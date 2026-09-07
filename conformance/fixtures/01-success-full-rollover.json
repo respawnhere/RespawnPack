@@ -1,0 +1,85 @@
+{
+  "id": "success-full-rollover",
+  "class": "known-good",
+  "title": "A managed in-place rollover: measure, settle, verify, compact, observe, re-identify, consume once",
+  "why": "The reference trace. Every later fixture is this one with exactly one thing wrong, so a fixture that fails here is a defect in the machine rather than in the scenario.",
+  "host": "claude-code",
+  "conversationId": "sess_reference_a",
+  "steps": [
+    {
+      "do": "apply", "transition": "checkpoint", "eventId": "measure-1", "expectStatus": "APPLIED",
+      "evidence": [{
+        "kind": "context-measurement", "source": "documented-api", "usedPercent": 86,
+        "raw": { "exceeds_200k_tokens": false, "used_percent": 86, "note": "statusline JSON — a documented surface, unlike the transcript" },
+        "observedAt": "2026-08-06T10:00:00.000Z"
+      }]
+    },
+    {
+      "do": "apply", "transition": "closeout", "eventId": "stop-1", "expectStatus": "APPLIED",
+      "evidence": [{
+        "kind": "safe-boundary", "mechanism": "unblocked-stop-hook",
+        "raw": { "hook_event_name": "Stop", "stop_hook_active": false, "session_id": "sess_reference_a" },
+        "observedAt": "2026-08-06T10:00:05.000Z"
+      }]
+    },
+    {
+      "do": "write-handoff", "as": "h1",
+      "handoff": {
+        "identity": { "host": "claude-code", "conversationId": "sess_reference_a", "conversationIdField": "session_id" },
+        "contextCycleId": "$cycleId",
+        "atomicActionId": "W1-rollover-core",
+        "exactNextAction": "run node --test core/core.test.mjs and report the parsed counts",
+        "git": {
+          "head": "466ed95aa1b2c3d4e5f60718293a4b5c6d7e8f90",
+          "uncommittedFiles": ["core/index.js", "core/lifecycle/machine.js"],
+          "sessionDelta": { "status": "CHANGED", "files": ["core/index.js"], "headMoved": false }
+        },
+        "userConstraints": ["additive only: no edits outside core/ and conformance/"],
+        "unresolvedQuestions": [],
+        "candidateMemories": []
+      }
+    },
+    { "do": "apply", "transition": "stage-handoff", "eventId": "write-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.written" }] },
+    { "do": "apply", "transition": "verify-handoff", "eventId": "readback-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.readback" }] },
+    { "do": "latch", "threshold": "final", "atPercent": 86 },
+    {
+      "do": "apply", "transition": "request-compact", "eventId": "compact-req-1", "expectStatus": "APPLIED",
+      "evidence": [{
+        "kind": "compact-requested", "mechanism": "sdk-slash-command",
+        "raw": { "type": "user", "message": { "role": "user", "content": "/compact" } },
+        "observedAt": "2026-08-06T10:00:20.000Z"
+      }]
+    },
+    {
+      "do": "apply", "transition": "observe-completion", "eventId": "boundary-1", "expectStatus": "APPLIED",
+      "evidence": [{
+        "kind": "compact-completed", "signal": "compact_boundary",
+        "raw": { "type": "system", "subtype": "compact_boundary", "compact_metadata": { "trigger": "manual", "pre_tokens": 152331 }, "session_id": "sess_reference_a" },
+        "observedAt": "2026-08-06T10:00:41.000Z"
+      }]
+    },
+    {
+      "do": "apply", "transition": "verify-identity", "eventId": "sessionstart-compact-1", "expectStatus": "APPLIED",
+      "evidence": [{
+        "kind": "identity-verification", "expectedId": "sess_reference_a", "observedId": "sess_reference_a", "equal": true,
+        "raw": { "hook_event_name": "SessionStart", "source": "compact", "session_id": "sess_reference_a" },
+        "observedAt": "2026-08-06T10:00:42.000Z"
+      }]
+    },
+    { "do": "consume-handoff", "ref": "h1", "consumerId": "session-start-injector", "expectStatus": "CONSUMED" }
+  ],
+  "expect": {
+    "finalState": "ACTIVE",
+    "outcome": "PASS",
+    "haltCode": null,
+    "rolloverOutcome": "ROLLED_OVER",
+    "cycleAdvances": 1,
+    "cycleIndex": 1,
+    "neverEntered": ["HALTED"],
+    "journalKinds": ["cycle-open", "transition", "consumption"],
+    "transitionsApplied": ["checkpoint", "closeout", "stage-handoff", "verify-handoff", "request-compact", "observe-completion", "verify-identity"],
+    "counts": { "noops": 0, "refusals": 0, "halts": 0, "consumptions": 1 },
+    "consumptions": [{ "status": "CONSUMED" }],
+    "latchesAfter": { "rearmed": true, "latched": [] }
+  }
+}

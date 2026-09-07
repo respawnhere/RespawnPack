@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/index-lease.schema.json",
+  "title": ".respawnpack/runtime/index-lease-<sha16>.json — exclusive ownership of one git index",
+  "description": "Written by hooks/_index-lease.js acquire()/confirm(). GITIGNORED. Keyed on the INDEX IDENTITY (the absolute, forward-slashed, lowercased path of the git index), not on the project directory, so two principals aimed at one linked worktree contend correctly. ⛔ AN UNREADABLE RECORD IS NOT AN ABSENT ONE: readLease() distinguishes null from {error}, because a corrupt lease that read as 'nobody holds this index' would hand it to a second writer. ⛔ AND A LEASE IS TAKEN PROVISIONALLY: a PreToolUse hook cannot know what a later hook will decide, so PostToolUse confirms — otherwise a call that was denied downstream wedged the index for the full TTL.",
+  "type": "object",
+  "required": ["holderKey", "sessionId", "agentId", "agentType", "indexPath", "acquiredAt", "heartbeatAt", "provisional"],
+  "additionalProperties": false,
+  "properties": {
+    "holderKey": { "type": "string", "pattern": "^.+/.+$" },
+    "sessionId": { "type": "string" },
+    "agentId": { "type": ["string", "null"] },
+    "agentType": { "type": ["string", "null"] },
+    "indexPath": { "type": "string" },
+    "acquiredAt": { "type": "string" },
+    "heartbeatAt": { "type": "string" },
+    "provisional": { "type": "boolean" },
+    "confirmedAt": { "type": "string" },
+    "reclaimedFrom": {
+      "description": "Present only when a stale lease was taken over. A reclaim is always RECORDED — an aggressive expiry that hands the index to a second writer while the first is still working is the corruption the lease exists to prevent.",
+      "type": "string"
+    }
+  }
+}

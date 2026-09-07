@@ -1,0 +1,60 @@
+{
+  "respawnpack": "0.3.1",
+  "installedAt": "2026-08-11",
+  "note": "RespawnPack's own configuration \u2014 the pack dogfooding itself. Not an installed target: there is no .claude/respawnpack/ here because the kernel IS kernel/. What is declared is exactly what this repo asks the kernel to enforce against it.",
+  "routeSource": {
+    "notApplicable": true,
+    "reason": "This repository serves no routes. It ships a kernel, hooks, skills and agents that get INSTALLED into products; the products have routes, the pack does not. There is no app/, pages/ or routes/ tree to enumerate and no FEATURES-PAGES.md \u00a72 matrix to enumerate it against, so the routes\u2194matrix drift-check has no subject here. \u26d4 THE REVISIT CLAUSE WAS EXERCISED, AND THE OPT-OUT STILL HOLDS (P3-O-4b, 2026-09-03). The pack now ships `respawnpack site`, which renders a TARGET's tracked documents into a static site and serves it on 127.0.0.1. That is a local VIEWER of someone else's documents, not a route of this repository: it declares no route table, there is still no app/, pages/ or routes/ tree here to enumerate, its pages are a projection of markdown files written under a gitignored output directory, and there is still no FEATURES-PAGES.md \u00a72 matrix to enumerate them against. The clause stays armed for the case it was written for, this repository publishing routes of its own, because a declared not-applicable is trusted by design and `respawnpack doctor` will not catch it."
+  },
+  "codeTruth": [
+    "schemas/",
+    "kernel/lib/",
+    "VERSION"
+  ],
+  "codeTruthNote": "The three places where code outranks prose in THIS repo, and each is already mechanized rather than asserted: `schemas/` holds the normative declarations every writer and reader is fenced against (kernel/schema.test.mjs), `kernel/lib/` is where every behavioural claim the README and the skills make about outcomes, exit codes and scan coverage actually lives (counts-fence.test.mjs re-derives those claims from these files and fails on drift), and `VERSION` is the single source for the version any doc cites. A doc that disagrees with one of these is wrong, not the code.",
+  "qualityGate": {
+    "checks": [
+      {
+        "name": "suite-aggregate",
+        "root": ".",
+        "command": "node",
+        "args": [
+          "ops/suite-counts.mjs"
+        ]
+      }
+    ],
+    "reason": "\u26d4 CONFIGURED, not opted out: this pack HAS a quality gate and it is `ops/suite-counts.mjs` \u2014 the strict aggregate over the twenty suites, which refuses to report a number it did not measure. Declaring notApplicable here would have been the easy green and a lie, since the gate exists and runs in CI. It is deliberately the AGGREGATE rather than a lint or typecheck: there is no package.json at this root, so `gate.js`'s stack detection finds no profile and would report NOT_CONFIGURED \u2014 an honest verdict that would nonetheless have said nothing about the one gate this repo actually keeps. Slow by design (twenty suites, ~25 minutes); a gate is run deliberately, and nothing in the test suite invokes `gate` against this root."
+  },
+  "state": {
+    "removals": {
+      "registry": "docs/derived/state/removals.json",
+      "liveContentDirs": [
+        "."
+      ],
+      "historyPaths": [
+        "CHANGELOG.md",
+        "ATTRIBUTION.md",
+        "spine/DECISIONS.md",
+        "spine/derived/CHANGELOG.md",
+        "docs/dogfood",
+        "docs/dev/rework-2026-09"
+      ],
+      "exclude": [
+        "research",
+        "graphify-8",
+        "memory/engine",
+        "memory/graph",
+        "memory/candidates",
+        ".claude",
+        ".github",
+        "docs/derived/_archive"
+      ],
+      "historyPathsCaveat": "\u26d4 A DECLARED HISTORY PATH IS A HOLE, AND THESE SIX ARE HOLES ON PURPOSE. A decision record must be able to state what was rejected without the scanner reading its own prohibition as a live assertion. The exposure is bounded and stated rather than discovered: a reversal written into a listed decision/history record is a new decision under review, whereas the reintroductions this contract exists to catch are the ones that appear quietly in live prose elsewhere. ADR-002 is cited evidence for R-003 and R-004 but is deliberately NOT excluded wholesale: accepted evidence remains scanned, and its scoped retirement wording passes the same discrimination rules as other current prose. Re-examine this list whenever a history path starts holding anything other than a record of decisions already made.",
+      "reason": "liveContentDirs is `.` \u2014 the whole repo minus the exclusions \u2014 because this pack's most drift-prone prose is at the ROOT (README.md and the maintainer notes) and a directory list cannot reach a root file. The the 2026-08-07 field run's \u00a72 finding was a scan pointed at one directory reporting success for a whole project; narrowing this to ['docs'] would reproduce it here, where docs/ holds 19 of the repo's live markdown files and skills/, agents/, spine/ and the root hold the rest. The exclusions are vendored or generated trees, not judgement calls: research/ holds third-party prior art, graphify-8/ and memory/engine/ are vendored sub-trees, and .claude/ holds local checkouts and runtime state that would double every hit."
+    },
+    "reconcile": {
+      "notApplicable": true,
+      "reason": "This repo has NO structured task source, and DF-005 deliberately refuses to infer one from prose. Its work is tracked in CHANGELOG.md, .respawnpack/wave-ledger.md and commit messages \u2014 all prose, all outside what a reconciler may read (`kernel/lib/reconcile.js`: 'a heading that says done is not a record'). The kernel's own `requirements` kind is not available either: docs/derived/state/requirements.json does not exist, and docs/derived/STATE.json records `tracksRequirements: false` with `cannotDetermine: ['no approved requirement source']`. Declaring `tasks: {kind: 'requirements'}` against an absent file would buy a permanent CANNOT_DETERMINE dressed as configuration. \u26d4 REVISIT THIS WHEN A REQUIREMENTS DENOMINATOR IS APPROVED: the moment docs/derived/state/requirements.json exists, this opt-out is stale and both sides should be declared instead."
+    }
+  }
+}

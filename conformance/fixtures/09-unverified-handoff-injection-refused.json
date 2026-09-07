@@ -1,0 +1,49 @@
+{
+  "id": "unverified-handoff-injection-refused",
+  "class": "known-bad",
+  "title": "Compaction is requested, and the handoff is offered for injection, with no verification behind either",
+  "why": "Two refusals of the same rule at two different layers. The state machine refuses to leave ROLLOVER_PENDING for COMPACTING, because request-compact runs only from HANDOFF_VERIFIED; and the consumption primitive independently refuses to hand over a document with no verification receipt, because a receipt is what proves the bytes were read back and compared. Neither layer relies on the other having done it, and COMPACTING is never entered.",
+  "host": "pi",
+  "conversationId": "pi_session_i",
+  "steps": [
+    {
+      "do": "apply", "transition": "checkpoint", "eventId": "measure-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "context-measurement", "source": "documented-api", "usedPercent": 88, "raw": { "call": "getContextUsage()", "note": "PROVISIONAL — Pi is not installed in this environment; the shape is a design-doc claim until a canary proves it" }, "observedAt": "2026-08-06T18:00:00.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "closeout", "eventId": "idle-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "safe-boundary", "mechanism": "wait-for-idle", "raw": { "state": "idle" }, "observedAt": "2026-08-06T18:00:04.000Z" }]
+    },
+    {
+      "do": "write-handoff", "as": "h1",
+      "handoff": {
+        "identity": { "host": "pi", "conversationId": "pi_session_i", "conversationIdField": "sessionId" },
+        "contextCycleId": "$cycleId", "atomicActionId": "W1-unverified", "exactNextAction": "verify the handoff before anything else",
+        "git": { "head": "466ed95", "uncommittedFiles": [], "sessionDelta": { "status": "UNCHANGED", "files": [], "headMoved": false } },
+        "userConstraints": [], "unresolvedQuestions": [], "candidateMemories": []
+      }
+    },
+    { "do": "apply", "transition": "stage-handoff", "eventId": "write-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.written" }] },
+    {
+      "do": "apply", "transition": "request-compact", "eventId": "compact-req-1", "expectStatus": "REFUSED", "expectFailure": "ILLEGAL_TRANSITION",
+      "evidence": [{ "kind": "compact-requested", "mechanism": "pi-ctx-compact", "raw": { "call": "ctx.compact()" }, "observedAt": "2026-08-06T18:00:06.000Z" }]
+    },
+    { "do": "revoke-verification", "ref": "h1" },
+    { "do": "consume-handoff", "ref": "h1", "consumerId": "impatient-injector", "expectStatus": "REFUSED" },
+    { "do": "apply", "transition": "halt", "eventId": "halt-1", "failureCode": "HANDOFF_UNVERIFIED", "detail": "the rollover was driven forward with no read-back verification for the handoff", "expectStatus": "HALTED" }
+  ],
+  "expect": {
+    "finalState": "HALTED",
+    "outcome": "FAIL",
+    "haltCode": "HANDOFF_UNVERIFIED",
+    "haltOutcome": "FAIL",
+    "rolloverOutcome": "HALTED",
+    "cycleAdvances": 0,
+    "cycleIndex": 0,
+    "neverEntered": ["HANDOFF_VERIFIED", "COMPACTING", "REHYDRATING"],
+    "journalKinds": ["refusal", "consumption", "halt"],
+    "counts": { "refusals": 1, "halts": 1 },
+    "consumptions": [{ "status": "REFUSED", "failureCode": "HANDOFF_UNVERIFIED" }],
+    "recoveryMentions": ["write the handoff and verify it"]
+  }
+}

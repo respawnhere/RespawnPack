@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/skill-meta.schema.json",
+  "title": "<skillDir>/.skill-meta.json — living-skill lifecycle metadata",
+  "description": "Written by kernel/lib/living.js enable/regenerate/reset and stamped by install/uninstall.js --for-upgrade. TRACKED (it belongs to the founder's project, not to the runtime). ⛔ ITS ABSENCE IS NOT A FAILURE: a skill with no meta is STATIC, which living status reports as NOT_APPLICABLE and which the docs call a completely supported state. Living behaviour applies to three opt-in canaries (debug, savepoint, knowledge) and to nothing else — deliberately NOT the same set as the skills shipping a SKILL.base.md, because enabling a canary is what creates its baseline.",
+  "type": "object",
+  "required": ["schemaVersion", "skill", "baseHash", "enabledAt", "lastReset", "overlayBudgetLines", "source"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "description": "Presence-checked by status(): a meta missing this, baseHash or overlayBudgetLines is CANNOT_DETERMINE, never a quiet pass.",
+      "const": "1.0.0"
+    },
+    "skill": { "type": "string" },
+    "baseHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "enabledAt": { "type": "string" },
+    "lastReset": { "type": ["string", "null"] },
+    "overlayBudgetLines": { "type": "integer", "minimum": 1 },
+    "source": { "type": "string" },
+    "supersededByUpgrade": {
+      "description": "⛔ THE HONEST NARROWING. An upgrade does NOT preserve a living overlay — a founder who upgrades wants the new pack skill — so the living form is ARCHIVED and the loss is REPORTED, rather than the overlay silently vanishing under a clean PASS. Bounded at five archives; at the bound the upgrade refuses to remove the living form and says so.",
+      "type": "object",
+      "required": ["lines", "archive"],
+      "additionalProperties": false,
+      "properties": {
+        "lines": { "type": "integer", "minimum": 0 },
+        "archive": { "type": "string", "pattern": "^SKILL\\.superseded(\\.[2-5])?\\.md$" }
+      }
+    }
+  }
+}

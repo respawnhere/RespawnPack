@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/consumption-receipt.schema.json",
+  "title": ".respawnpack/runtime/rollover/<host>-<conversationId>/<subjectId>.consumed.json — the exactly-once claim receipt",
+  "description": "Written by core/lifecycle/consumable.js's consume() with `wx` (O_EXCL / CREATE_NEW): exactly one caller across any number of processes creates this file, and every other caller learns it already existed. Generic on purpose — the ROLLOVER HANDOFF is the first and, in W2, the only subject that claims through it (core/state/handoff.js's own consume() delegates here), but the mechanism and this schema are not handoff-specific: `subjectId` names whatever was claimed. GITIGNORED, machine-local. No schemaVersion: a receipt this small, with a lifetime bound to one subjectId and never rewritten once created, carries no format a future reader needs to distinguish from an earlier one.",
+  "type": "object",
+  "required": ["kind", "subjectId", "consumerId", "consumedAt", "note"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "consumption-receipt" },
+    "subjectId": { "type": "string" },
+    "consumerId": { "type": "string" },
+    "consumedAt": { "type": "string" },
+    "note": {
+      "description": "A human-readable reason the caller supplied. Null is legal — not every consumer names one.",
+      "type": ["string", "null"]
+    },
+    "extra": {
+      "description": "Caller-defined payload, present only when the caller supplied one. The rollover handoff's own consumption records {verifiedDigest, contextCycleId, exactNextAction} here — see core/state/handoff.js consume(). Deliberately unconstrained beyond its own type: this primitive is reused by whatever else needs exactly-once consumption, and a schema that named one caller's fields would be documenting a caller, not the primitive.",
+      "type": ["object", "null"]
+    }
+  }
+}

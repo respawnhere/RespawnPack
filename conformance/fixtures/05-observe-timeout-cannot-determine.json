@@ -1,0 +1,51 @@
+{
+  "id": "observe-timeout-cannot-determine",
+  "class": "known-bad",
+  "title": "Compaction was requested and no completion signal ever arrived",
+  "why": "The window closed with nothing observed. That is NOT evidence that compaction failed and NOT evidence that it succeeded, so the rollover ends CANNOT_DETERMINE and never reaches REHYDRATING. A declared compact-unobserved record is legitimate to CARRY and is refused as a completion, which is the distinction the taxonomy exists to hold: the same word means opposite things depending on which field it appears in.",
+  "host": "codex",
+  "conversationId": "thr_timeout_e",
+  "steps": [
+    {
+      "do": "apply", "transition": "checkpoint", "eventId": "measure-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "context-measurement", "source": "documented-event", "usedPercent": 91, "raw": { "method": "thread/tokenUsage/updated", "params": { "threadId": "thr_timeout_e" } }, "observedAt": "2026-08-06T14:00:00.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "closeout", "eventId": "turn-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "safe-boundary", "mechanism": "turn-completed", "raw": { "method": "turn/completed", "params": { "status": "interrupted", "threadId": "thr_timeout_e" } }, "observedAt": "2026-08-06T14:00:06.000Z" }]
+    },
+    {
+      "do": "write-handoff", "as": "h1",
+      "handoff": {
+        "identity": { "host": "codex", "conversationId": "thr_timeout_e", "conversationIdField": "threadId" },
+        "contextCycleId": "$cycleId", "atomicActionId": "W1-timeouts", "exactNextAction": "ask the host for its current state before doing anything else",
+        "git": { "head": "466ed95", "uncommittedFiles": [], "sessionDelta": { "status": "UNCHANGED", "files": [], "headMoved": false } },
+        "userConstraints": [], "unresolvedQuestions": [], "candidateMemories": []
+      }
+    },
+    { "do": "apply", "transition": "stage-handoff", "eventId": "write-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.written" }] },
+    { "do": "apply", "transition": "verify-handoff", "eventId": "readback-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.readback" }] },
+    {
+      "do": "apply", "transition": "request-compact", "eventId": "compact-req-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "compact-requested", "mechanism": "app-server-thread-compact", "raw": { "method": "thread/compact/start", "params": { "threadId": "thr_timeout_e" } }, "observedAt": "2026-08-06T14:00:12.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "observe-completion", "eventId": "watchdog-1", "expectStatus": "REFUSED", "expectFailure": "EVIDENCE_MISSING",
+      "evidence": [{ "kind": "compact-unobserved", "reason": "timeout", "waitedMs": 120000, "raw": { "lastEvent": "item/started", "itemId": "itm_9", "note": "no item/completed for the contextCompaction item" }, "observedAt": "2026-08-06T14:02:12.000Z" }]
+    },
+    { "do": "apply", "transition": "halt", "eventId": "halt-1", "failureCode": "COMPLETION_UNOBSERVED", "detail": "no item/completed for contextCompaction itm_9 after 120000ms", "expectStatus": "HALTED" }
+  ],
+  "expect": {
+    "finalState": "HALTED",
+    "outcome": "CANNOT_DETERMINE",
+    "haltCode": "COMPLETION_UNOBSERVED",
+    "haltOutcome": "CANNOT_DETERMINE",
+    "rolloverOutcome": "HALTED",
+    "cycleAdvances": 0,
+    "cycleIndex": 0,
+    "neverEntered": ["REHYDRATING"],
+    "journalKinds": ["refusal", "halt"],
+    "counts": { "halts": 1, "refusals": 1 },
+    "recoveryMentions": ["never continue on the assumption that enough time has passed"]
+  }
+}

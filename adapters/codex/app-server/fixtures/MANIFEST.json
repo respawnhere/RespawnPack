@@ -1,0 +1,176 @@
+{
+  "kind": "respawnpack-fixture-manifest",
+  "profile": "codex/app-server",
+  "why": "CAPTURED and SYNTHETIC are different claims and must never be told apart by guessing at a filename. A captured fixture is what a host actually said and can be cited as evidence; a synthetic one is what this adapter believes a host would say, and can only prove that the READER is correct if it does. This manifest states which is which, where each came from, and the digest of the bytes as recorded — so a synthetic fixture cannot be quietly promoted, and a captured one cannot be quietly edited into agreement with the code that reads it.",
+  "recordedAt": "2026-08-06",
+  "digestAlgorithm": "sha256",
+  "host": "codex-cli 0.146.0, Windows 11 (10.0.26200), model gpt-5.6-sol, modelContextWindow 258400",
+  "fixtures": [
+    {
+      "file": "captured/01-turn-lifecycle.jsonl",
+      "origin": "captured-live",
+      "bytes": 5740,
+      "sha256": "9f124f479972a87bff4ef5af1668324969f803d1ed554a4336f2499eab12bdeb",
+      "capturedFrom": "the live probe's raw log (W3 probe, 2026-08-06) — the RECV notification lines of one real trivial turn, in arrival order, with the RPC responses removed to captured/04-responses.json",
+      "verifiedIdentical": "each line is byte-for-byte the payload the probe logged; nothing was reformatted or re-serialised ⛔ AMENDED 2026-08-16 FOR PUBLICATION: the machine account name in captured absolute paths was replaced with the placeholder \"user\". That is the ONLY change — every protocol payload, ordering, id and token count is exactly as the probe logged it. The digest below is of the amended bytes, so this manifest still states the truth about the file it describes; the original recording is retained in the development repository. ⛔ AMENDED 2026-09-07 FOR PUBLICATION: the account's planType value in 1 account/rateLimits/updated notification was replaced with \"redacted\", because a subscription tier is account data rather than protocol shape; bytes and sha256 were re-recorded for it, and every other field is unchanged.",
+      "shows": [
+        "the documented order: thread/started (LAZY — it fires on the first turn, not on thread/start) → thread/status/changed → turn/started → item/started → item/completed → item/agentMessage/delta → thread/tokenUsage/updated → turn/completed",
+        "thread/tokenUsage/updated with a HEALTHY last block: inputTokens 15703, cachedInputTokens 11008 (a SUBSET of it), outputTokens 5, totalTokens 15708, modelContextWindow 258400",
+        "the unsolicited traffic any reader must tolerate without interpreting: mcpServer/startupStatus/updated, account/rateLimits/updated, thread/status/changed",
+        "live item ids are uuidv7 (msg_…/019f…), not the item-N form a resumed thread renumbers to"
+      ]
+    },
+    {
+      "file": "captured/02-compaction.jsonl",
+      "origin": "captured-live",
+      "bytes": 2352,
+      "sha256": "17596254fce57589c50807fae62addaccdd4ed7dde70b49088361482f9ea560e",
+      "capturedFrom": "the live probe's raw log (W3 probe, 2026-08-06) — a REAL thread/compact/start on a 15.7k/258.4k thread that compacted in ~1.8s",
+      "verifiedIdentical": "byte-for-byte with the probe's own log ⛔ AMENDED 2026-09-07 FOR PUBLICATION: the account's planType value in 1 account/rateLimits/updated notification was replaced with \"redacted\", because a subscription tier is account data rather than protocol shape; bytes and sha256 were re-recorded for it, and every other field is unchanged.",
+      "shows": [
+        "THE EVIDENCE CONTRACT: the compaction runs as its OWN TURN (a new turnId on the same threadId) and the ONLY completion signal is the contextCompaction item reaching item/completed with the SAME item id it started with",
+        "the item NEVER carries more than {id,type} — there is no pre/post token metadata to corroborate it with",
+        "THE POST-COMPACTION USAGE ROW: total is UNCHANGED (it is cumulative) while last reports totalTokens 4511 with all five component counters at 0 — the row no occupancy may be derived from",
+        "the deprecated thread/compacted notification does NOT fire on this build"
+      ]
+    },
+    {
+      "file": "captured/03-interrupt-race.jsonl",
+      "origin": "captured-live",
+      "bytes": 1996,
+      "sha256": "b2db6d5a63a92692fb00c4cf0132f1696b96aee81f1572b84b901c8fbd230fd9",
+      "capturedFrom": "the live probe's raw log (W3 probe, 2026-08-06) — both halves of the turn/interrupt race, in one file",
+      "verifiedIdentical": "byte-for-byte with the probe's own log",
+      "shows": [
+        "the LOSING half: an interrupt sent after the turn/start RESPONSE but before the turn/started NOTIFICATION answers -32600 \"no active turn to interrupt\"",
+        "the WINNING half: the same interrupt sent after turn/started is acknowledged {} and the turn settles with status \"interrupted\"",
+        "why the supervisor waits for the notification instead of retrying into the error: the two are indistinguishable from the error text alone"
+      ]
+    },
+    {
+      "file": "captured/04-responses.json",
+      "origin": "captured-live",
+      "bytes": 5195,
+      "sha256": "a4490129c8c5376553ec2e6f757e30636ba04c2f1a6e1c6ee6829cf5f47eb266",
+      "capturedFrom": "the live probe's raw log (W3 probe, 2026-08-06) — the verbatim JSON-RPC RESPONSES, keyed by what they answered",
+      "verifiedIdentical": "each value is the response line exactly as logged ⛔ AMENDED 2026-08-16 FOR PUBLICATION: the machine account name in captured absolute paths was replaced with the placeholder \"user\". That is the ONLY change — every protocol payload, ordering, id and token count is exactly as the probe logged it. The digest below is of the amended bytes, so this manifest still states the truth about the file it describes; the original recording is retained in the development repository.",
+      "shows": [
+        "preInitThreadStartError: -32600 \"Not initialized\" for a request sent before the mandatory handshake — after which the process exits with code 0",
+        "threadStart: thread.id and thread.sessionId are the SAME uuidv7 value, and the response reports approvalPolicy \"never\" and sandbox {type:\"readOnly\"}",
+        "threadCompactStartAck: the whole answer is {} — an acknowledgement, not a completion",
+        "threadResumeWithoutPolicyRepass: a resume that did NOT re-pass approvalPolicy came back \"on-request\" on a thread started \"never\", while sandbox stayed readOnly — the gotcha this adapter re-passes against",
+        "the resumed thread's items are renumbered item-1, item-2, item-3 — nothing may be correlated across a cold resume by item id"
+      ]
+    },
+    {
+      "file": "captured/05-live-canary-events.jsonl",
+      "origin": "captured-live",
+      "bytes": 78032,
+      "sha256": "63e7949013a1739da57a7669bd34c4f6732d01c204cc1e1450d5e11b8b41cf49",
+      "capturedFrom": "adapters/codex/app-server/canary.js --rollovers 3 --context-window 18000, run live against codex-cli 0.146.0 on 2026-08-06 — the complete ordered event log of THREE CONSECUTIVE IN-PLACE ROLLOVERS on one thread. THIS IS THE RELEASE EVIDENCE for the codex/app-server profile.",
+      "verifiedIdentical": "written by rpc.js as the run happened; its digest equals the independently streamed raw log's digest ⛔ AMENDED 2026-08-16 FOR PUBLICATION: the machine account name in captured absolute paths was replaced with the placeholder \"user\". That is the ONLY change — every protocol payload, ordering, id and token count is exactly as the probe logged it. The digest below is of the amended bytes, so this manifest still states the truth about the file it describes; the original recording is retained in the development repository. ⛔ AMENDED 2026-09-03 FOR PUBLICATION: the 2026-08-16 pass missed one further occurrence of the machine account name, nested inside the `codexJs` field of a JSON-RPC wire payload carried in this line's own `raw` string — it sits after a backslash `home\\` segment, a form neither the account-name check's structural regex nor a plain path scan is built to read into a string-within-a-string. That occurrence is now replaced with the same placeholder \"user\" and nothing else changed. The digest below is of the re-amended bytes. `containsEnvironmentData` is cleared by this same pass: the account name was the one thing here that `captured/01-turn-lifecycle.jsonl`, `captured/02-compaction.jsonl` and `captured/04-responses.json` do not already ship unflagged despite carrying these same codexHome, userAgent and account/rateLimits shapes verbatim. With the name gone, this fixture is no longer a different kind of data from those three, so the flag is removed rather than left standing for a review it no longer needs. ⛔ AMENDED 2026-09-07 FOR PUBLICATION: the machine's host name in the remoteControl/status/changed notification's serverName field was replaced with the placeholder \"host\". That is the only change; bytes and sha256 above were re-recorded for it, and every protocol payload is otherwise exactly what the host said. ⛔ AMENDED 2026-09-07 FOR PUBLICATION: the account's planType value in 7 account/rateLimits/updated notifications was replaced with \"redacted\", because a subscription tier is account data rather than protocol shape; bytes and sha256 were re-recorded for it, and every other field is unchanged.",
+      "shows": [
+        "three contextCompaction item/started → item/completed pairs, each with a matching uuidv7 item id, all on threadId 019fd836-2d07-7330-b018-d9059a2d348c",
+        "the threadId is IDENTICAL before and after every compaction, and a thread/resume between rollovers re-passes approvalPolicy and reads back \"never\"",
+        "every thread/compact/start is answered {} first and the compaction then runs as its own turn",
+        "zero server→client requests arrived under sandbox read-only + approvalPolicy never — observed, and still not proof that none can",
+        "zero unparsed lines and no torn tail across 123 notifications"
+      ]
+    },
+    {
+      "file": "captured/06-live-canary-report.json",
+      "origin": "captured-live",
+      "bytes": 77327,
+      "sha256": "c6d5cc2e2851f205b70734ae9e4dc4e87fdc638cdbb1a544550b7b4abf9ab11a",
+      "capturedFrom": "the same run's structured report (canary.js --json) — outcome PASS, exit 0",
+      "verifiedIdentical": "written atomically by the canary at the end of the run ⛔ AMENDED 2026-08-16 FOR PUBLICATION: the machine account name in captured absolute paths was replaced with the placeholder \"user\". That is the ONLY change — every protocol payload, ordering, id and token count is exactly as the probe logged it. The digest below is of the amended bytes, so this manifest still states the truth about the file it describes; the original recording is retained in the development repository. ⛔ AMENDED 2026-09-03 FOR PUBLICATION: the 2026-08-16 pass redacted the account name from this file's `cwd` fields but missed it in the `codexJs`, `candidate` and `detail` fields and in their duplicate copies nested inside seven nested `raw` JSON-string payloads — all of it sitting after a backslash `home\\` segment, a form neither the account-name check's structural regex nor a plain path scan is built to read into a string-within-a-string. Those occurrences are now replaced with the same placeholder \"user\" and nothing else changed. The digest below is of the re-amended bytes. `containsEnvironmentData` is cleared by this same pass, same as 05: the account name was the one thing here that `captured/01-turn-lifecycle.jsonl`, `captured/02-compaction.jsonl` and `captured/04-responses.json` do not already ship unflagged despite carrying these same codexHome, userAgent and account/rateLimits shapes verbatim. With the name gone, this fixture is no longer a different kind of data from those three, so the flag is removed rather than left standing for a review it no longer needs.",
+      "shows": [
+        "the per-claim verdicts, each carrying the observation it rests on",
+        "cycle indices 0 → 1 → 2 → 3 with the cycle NONCE changing at every advance",
+        "occupancy 86.81% / 88.24% / 89.48% of an OPERATOR-CONFIGURED 18000-token denominator — the budget note says so in the report's own text, and every measurement record carries windowHostReported:false",
+        "the capability matrix generated FROM this run: rolloverCapable true, nothing downgraded"
+      ]
+    },
+    {
+      "file": "synthetic/client-request-schema.json",
+      "origin": "synthetic",
+      "bytes": 2674,
+      "sha256": "24f931d88e39e4a02a536d922fdd66b37727d026b811526e606cd6b93177e5fc",
+      "builtFrom": "the shape of the ClientRequest.json that `codex app-server generate-json-schema --experimental` writes, reduced to the six methods this adapter sends",
+      "whyNotCaptured": "the live file is regenerated by probe() on every supervisor start, which is where a real drift finding comes from; a frozen copy would go stale and start disagreeing with the host it claims to describe",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-ack-without-item.jsonl",
+      "origin": "synthetic",
+      "bytes": 1806,
+      "sha256": "2f3bc1e96a4d8067a45a33c855f022cb297976be5abd757f18491a3a45e88cfe",
+      "builtFrom": "captured/02-compaction.jsonl with both contextCompaction item lines removed — the ack, the turn, and no item ⛔ AMENDED 2026-09-07 FOR PUBLICATION: the account's planType value in 1 account/rateLimits/updated notification was replaced with \"redacted\", because a subscription tier is account data rather than protocol shape; bytes and sha256 were re-recorded for it, and every other field is unchanged.",
+      "whyNotCaptured": "a genuine no-op compaction has NEVER been observed on this host. That is exactly why this input must not be resolved: it is either a no-op or a completion this adapter did not observe, and the two cannot be told apart from here",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-duplicate-item.jsonl",
+      "origin": "synthetic",
+      "bytes": 2627,
+      "sha256": "29d4868b1238677bf3f9e94a6624aac12f0c55505673981d5edf2831d57a824d",
+      "builtFrom": "captured/02-compaction.jsonl with the item/completed line repeated VERBATIM (same item id) ⛔ AMENDED 2026-09-07 FOR PUBLICATION: the account's planType value in 1 account/rateLimits/updated notification was replaced with \"redacted\", because a subscription tier is account data rather than protocol shape; bytes and sha256 were re-recorded for it, and every other field is unchanged.",
+      "whyNotCaptured": "redelivery has not been observed; the machine's duplicate suppression must hold whether or not it ever is",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-identity-changed.jsonl",
+      "origin": "synthetic",
+      "bytes": 2352,
+      "sha256": "e6d8ad64e6164a7ba3181a12933cbab5fdf7e7e34c9c1ed80f95bac809ebfc27",
+      "builtFrom": "captured/02-compaction.jsonl with the threadId on both contextCompaction items changed to a different uuid ⛔ AMENDED 2026-09-07 FOR PUBLICATION: the account's planType value in 1 account/rateLimits/updated notification was replaced with \"redacted\", because a subscription tier is account data rather than protocol shape; bytes and sha256 were re-recorded for it, and every other field is unchanged.",
+      "whyNotCaptured": "threadId-across-compaction held in every live observation. The check is empirical PER ROLLOVER anyway, and this is the input it exists to catch",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-persisted-item-id.jsonl",
+      "origin": "synthetic",
+      "bytes": 2292,
+      "sha256": "b4df49f8db791cba8979177a67080b6e45b5c692f4c1ec412f3a36b19915a6c6",
+      "builtFrom": "captured/02-compaction.jsonl with the item ids replaced by item-3, the form a resumed thread renumbers to ⛔ AMENDED 2026-09-07 FOR PUBLICATION: the account's planType value in 1 account/rateLimits/updated notification was replaced with \"redacted\", because a subscription tier is account data rather than protocol shape; bytes and sha256 were re-recorded for it, and every other field is unchanged.",
+      "whyNotCaptured": "the renumbering was captured on a cold resume, but never on a LIVE item; this is the shape that would collide two compactions on one event id if it ever arrived live",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-started-never-completed.jsonl",
+      "origin": "synthetic",
+      "bytes": 2077,
+      "sha256": "a9695b4ed194dfdc6f734d32638da26b6b97cb02a6b232ab5aed7638af8d7f59",
+      "builtFrom": "captured/02-compaction.jsonl with the contextCompaction item/completed line removed ⛔ AMENDED 2026-09-07 FOR PUBLICATION: the account's planType value in 1 account/rateLimits/updated notification was replaced with \"redacted\", because a subscription tier is account data rather than protocol shape; bytes and sha256 were re-recorded for it, and every other field is unchanged.",
+      "whyNotCaptured": "a compaction that began and was never reported finished has not been observed; half a pair is not a completion and must not be read as one",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/server-requests.jsonl",
+      "origin": "synthetic",
+      "bytes": 600,
+      "sha256": "1638ab7e00b730422a61a5fccb5fad583c92a09e7b295a4a9d8ce9bb6d478a76",
+      "builtFrom": "the ServerRequest.json method inventory: two approvals, an MCP elicitation, the benign clock read, and one method no schema declares",
+      "whyNotCaptured": "with sandbox read-only and approvalPolicy \"never\", NO server→client request was observed in any live run. That is not proof they cannot arrive, and an unanswered one hangs the turn forever",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/tokenusage-cases.jsonl",
+      "origin": "synthetic",
+      "bytes": 1395,
+      "sha256": "bcc66b028636c7891cd9b917f6ad8048ad6c36657a9cbae862f9d75b6343a4af",
+      "builtFrom": "the captured healthy usage row, plus the same row with modelContextWindow null, plus one for a DIFFERENT threadId",
+      "whyNotCaptured": "modelContextWindow was non-null in every live observation, and no second thread ran. Known answers: 15703/258400 = 6.0770…%, a null window is CANNOT_DETERMINE, and the foreign row must not be read at all",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/transport-hostile.jsonl",
+      "origin": "synthetic",
+      "bytes": 227,
+      "sha256": "72d6529d2bb02f11e5d172cc983cb3a6c8c0fa6cd8ba0fdaae89f3076b269792",
+      "builtFrom": "a non-JSON line, a JSON array, an unknown notification method, a response nobody is waiting for, and one ordinary notification",
+      "whyNotCaptured": "the host emitted none of these. This is an EXPERIMENTAL surface, so a reader that silently drops what it cannot read has no way to notice the day it grows a shape",
+      "provesReaderNotHost": true
+    }
+  ]
+}

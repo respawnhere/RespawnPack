@@ -1,0 +1,299 @@
+{
+  "schemaVersion": "1.0.0",
+  "reason": "The pack's own unmirrored-obligation inventory. A PAIR is an invariant of the form \"X must agree with Y\" \u2014 two artifacts where changing one obliges a change in the other. \u26d4 THIS FILE EXISTS BECAUSE EVERY DEFECT THAT SHIPPED IN 5204353 WAS A BROKEN PAIR AND EVERY FENCE THAT CAUGHT ONE WAS TWO-SIDED, 4/4 IN BOTH DIRECTIONS. A rule that isn't executable is a suggestion: rules 14 and 15 were added to the testing standard and violated within the hour by the change that added them. So the residue is enumerated here rather than described in prose, and `unfenced` is the number that has to go down. \u26d4 IT IS A FLOOR, NOT AN INVENTORY: a pair is only tracked once someone records it, so a new mirror needs a row when it is created, not at the next audit.",
+  "shapes": {
+    "A": "Completeness over an enumerable-now set. Both sides can be listed by scanning current state, so a set-diff in both directions is the fence.",
+    "B": "Noticing a NEW obligation was just created. The universe is not enumerable in advance, so there is nothing to diff against and something must recognise the change. The field's own tooling (CodeScene) keeps this class advisory rather than blocking; so does this file.",
+    "C": "Declaration versus ground truth. Checking a claim against reality rather than against another claim \u2014 stronger than a set-diff, which two agreeing-but-wrong lists can satisfy.",
+    "D": "N-way semantic agreement. Not presence/absence at all; set-diffs are structurally blind to it. The fence is a shared test vector through every implementation."
+  },
+  "pairs": [
+    {
+      "id": "P-001",
+      "sideA": "install/upgrade.js SOURCE_TREES (preflight)",
+      "sideB": "install/uninstall.js KERNEL_FILES + CORE_FILES (what phase 1 deletes)",
+      "invariant": "Never delete from the target anything this source cannot put back.",
+      "shape": "C",
+      "enforcedBy": "install/uninstall.test.mjs:upgrade.js preflight: EVERY preflighted source tree, torn in turn, aborts before the target is touched",
+      "exposure": "REPRODUCED before the fix: a pack source missing core/ passed preflight, phase 1 stripped the target, phase 2 died on ENOENT, and the target went from 13 core files to 0. With one file missing from kernel/lib/ the same run left 3 of 12 kernel libs and a kernel that would not start."
+    },
+    {
+      "id": "P-002",
+      "sideA": "install/upgrade.js SOURCE_TREES",
+      "sideB": "every source tree install/install.js actually reads unguarded",
+      "invariant": "The preflight list must be COMPLETE against what the installer reads, not merely free of phantoms.",
+      "shape": "A",
+      "enforcedBy": "install/uninstall.test.mjs:upgrade.js and install.js source their preflight list from install/_sources.js \u2014 neither declares SOURCE_TREES/SOURCE_FILES of its own",
+      "exposure": "A future top-level tree read unguarded by install.js repeats P-001 exactly."
+    },
+    {
+      "id": "P-003",
+      "sideA": "kernel/lib/gate.js notApplicable handling",
+      "sideB": "kernel/lib/removals.js readConfig + kernel/lib/reconcile.js runReconciliation",
+      "invariant": "All three implementations of the declared-opt-out contract must answer the same input alike.",
+      "shape": "D",
+      "enforcedBy": "kernel/kernel.test.mjs:P1 \u00b7 a reason-less opt-out is REFUSED by all three, and never reaches a passing exit",
+      "exposure": "PROVEN before the fix: gate.js returned NOT_APPLICABLE at exit 0 for a reason-less opt-out while the other two refused it \u2014 the weakest of three implementations sitting in the file whose own header argues hardest for the rule."
+    },
+    {
+      "id": "P-004",
+      "sideA": "schemas/project-config.schema.json blocks declaring a notApplicable opt-out",
+      "sideB": "kernel/lib/applicability.js survey() subsystems",
+      "invariant": "Every optional contract a founder can decline in config must get an applicability row, or doctor's \"all N optional contracts are decided\" over-claims.",
+      "shape": "A",
+      "enforcedBy": "kernel/kernel.test.mjs:every schema-declared notApplicable opt-out has a survey() subsystem row, and every subsystem row traces back to a schema opt-out or is exempted \u2014 P-004",
+      "exposure": "doctor prints \"all 5 optional contracts are decided\" while a sixth exists and is undecided."
+    },
+    {
+      "id": "P-005",
+      "sideA": "hooks/_manifest.js INPUT_FILES",
+      "sideB": "state.reconcile.tasks.path / .project.path (founder-configurable JSON sources)",
+      "invariant": "Every configured input to the compiled STATE.json must be freshness-bound.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "state.removals.registry got a hand-added configuredRegistryRel() for exactly this reason and the sibling case was never done. The fix pattern already exists in the same file; what is missing is deriving the set of configurable path keys from the schema instead of listing them.",
+      "exposure": "Editing the project's real task file changes what the reconciliation verdict should be while readDurableState() still reports CURRENT \u2014 a confident stale claim, which is the failure hooks/_manifest.js exists to end."
+    },
+    {
+      "id": "P-006",
+      "sideA": "kernel/lib/removals.js HISTORY_HEADING (wholesale section exclusion)",
+      "sideB": "spine/reference/testing-standards.md rule 12 (current evidence stays scannable)",
+      "invariant": "A live assertion under a decisions/changelog/history heading must still be scanned; only genuinely historical prose may be suppressed.",
+      "shape": "C",
+      "enforcedBy": null,
+      "why": "Reported by the skills/docs sweep as the one UNENFORCED rule of the 17. NOT independently reproduced yet \u2014 it is plausible and untested, and this file does not record unverified findings as facts. Verify with a fixture that plants a forbidden phrase as a live assertion directly under a `## Decisions` heading before treating it as a defect.",
+      "exposure": "If real: a killed feature reintroduced as a new decision entry passes the removal scan silently, reopening the exact class the scan exists to close."
+    },
+    {
+      "id": "P-007",
+      "sideA": "ops/suite-counts.mjs SUITES",
+      "sideB": ".github/workflows/ci.yml per-suite steps, and the *.test.mjs files on disk",
+      "invariant": "The suites the aggregate gate counts, the suites CI runs, and the suites that exist must be one set.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "All three agree today by discipline alone. Derivable three ways (array literal, ci.yml regex, git ls-files), so this is the cheapest remaining Shape A fence and the technique counts-fence.test.mjs already uses for the quality-gate step count.",
+      "exposure": "A new test suite forgotten in both lists never runs anywhere, ever, and nothing says so."
+    },
+    {
+      "id": "P-008",
+      "sideA": "skills/skills.test.mjs SKILL_SOURCES",
+      "sideB": "the real skills/, ops/*, ops/mcp/* directories",
+      "invariant": "Every skill the pack ships must be structurally linted.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "The forward direction is guaranteed by construction (a named directory that does not exist crashes the installer). The reverse has no fence: nothing reads the pack's own skills/ tree. counts-fence checks the COUNT, not the names.",
+      "exposure": "A skill correctly added to skills/ and install.js but forgotten in SKILL_SOURCES ships with zero structural lint, including the frontmatter injection guard."
+    },
+    {
+      "id": "P-009",
+      "sideA": "install/install.js MCP placement loop (7 hardcoded server names)",
+      "sideB": "the real ops/mcp/* directories",
+      "invariant": "Every MCP server directory the pack ships must be reachable by the installer.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "uninstall.js derives its MCP list from disk via listSrc(); install.js hardcodes it. One side already does the right thing, which makes the asymmetry cheap to close.",
+      "exposure": "A new ops/mcp/<server>/ is silently never installed anywhere \u2014 dead capability nobody notices."
+    },
+    {
+      "id": "P-010",
+      "sideA": "install/install.js \"Next steps\" block",
+      "sideB": "the target's actual effective state",
+      "invariant": "Summaries report what is actually active, not fresh-install defaults (testing-standards rule 11).",
+      "shape": "C",
+      "enforcedBy": null,
+      "why": "The removals/reconcile diagnostics in the same summary DO read back effective state and comply. The numbered onboarding checklist is static prose gated only on --dry-run, so it prints byte-identically on a fresh install, an idempotent rerun, and every upgrade. The mechanism to fix it already exists and is not reused: doctor's onboarding row computes exactly this.",
+      "exposure": "Every founder is told the same eleven things on every install and every upgrade forever, which is how a summary becomes furniture."
+    },
+    {
+      "id": "P-011",
+      "sideA": "kernel/lib/outcome.js OUTCOME / RANK / exitCodeFor",
+      "sideB": "core/policy/failures.js OUTCOME / RANK / exitCodeFor",
+      "invariant": "The deliberately duplicated four-outcome vocabulary must stay identical across the dependency boundary.",
+      "shape": "D",
+      "enforcedBy": null,
+      "why": "VERIFIED identical today \u2014 names, ranks and all four exit codes agree. Correct by luck: kernel.test.mjs never imports core/, core.test.mjs never imports the kernel's copy. The duplication is deliberate (core must not depend on kernel), so removing the pair is not available; a shared test vector is.",
+      "exposure": "kernel/ and core/ silently disagree about what CANNOT_DETERMINE ranks as, or what exit code FAIL maps to."
+    },
+    {
+      "id": "P-012",
+      "sideA": "schemas/rollover-handoff.schema.json and schemas/candidate-memory.schema.json oneOf[0]",
+      "sideB": "core/state/rollover-handoff.schema.json and core/memory/candidate-memory.schema.json",
+      "invariant": "Both copies claim in their own description to be kept textually identical, and each is validated by a different suite that never sees the other.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "VERIFIED structurally identical today (descriptions stripped) but NOT byte-identical: the two descriptions already disagree about whether the family is registered. The claim of sync is itself out of sync.",
+      "exposure": "A real structural divergence would be validated as correct by both suites independently."
+    },
+    {
+      "id": "P-013",
+      "sideA": "core/lifecycle/states.js transition guard names",
+      "sideB": "core/lifecycle/machine.js GUARDS keys",
+      "invariant": "Every declared guard name must resolve to a callable.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "The transition-table fence in core.test.mjs checks from/to/requires and never touches .guard; machine.js calls GUARDS[t.guard](...) with no existence check.",
+      "exposure": "A rename or typo on either side is a raw TypeError mid-rollover \u2014 a crash instead of a coded failure, in the subsystem whose entire design is about failing closed."
+    },
+    {
+      "id": "P-014",
+      "sideA": "kernel/lib/state.js CLAIM_TYPES",
+      "sideB": "schemas/evidence.schema.json $defs/claimType enum",
+      "invariant": "The accepted claim-type vocabulary must match its declared schema.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "The generic declared-props fence checks property NAMES, never enum values. evidence is registered writer:null and is in NOT_CAPTURABLE, so the usual real-run capture safety net structurally cannot apply here.",
+      "exposure": "An eighth claim type accepted at runtime and rejected by the schema, with no mechanism that could ever surface it."
+    },
+    {
+      "id": "P-015",
+      "sideA": "core/_io.js read-retry constants (ABSENT_RETRIES, ABSENT_PAUSE_MS, LOCKED_DEADLINE_MS, LOCKED_PAUSE_MS)",
+      "sideB": "hooks/_artifact.js copies of the same four",
+      "invariant": "The two read-retry boundaries must agree.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "No test in the repo references either name. These encode the measured Windows-contention lesson the pack has already paid for twice.",
+      "exposure": "Silent divergence reopens the ENOENT/EPERM-during-rename class in whichever tree nobody retuned."
+    },
+    {
+      "id": "P-016",
+      "sideA": "kernel/README.md subsystem sentence",
+      "sideB": "kernel/lib/modhealth.js SUBSYSTEMS",
+      "invariant": "The README's list of lazily-loaded kernel subsystems must equal the registry.",
+      "shape": "A",
+      "enforcedBy": "counts-fence.test.mjs:kernel/README.md subsystem sentence matches modhealth.SUBSYSTEMS exactly",
+      "exposure": "A reader is told two shipped subsystems do not exist."
+    },
+    {
+      "id": "P-017",
+      "sideA": "VERSION",
+      "sideB": "respawnpack.config.json, README.md, CHANGELOG.md, docs/vision/ROADMAP.md version citations",
+      "invariant": "Every version citation agrees with the one authoritative VERSION file.",
+      "shape": "A",
+      "enforcedBy": "counts-fence.test.mjs:respawnpack.config.json version matches VERSION",
+      "exposure": "Docs and config disagree about which release this is."
+    },
+    {
+      "id": "P-018",
+      "sideA": "<!-- invariant --> markers in SKILL.md files (126 across 14 files)",
+      "sideB": "kernel/lib/living.js overlay regeneration",
+      "invariant": "A regenerated living-skill overlay must never drop or contradict a base rule marked as an invariant.",
+      "shape": "C",
+      "enforcedBy": null,
+      "why": "SELF-ADMITTED in the shipped doc: skills/skill-guard/SKILL.md states that nothing in the kernel reads an invariant marker and there is no smoke check. Honestly disclosed, which is the pack's style, and still a convention promising a control that does not exist. Either implement it or retire the marker.",
+      "exposure": "A load-bearing rule silently vanishes from a living skill across regenerations, with nothing detecting it."
+    },
+    {
+      "id": "P-019",
+      "sideA": "adapters/codex/README.md capability prose",
+      "sideB": "conformance/CAPABILITY-MATRIX.md (mechanically rendered)",
+      "invariant": "An adapter's own README must agree with the rendered capability matrix.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "The matrix is rigorously self-fenced with a tamper control, and the underlying modules are unit-tested; nothing reads the README prose against either. The parenthetical capability:SUPPORT_LEVEL form in the READMEs is already grep-able, so this is a cheap expectClaim-shaped fence.",
+      "exposure": "An operator choosing a host reads the prose, not the matrix; a capability flip leaves the adjacent sentence claiming the old behaviour indefinitely."
+    },
+    {
+      "id": "P-020",
+      "sideA": "spine/reference/living-skills.md and skills/skill-guard/SKILL.md: \"nine skills ship a SKILL.base.md\"",
+      "sideB": "the real SKILL.base.md files on disk",
+      "invariant": "The stated count equals the tree, and the base-shipping set stays disjoint from living.js CANARIES.",
+      "shape": "A",
+      "enforcedBy": "counts-fence.test.mjs:the SKILL.base.md skill count matches the tree and stays disjoint from the living canaries",
+      "exposure": "The count drifts in the document written specifically to correct earlier overclaims."
+    },
+    {
+      "id": "P-021",
+      "sideA": "spine/reference/testing-standards.md section 9 rules",
+      "sideB": "the test that enforces each one",
+      "invariant": "Every stated rule names its enforcement site, or declares that nothing enforces it.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "AUDITED 2026-08-12: 14 MECHANIZED, 1 INSTANCE-ONLY (rule 6, freshness follows configuration \u2014 see P-005), 1 UNENFORCED (rule 12 \u2014 see P-006). Coverage is far better than it looks; the defect is that nothing SAYS which test enforces which rule, so a mechanized rule and an aspirational one are typographically identical. That is why rules 14 and 15 were violated within an hour of being written. An enforced-by field per rule, fenced both ways, is the fix.",
+      "exposure": "A reader cannot distinguish a rule that runs from a rule that hopes, so the untrusted surface reads as the whole list."
+    },
+    {
+      "id": "P-022",
+      "sideA": "a behaviour retired anywhere in the pack",
+      "sideB": "a row in docs/derived/state/removals.json guarding its reintroduction",
+      "invariant": "Anything retired needs a row at the time it is retired, not at the next audit.",
+      "shape": "B",
+      "enforcedBy": null,
+      "why": "\u26d4 DELIBERATELY NOT MECHANIZED, and this is the honest entry in this file. The universe of future retirements is not enumerable, so there is nothing to diff against; something must recognise that a diff LOOKS like a retirement. Mining change-coupling from history is the real prior art here, and the product built on it (CodeScene) structurally separates that signal from its blocking gates and lets an ignored warning decay \u2014 a deliberate choice by the team with the most data. Two candidate phrase-based rows were already rejected in this repo for flagging correct prose. So this stays a human obligation, named and counted rather than implied. It is the reason an independent reviewer is not eliminable here.",
+      "exposure": "PROVEN: commit 5204353 retired the installer's active placeholder configuration and added no row. Still missing."
+    },
+    {
+      "id": "P-023",
+      "sideA": "docs/derived/state/pairs.json (this file)",
+      "sideB": "schemas/registry.json, schemas/fixtures.gen.mjs FAMILIES, and the schema-family classification fences",
+      "invariant": "Every machine-readable state artifact the pack ships has a declared schema and a registered family.",
+      "shape": "A",
+      "enforcedBy": "kernel/schema.test.mjs:docs/derived/state/pairs.json has a registered family, a declared schema, and conforms to it",
+      "exposure": "This inventory drifts from its own consumers with nothing checking, which is the exact failure it enumerates."
+    },
+    {
+      "id": "P-024",
+      "sideA": "kernel/lib/gate.js candidateRoots and kernel/lib/applicability.js ROUTE_DIRS",
+      "sideB": "install/install.js monorepo probe dirs and route-source detection",
+      "invariant": "The gate, the onboarding survey and the installer must agree on what a monorepo root and a route source are.",
+      "shape": "A",
+      "enforcedBy": null,
+      "why": "Three copies of two small lists, currently in agreement, with nothing checking. Cheap to fence by set-diff over the source literals.",
+      "exposure": "The survey reports a route source configured or absent for a shape the installer no longer detects, or the gate scans roots the installer never probed."
+    },
+    {
+      "id": "P-025",
+      "sideA": "schemas/fixtures.gen.mjs mutation functions",
+      "sideB": "the checked-in schemas/fixtures/ output",
+      "invariant": "The committed fixtures reflect what the generator currently produces.",
+      "shape": "C",
+      "enforcedBy": ".github/workflows/ci.yml:node schemas/fixtures.gen.mjs",
+      "exposure": "Editing a mutator without regenerating leaves stale negatives that validate forever. Fenced in CI only \u2014 a local run does not catch it, which is why it is recorded rather than assumed."
+    },
+    {
+      "id": "P-026",
+      "sideA": "a row's enforcedBy field in this register",
+      "sideB": "the edit history that produced it (git, or a concurrent writer)",
+      "invariant": "A row that silently reverts from a real fence to `enforcedBy: null` must be detectable.",
+      "shape": "C",
+      "enforcedBy": null,
+      "why": "\u26d4 FOUND BY USING THE REGISTER, NOT BY AUDITING IT. Four subagents were fanned out over this file at once \u2014 a violation of this pack's own disjoint-ownership rule, committed by the orchestrator that wrote the rule down. Verified afterwards by hand that no update was lost, and no fence could have told me: the register's self-check in counts-fence.test.mjs validates that a CLAIMED fence exists, and a row that quietly reverted to `enforcedBy: null` WITH its `why` restored still passes every assertion. The gap is structural \u2014 the register can compare itself to the tree, but not to its own past, so a lost update is invisible to it. Closing it means comparing against git history or making concurrent edits impossible; neither is proportionate today, and an unfenced gap that has been measured is better than a fence that cannot fail.",
+      "exposure": "A fence recorded as done silently becomes undone, and the published unfenced count reads lower than the truth \u2014 the register reporting a number it did not measure, which is the one thing it exists to prevent."
+    },
+    {
+      "id": "P-027",
+      "sideA": "kernel/schema.test.mjs RAW_READS entries, keyed by FILE AND LINE NUMBER",
+      "sideB": "the raw JSON reads they classify",
+      "invariant": "Every raw JSON read in the scanned tree is classified, and every classification points at a real read.",
+      "shape": "A",
+      "enforcedBy": "kernel/schema.test.mjs:\u26d4 every raw JSON read in the scanned tree is classified \u2014 a new one cannot slip in unfenced",
+      "exposure": "\u26d4 FENCED IN BOTH DIRECTIONS AND RECORDED ANYWAY, because the KEY is brittle. It broke three times in one session \u2014 not from a bad classification, but because an unrelated comment above a read shifted its line number. Each break cost an aggregate run (~25 minutes) to discover. It is doing its job and the friction is real: a fence expensive enough to discourage editing the file it guards eventually gets loosened by someone in a hurry, which is how a control becomes furniture. Keying on the read's enclosing function or a stable nearby token instead of its line would keep the guarantee and drop the cost."
+    },
+    {
+      "id": "P-028",
+      "sideA": "the (event, matcher, command, if) tuple identity install/install.js writes into .respawnpack/install-receipt.json settingsHooks",
+      "sideB": "the same identity install/install.js's own settings merge dedupes on, and install/uninstall.js replays out of settings.json",
+      "invariant": "One tuple identity, read the same way by all three sites. A merge that keys the receipt differently from the way it keys settings.json cannot tell founder-removed from new-in-this-version, which is the whole point of the record (P3-T-08 / BUG-6).",
+      "shape": "A",
+      "enforcedBy": "install/uninstall.test.mjs:the receipt names every settings hook the merge placed, and uninstall replays it",
+      "exposure": "\u26d4 RECORDED AT CREATION, NOT AT THE NEXT AUDIT, which is this register's own rule. The key function is written out three times \u2014 install.js's merge dedupe, install.js's receipt reader, uninstall.js's replay \u2014 and deliberately so: install/_sources.js is the shared declaration for SOURCE TREES, and routing a two-line key through it would widen that module's job from \"what does the installer read\" to \"how does the installer think\". The cost is that a change to the tuple shape in one site and not the others is silent in the worst direction: a receipt whose keys no longer match the merge's keys reports every tuple as new-in-this-version, so every founder removal quietly comes back and looks exactly like a successful install. The fence above is a real set-diff (the receipt against the settings.json a fresh install produces) so a divergence fails rather than drifts, but it proves agreement only for the tuples a FRESH install lays."
+    },
+    {
+      "id": "P-030",
+      "sideA": "hooks/_exceptions.js EXCEPTION_RULES (which rules have a subject, and which kinds each one accepts)",
+      "sideB": "the literal rule ids shell-guard.js, push-guard.js, worktree-guard.js and index-guard.js pass to .allowed(",
+      "invariant": "Every rule id one of these four guards asks allowed() about has a row in EXCEPTION_RULES, and the subject kind it is asked with is one that row actually lists. A rule id the table does not know, or a subject kind the row does not carry, would read as declared and lift nothing rather than failing loudly at declaration time.",
+      "shape": "A",
+      "enforcedBy": "hooks/hooks.test.mjs:\u26d4 index-guard hands `allowed()` exactly one rule id, read from its own source",
+      "exposure": "P1-E-1a's \"\u26d4 every EXCEPTION_RULES key is a real rule id, and the three with no posture row are named\" keeps the table itself honest, against posture.FIXED_IDS and posture.RESOLVER, before any guard exists to consult it. The cited P1-E-1d test then reads the four guards' own source, strips comments, and cross-checks every literal id passed to .allowed( against that table: the rule must be a real key, and the subject kind must be one the key lists. It also pins index-guard.js to exactly the one rule id it may ever ask about, index-guard:unmodelled, so the three anti-drift-fixed index-guard rules stay provably unreachable rather than merely undeclared. secret-scan.js and injection-scan.js are the other two consumers EXCEPTION_RULES lists (P1-E-1b, P1-E-1c); they are proven correct by their own hook-specific behavioural suites rather than by this source-level scan, so a drift there would surface as a wrongly lifted or wrongly denied hit, not as a failing source-scan."
+    },
+    {
+      "id": "P-029",
+      "sideA": "install/_sources.js KERNEL_FILES",
+      "sideB": "the kernel libs the pack actually ships under kernel/lib/",
+      "invariant": "Every kernel subsystem this pack ships must be on the list the installer places, and nothing on that list may be missing from the pack.",
+      "shape": "A",
+      "enforcedBy": "kernel/kernel.test.mjs:⛔ install/_sources.js KERNEL_FILES names EVERY shipped kernel lib, and only shipped ones",
+      "exposure": "The list was fenced in one direction only: install/uninstall.test.mjs proves every DECLARED file exists in the pack, and nothing proved the converse. A new subsystem whose one line in _sources.js is forgotten is never installed, so doctor reports kernel-lib:<file> BROKEN on every target while the pack's own suites stay green. Noticed while adding lib/lineage.js (P2-P-1), which had to be added to that list by hand with nothing to catch the omission."
+    }
+  ]
+}

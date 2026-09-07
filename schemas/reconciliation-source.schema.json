@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/reconciliation-source.schema.json",
+  "title": "a DF-005 reconciliation source — the task list, or the project's gap/gate records",
+  "description": "AUTHORED by the project, or printed on stdout by a project adapter. This pack has no writer: it owns the INVOCATION and the OUTCOME SEMANTICS, never a project's native task format. Both sides of the comparison use this one shape, because the comparison is symmetric — DF-005 is drift in BOTH directions at once, and a schema that described only the task side would encode the half-implementation the finding is about. additionalProperties is TRUE at every level: a project's records carry its own fields, and the reconciler reads only the ones below.",
+  "$comment": "⛔ THE RECORD ARRAY'S LOCATION IS PROJECT-DECLARED (state.reconcile.*.pointer), so this schema cannot name the key that holds it. It does the next best thing rather than the vacuous thing: ANY array in this document must be an array of records. A first draft declared $defs/record and never referenced it, which validated nothing at all while reading like a specification — the exact failure the validator's refuse-what-you-cannot-enforce rule exists to prevent, one level up.",
+  "oneOf": [
+    {
+      "title": "the source IS the record array (no pointer declared)",
+      "type": "array",
+      "items": { "$ref": "#/$defs/record" }
+    },
+    {
+      "title": "the records sit under a project-declared pointer",
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "description": "Optional — a source that declares none is read on its own terms. A source that declares one this kernel does not support is REFUSED by name (drift class UNSUPPORTED_SCHEMA_VERSION), never read on a best-effort basis.",
+          "const": "1.0.0"
+        }
+      },
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "array", "items": { "$ref": "#/$defs/record" } },
+          { "not": { "type": "array" } }
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "record": {
+      "description": "The comparable record. Reachable at whatever `pointer` the project declares, which is why this is a $def rather than a fixed property — a project's task file may nest its rows anywhere.",
+      "type": "object",
+      "required": ["id", "status"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "description": "The STABLE identifier both sides share. Without one there is nothing to reconcile, so a record with no string id is rejected and reported rather than skipped.",
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "title": { "type": "string" },
+        "status": {
+          "description": "The project's own word. It is mapped to open/closed through openStatuses/closedStatuses. ⛔ An UNMAPPED word is not guessed: the record becomes undetermined and drags the verdict to CANNOT_DETERMINE, because guessing 'probably open' lets a typo silently close a gap.",
+          "type": "string"
+        },
+        "source": { "type": "string" },
+        "requirement": { "type": ["string", "null"] },
+        "gate": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/requirements.schema.json",
+  "title": "docs/derived/state/requirements.json — the approved denominator",
+  "description": "AUTHORED by the project, never written by this pack. additionalProperties is TRUE throughout: the founder owns this file and may carry fields the kernel does not read. ⛔ Note what the kernel does NOT validate — `schemaVersion` is present by convention and is consumed only through the freshness manifest; kernel/lib/state.js never checks it. Declaring that here is the point: the gap is stated rather than implied away.",
+  "type": "object",
+  "required": ["requirements"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "denominatorVersion": { "type": "string" },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "mandatory": {
+            "description": "Absent means mandatory. Only an explicit `false` opts out — a typo must not silently shrink the denominator.",
+            "type": "boolean"
+          },
+          "risk": { "type": "string" },
+          "priority": { "type": "string" },
+          "gate": { "type": "string" },
+          "waived": { "type": "string" },
+          "blockedBy": { "type": "array", "items": { "type": "string" } },
+          "dependsOn": { "type": "array", "items": { "type": "string" } },
+          "missingAuthority": {}
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "title": { "type": "string" },
+          "requires": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

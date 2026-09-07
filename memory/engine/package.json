@@ -1,0 +1,19 @@
+{
+  "name": "respawn-memory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "RespawnPack memory engine — markdown-in-git source of truth, PGLite+pgvector hybrid retrieval, pluggable embeddings, spine-aware. An MCP server + CLI.",
+  "bin": {
+    "rmem": "src/cli.mjs"
+  },
+  "scripts": {
+    "test": "node test/smoke.mjs && node test/full.mjs && node test/fixes.mjs && node test/lessons.mjs"
+  },
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "@electric-sql/pglite": "^0.2.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  }
+}

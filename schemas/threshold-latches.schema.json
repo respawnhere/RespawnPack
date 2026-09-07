@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/threshold-latches.schema.json",
+  "title": ".respawnpack/runtime/rollover/<host>-<conversationId>/thresholds.json — which context thresholds have fired THIS CYCLE",
+  "description": "Written by core/policy/thresholds.js's writeLatches(), and by hooks/context-monitor.js which reads/re-arms/writes this same file directly (not through thresholds.js's own named-threshold latch() helper, because context-monitor.js's advisory/collaborate stages are a caller-defined two-value set — 60/80 — that does not fit the module's fixed advisory/checkpoint/final vocabulary; the module's forCycle/readLatches/writeLatches primitives are host- and caller-agnostic by design and this is exactly the kind of caller they exist for). ⛔ THE WHOLE FILE IS REPLACED, NEVER MERGED, THE MOMENT ITS OWN cycleId NO LONGER MATCHES THE CURRENT ONE — see thresholds.js forCycle(): 'which thresholds already fired' is a fact about ONE context cycle and means nothing in the next, which is the v0.2 defect (a per-SESSION latch that fired once and went silent forever) this file's whole existence corrects. GITIGNORED, machine-local. No schemaVersion: this file is REBUILT EMPTY every time its cycle changes rather than migrated, so there is no format for an old reader to disagree about.",
+  "type": "object",
+  "required": ["kind", "cycleId", "latched"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "threshold-latches" },
+    "cycleId": {
+      "description": "host:conversationId:cycleIndex:cycleNonce, OR the read-only synthetic 'host:conversationId:0:unestablished' a caller uses before any machine state exists for this conversation — see core/lifecycle/cycle.js.",
+      "type": "string"
+    },
+    "latched": {
+      "description": "Keyed by threshold name. core/policy/thresholds.js's own latch() only ever writes 'advisory' | 'checkpoint' | 'final'; hooks/context-monitor.js additionally writes its own numeric-string stage keys ('60', '75', '80', '85', ...) for its caller-defined stage arrays, so keys are validated by VALUE SHAPE rather than by a closed name enum.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["at", "atPercent"],
+        "additionalProperties": false,
+        "properties": {
+          "at": { "type": "string" },
+          "atPercent": { "type": ["number", "null"] }
+        }
+      }
+    }
+  }
+}

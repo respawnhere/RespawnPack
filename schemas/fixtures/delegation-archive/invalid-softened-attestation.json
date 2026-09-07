@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0.0",
+  "completed": [
+    {
+      "task": "write the CSV writer",
+      "acceptance": [
+        "tests pass"
+      ],
+      "attestedAt": "2026-08-04T00:00:00.000Z",
+      "attestation": "the delegation was verified complete",
+      "evidence": "suite green",
+      "note": null
+    }
+  ]
+}

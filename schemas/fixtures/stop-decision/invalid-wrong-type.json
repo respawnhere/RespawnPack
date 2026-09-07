@@ -1,0 +1,8 @@
+{
+  "sessionId": "s-1",
+  "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "head": "0000000000000000000000000000000000000000",
+  "files": "src/a.ts",
+  "branch": "blocked-for-closeout",
+  "at": "2026-08-04T00:00:00.000Z"
+}

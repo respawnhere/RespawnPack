@@ -1,0 +1,9 @@
+{
+  "sessionId": "s-1",
+  "head": "0000000000000000000000000000000000000000",
+  "files": [],
+  "capturedAt": "2026-08-04T00:00:00.000Z",
+  "workingDigest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "stagedDigest": "ffffffffffffffffffffffffffffffff",
+  "indexPath": "c:/p/.git/index"
+}

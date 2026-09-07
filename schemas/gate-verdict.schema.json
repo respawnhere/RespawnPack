@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/gate-verdict.schema.json",
+  "title": "the quality-gate verdict artifact (--verdict-file, conventionally gate-verdict.json)",
+  "description": "Written by kernel/respawnpack.js cmdGate() from kernel/lib/gate.js runGate(). A CI artifact: uploaded and discarded, never committed, and with NO reader in this repository — which is stated rather than hidden, because an artifact nobody reads is a place where drift is free. ⛔ NOT_APPLICABLE IS DECLARED, NEVER INFERRED (Scenario N): the shipped gate used to be four YAML skip-branches that reported green after running zero checks. `ran` and `checks` are what make that impossible to spell again. ⭐ K-09: `outcome` is the pack's ONE four-value vocabulary (kernel/lib/outcome.js), so the exit code comes from `exitCodeFor` like every other verb, and the gate's own richer word survives as `label` — a display field that nothing derives an exit code, a rollup or a refusal from.",
+  "type": "object",
+  "required": ["outcome", "label", "why", "profiles", "checks", "ran", "exitCode"],
+  "additionalProperties": false,
+  "properties": {
+    "outcome": {
+      "description": "The shared four-outcome vocabulary. NOT_CONFIGURED maps here to CANNOT_DETERMINE — at the same exit 2 it always had, because 'the gate could not establish anything' was never the same claim as 'the gate failed'.",
+      "enum": ["PASS", "FAIL", "CANNOT_DETERMINE", "NOT_APPLICABLE"]
+    },
+    "label": {
+      "description": "The gate's own word for this same verdict, kept so no diagnostic precision is lost: NOT_CONFIGURED (a stack was detected but nothing meaningful could run) reads differently to an operator than a bare CANNOT_DETERMINE. COULD_NOT_RUN is a ROW word and never a verdict — one check failing to start makes the run NOT_CONFIGURED, because the question went unanswered.",
+      "enum": ["PASS", "FAIL", "NOT_CONFIGURED", "NOT_APPLICABLE"]
+    },
+    "why": { "type": "string" },
+    "declared": {
+      "description": "Whether the outcome was DECLARED by the project rather than derived. True only on the NOT_APPLICABLE branch, where the project explicitly opted out with a reason; the gate emits it as `false` elsewhere, which is why this is a boolean and not a const — the field is the ANSWER to 'was this declared', and on every other branch the answer is no.",
+      "type": "boolean"
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "root", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "enum": ["node", "python", "go", "rust"] },
+          "root": { "type": "string" },
+          "evidence": { "description": "The file whose presence proved this stack — detection is never assumed.", "type": "string" }
+        }
+      }
+    },
+    "checks": {
+      "description": "One kernel/lib/outcome.js `result()` row per planned check. The first seven properties are the shared row contract every verb emits; the rest are the gate's own planning facts, which are what a reader needs in order to fix the row and are not derivable from it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["outcome", "check", "detail", "checked", "domain", "subject", "label", "name", "profile", "root", "configured"],
+        "additionalProperties": false,
+        "properties": {
+          "outcome": { "enum": ["PASS", "FAIL", "CANNOT_DETERMINE", "NOT_APPLICABLE"] },
+          "check": { "description": "The stable parameterised id, `gate:<root>:<name>` — `gate:backend:test`.", "type": "string" },
+          "detail": { "type": "string" },
+          "checked": {
+            "description": "How many commands this row examined: 1 for a check that ran, 0 for one that was never configured or could not start. A PASS here can never be 0 — `result()` throws on it.",
+            "type": "integer", "minimum": 0
+          },
+          "domain": {
+            "description": "Which question the row answers, from outcome.js DOMAIN (integrity | coverage | install | gate). Every row a gate run emits is a gate row.",
+            "const": "gate"
+          },
+          "subject": { "description": "What the row looked at: the command line for a check that has one, the root it was planned in when nothing was configured to run there.", "type": "string" },
+          "label": { "enum": ["NOT_CONFIGURED", "COULD_NOT_RUN", "PASS", "FAIL"] },
+          "name": { "enum": ["lint", "typecheck", "test", "build", "custom"] },
+          "profile": { "enum": ["node", "python", "go", "rust", "declared"] },
+          "root": { "type": "string" },
+          "configured": { "type": "boolean" },
+          "bin": { "type": "string" },
+          "args": { "type": "array", "items": { "type": "string" } },
+          "exitCode": { "description": "The CHECK's own exit code, from the project's own tool. Present only on a row that ran, and never confused with this document's `exitCode`, which is the gate's.", "type": "integer" },
+          "output": { "type": "string" }
+        }
+      }
+    },
+    "ran": {
+      "description": "The count that makes a vacuous green unspellable: an outcome of PASS with ran:0 is a contradiction the reader can see.",
+      "type": "integer", "minimum": 0
+    },
+    "exitCode": {
+      "description": "PASS 0 · NOT_APPLICABLE 0 · FAIL 1 · CANNOT_DETERMINE 2, from kernel/lib/outcome.js exitCodeFor — the same map every other verb uses. Four outcomes, three exit codes: 'I could not tell' has its own.",
+      "enum": [0, 1, 2]
+    }
+  }
+}

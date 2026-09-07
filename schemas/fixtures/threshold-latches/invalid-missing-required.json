@@ -1,0 +1,13 @@
+{
+  "kind": "threshold-latches",
+  "latched": {
+    "60": {
+      "at": "2026-08-06T12:01:00.000Z",
+      "atPercent": 60
+    },
+    "75": {
+      "at": "2026-08-06T12:02:00.000Z",
+      "atPercent": 75
+    }
+  }
+}

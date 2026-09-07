@@ -1,0 +1,42 @@
+<h1 id="edges-and-what-the-subset-does-not-model">Edges, and what the subset does not model</h1>
+<p>Everything this renderer does not understand arrives on the page as escaped text. Nothing below is
+dropped, and nothing below becomes markup.</p>
+<h2 id="raw-html-blocks">Raw HTML blocks</h2>
+<p>&lt;div class=&quot;wrapper&quot;&gt;
+&lt;p&gt;An HTML block is text.&lt;/p&gt;
+&lt;/div&gt;</p>
+<p>&lt;script&gt;
+window.location = &quot;https://elsewhere.test&quot;;
+&lt;/script&gt;</p>
+<p>&lt;img src=&quot;x&quot; onerror=&quot;alert(1)&quot;&gt;</p>
+<h2 id="syntax-borrowed-from-other-tools">Syntax borrowed from other tools</h2>
+<p>:::note
+A directive block from another renderer.
+:::</p>
+<p>{% raw %}A template tag.{% endraw %}</p>
+<p>[[A wiki link]]</p>
+<p>$$
+E = mc^2
+$$</p>
+<h2 id="front-matter-which-this-subset-reads-as-a-rule-and-a-paragraph">Front matter, which this subset reads as a rule and a paragraph</h2>
+<hr />
+<p>title: not parsed as metadata</p>
+<hr />
+<h2 id="angle-brackets-that-are-not-tags">Angle brackets that are not tags</h2>
+<p>The comparison a &lt; b and the comparison b &gt; a, an arrow -&gt; and an ampersand &amp; on its own, plus an
+already-escaped entity &amp;amp; that stays exactly as typed.</p>
+<h2 id="headings-with-nothing-a-slug-can-use">Headings with nothing a slug can use</h2>
+<h3 id="section">⛔</h3>
+<h3 id="section-1">⛔</h3>
+<h2 id="emphasis-that-does-not-pair">Emphasis that does not pair</h2>
+<p>A lone * star, a lone _ underscore, and a *run that never closes.</p>
+<h2 id="an-unterminated-comment">An unterminated comment</h2>
+<p>&lt;!-- this comment never closes
+so both of these lines stay on the page</p>
+<h2 id="an-empty-list-item-and-a-bare-marker">An empty list item and a bare marker</h2>
+<ul>
+<li></li>
+<li>second</li>
+</ul>
+<h2 id="a-link-with-an-empty-destination">A link with an empty destination</h2>
+<p><a href="">nothing here</a> and [a bare label] with no target.</p>

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/index-owned.schema.json",
+  "title": ".respawnpack/runtime/index-owned-<sessionId>.json — which staged states this session put there",
+  "description": "Written by hooks/_index-lease.js recordOwned(). GITIGNORED. Two levels: sha16(index identity) → repo-relative path → state key. ⛔ THE STATE KEY, NOT THE PATH, IS WHAT MAKES foreignStates() CORRECT (finding N-4): comparing raw command path text against the repository-root coordinates `git diff --cached` reports meant `git add -- A.txt` run in `sub/` read as no overlap with a foreign staged `sub/A.txt`. One canonical representation on both sides was the fix; more patterns was not.",
+  "type": "object",
+  "propertyNames": { "type": "string", "pattern": "^[0-9a-f]{16}$" },
+  "additionalProperties": {
+    "type": "object",
+    "propertyNames": { "type": "string" },
+    "additionalProperties": {
+      "description": "[status, dstMode, dstOid, path, from||''].join('|') — e.g. \"M|100644|a1b2…|src/x.js|\". Statuses come from `git diff --cached --raw -z`.",
+      "type": "string", "pattern": "^[A-Z][0-9]*\\|"
+    }
+  }
+}

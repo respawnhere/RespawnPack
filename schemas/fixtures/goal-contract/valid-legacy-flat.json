@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0.0",
+  "goal": "a pre-goals document",
+  "completion": [
+    "all-mandatory-conformant"
+  ],
+  "constraints": [],
+  "activeGoalId": "G-legacy"
+}

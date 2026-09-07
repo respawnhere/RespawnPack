@@ -1,0 +1,44 @@
+{
+  "id": "handoff-readback-mismatch",
+  "class": "known-bad",
+  "title": "The handoff on disk is not the handoff that was written",
+  "why": "The bytes are tampered with after the write and the read-back is redone against the ORIGINAL digest, so the mismatch is real rather than asserted by a hand-built record. A read-back that disagrees halts: what is on disk is not what this session meant to save, and compacting on top of it would discard the session in favour of a file nobody vouches for. COMPACTING must never be entered.",
+  "host": "claude-code",
+  "conversationId": "sess_mismatch_f",
+  "steps": [
+    {
+      "do": "apply", "transition": "checkpoint", "eventId": "measure-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "context-measurement", "source": "byte-proxy", "usedPercent": 89, "raw": { "chars": 712344, "budgetChars": 800000, "note": "our arithmetic, not the host's reading" }, "observedAt": "2026-08-06T15:00:00.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "closeout", "eventId": "stop-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "safe-boundary", "mechanism": "unblocked-stop-hook", "raw": { "hook_event_name": "Stop", "stop_hook_active": false }, "observedAt": "2026-08-06T15:00:03.000Z" }]
+    },
+    {
+      "do": "write-handoff", "as": "h1",
+      "handoff": {
+        "identity": { "host": "claude-code", "conversationId": "sess_mismatch_f", "conversationIdField": "session_id" },
+        "contextCycleId": "$cycleId", "atomicActionId": "W1-readback", "exactNextAction": "re-write the handoff and verify it again",
+        "git": { "head": "466ed95", "uncommittedFiles": ["core/state/handoff.js"], "sessionDelta": { "status": "CHANGED", "files": ["core/state/handoff.js"], "headMoved": false } },
+        "userConstraints": [], "unresolvedQuestions": [], "candidateMemories": []
+      }
+    },
+    { "do": "apply", "transition": "stage-handoff", "eventId": "write-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.written" }] },
+    { "do": "tamper-handoff", "ref": "h1", "append": "\n{\"injected\": \"a second document appended to the handoff\"}\n" },
+    { "do": "reverify-handoff", "ref": "h1", "as": "h1" },
+    { "do": "apply", "transition": "verify-handoff", "eventId": "readback-1", "expectStatus": "HALTED", "expectFailure": "HANDOFF_READBACK_MISMATCH", "evidence": [{ "$ref": "h1.readback" }] }
+  ],
+  "expect": {
+    "finalState": "HALTED",
+    "outcome": "FAIL",
+    "haltCode": "HANDOFF_READBACK_MISMATCH",
+    "haltOutcome": "FAIL",
+    "rolloverOutcome": "HALTED",
+    "cycleAdvances": 0,
+    "cycleIndex": 0,
+    "neverEntered": ["HANDOFF_VERIFIED", "COMPACTING", "REHYDRATING"],
+    "journalKinds": ["halt"],
+    "counts": { "halts": 1 },
+    "recoveryMentions": ["Do NOT compact"]
+  }
+}

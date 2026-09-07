@@ -1,0 +1,30 @@
+# License of the RespawnPack files in this repository
+
+This repository has RespawnPack installed. That placed a set of RespawnPack's own files into it,
+and this notice states their license. It is placed inside `.claude/` deliberately: the license
+described here covers the files sitting alongside it, and nothing else in your repository.
+
+## What this covers
+
+**RespawnPack's own program**, installed under `.claude/`:
+
+- `.claude/hooks/` — the governance hooks
+- `.claude/respawnpack/`, `.claude/core/` — the state kernel and the host-neutral rollover core
+- `.claude/skills/`, `.claude/agents/`, `.claude/workflows/` — the skills, role agents, and workflows
+
+These are **© 2026 respawnhere, licensed AGPL-3.0-or-later**. Full text:
+<https://www.gnu.org/licenses/agpl-3.0.txt>
+
+You may use, study, modify, and redistribute them, including commercially. Derivative works of
+*these files* carry the same license, and if you let people interact with a modified version of
+them remotely over a network, you must offer those users the corresponding source.
+
+## What this does NOT cover
+
+**Your project is yours.** This notice makes no claim on:
+
+- **The code and content you write**, including the documents you fill in under `docs/`. The pack
+  laid down that structure; what you write into it is your work, under whatever license you choose.
+- **The output of using the pack.** Files a RespawnPack skill helped you produce are your work.
+- **Third-party material.** Content under `library/`, and everything credited in `ATTRIBUTION.md`,
+  carries the license its own author or publisher set. None of it is governed by this notice.

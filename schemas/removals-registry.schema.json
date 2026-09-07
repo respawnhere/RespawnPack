@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/removals-registry.schema.json",
+  "title": "docs/derived/state/removals.json — the killed-feature removal contract",
+  "description": "AUTHORED by the project (path overridable via respawnpack.config.json state.removals.registry). Enforced at runtime by kernel/lib/removals.js readRegistry(). ⛔ AN EMPTY ARRAY IS CANNOT_DETERMINE, NOT A PASS: NOT_APPLICABLE must be DECLARED, never inferred from finding nothing. The one way to declare it here is `emptyBaseline` — see that property. additionalProperties is TRUE: `reason` is carried by real registries and read by humans, not by code.",
+  "type": "object",
+  "required": ["schemaVersion", "removals"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {
+      "description": "Hard-checked: a registry declaring any other version yields CANNOT_DETERMINE with the mismatch named, never a pass.",
+      "const": "1.0.0"
+    },
+    "emptyBaseline": {
+      "description": "⛔ A STRING THAT IS THE REASON, so it cannot be declared without justifying it. It says this project's retirement baseline is ESTABLISHED and deliberately empty — a claim someone made and can be reviewed, not an absence a scanner inferred. Without it, a configured scan over an empty registry is CANNOT_DETERMINE forever, because the only thing that clears it is a retirement the project has not made yet, and the founder's alternatives were to un-configure a scan they will need or to let a red check become furniture. Applies ONLY while `removals` is empty: the moment a row lands the rows are the contract and this is ignored, so a stale note cannot suppress a real registry. Declared blank or non-string is CANNOT_DETERMINE.",
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "removals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "feature", "forbidden"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "pattern": "\\S" },
+          "feature": { "type": "string", "pattern": "\\S" },
+          "forbidden": {
+            "description": "The FORBIDDEN LIVE ASSERTIONS that would reintroduce the feature — not the feature's name. Naming a retirement is not making one, so a retirement sentence, a prohibition, a blockquote, a history section, fenced code and a struck line all pass.",
+            "type": "array", "minItems": 1, "items": { "type": "string" }
+          },
+          "risk": { "enum": ["high", "normal"] },
+          "controls": {
+            "description": "Overrides the synthesized probe. Every row is checked with a known-good and a known-bad control BEFORE its verdict counts; a phrase that is itself retirement vocabulary can never match and stops at `unverified`.",
+            "type": "object", "required": ["good", "bad"], "additionalProperties": false,
+            "properties": { "good": { "type": "string" }, "bad": { "type": "string" } }
+          },
+          "reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}

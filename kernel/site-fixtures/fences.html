@@ -1,0 +1,39 @@
+<h1 id="fenced-and-indented-code">Fenced and indented code</h1>
+<h2 id="a-fence-with-a-language">A fence with a language</h2>
+<pre><code class="language-bash">set -euo pipefail
+echo &quot;hello&quot; | tr a-z A-Z
+</code></pre>
+<h2 id="a-fence-whose-info-string-carries-more-than-one-word">A fence whose info string carries more than one word</h2>
+<pre><code class="language-js">const answer = 40 + 2;
+</code></pre>
+<h2 id="a-fence-with-no-info-string">A fence with no info string</h2>
+<pre><code>plain text, no language class
+</code></pre>
+<h2 id="a-four-backtick-fence-holding-a-three-backtick-fence">A four-backtick fence holding a three-backtick fence</h2>
+<pre><code class="language-markdown">```bash
+echo &quot;the inner fence is content, not a closer&quot;
+```
+</code></pre>
+<h2 id="a-tilde-fence-which-may-hold-backticks-freely">A tilde fence, which may hold backticks freely</h2>
+<pre><code class="language-text">``` still content ```
+</code></pre>
+<h2 id="a-longer-tilde-fence-closed-by-a-longer-run">A longer tilde fence closed by a longer run</h2>
+<pre><code class="language-yaml">key: value
+</code></pre>
+<h2 id="code-is-escaped-never-markup">Code is escaped, never markup</h2>
+<pre><code class="language-html">&lt;script&gt;alert(&quot;not executed&quot;)&lt;/script&gt;
+&lt;b&gt;&amp;amp; not an entity&lt;/b&gt;
+</code></pre>
+<h2 id="an-indented-code-block">An indented code block</h2>
+<pre><code>function indented() {
+  return &quot;&lt;b&gt;escaped&lt;/b&gt;&quot;;
+}
+</code></pre>
+<h2 id="a-fence-indented-under-a-heading">A fence indented under a heading</h2>
+<pre><code class="language-sh">echo &quot;opened at two spaces, dedented by two&quot;
+</code></pre>
+<h2 id="an-unclosed-fence-which-runs-to-the-end-of-the-document">An unclosed fence, which runs to the end of the document</h2>
+<pre><code class="language-python">print(&quot;nothing after this line closes the fence&quot;)
+print(&quot;so both lines are code&quot;)
+
+</code></pre>

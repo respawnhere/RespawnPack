@@ -1,0 +1,889 @@
+{
+  "kind": "respawnpack-activation-canary",
+  "profile": "codex/app-server",
+  "startedAt": "2026-08-06T17:54:15.636Z",
+  "endedAt": "2026-08-06T17:54:36.632Z",
+  "environment": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "projectDir": "C:\\Users\\user\\AppData\\Local\\Temp\\rp-codex-canary-mSnpnu",
+    "cwd": "C:\\Users\\user\\AppData\\Local\\Temp\\rp-codex-work-QiLdQP",
+    "codexVersion": "codex-cli 0.146.0",
+    "codexJs": "C:\\home\\user\\.npm\\node_modules\\@openai\\codex\\bin\\codex.js"
+  },
+  "options": {
+    "rollovers": 3,
+    "contextWindow": 18000,
+    "padBudget": 3,
+    "padLines": 200,
+    "model": null
+  },
+  "budgetNote": "Thresholds were measured against an OPERATOR-CONFIGURED denominator of 18000 tokens, not the model's real context window. The compaction, the identity comparison, the exactly-once delivery and the cycle advance are real; \"the final threshold fires at the real window\" is NOT what this run measured. Use --context-window 0 for that.",
+  "probe": {
+    "outcome": "PASS",
+    "installed": true,
+    "authenticated": null,
+    "version": "codex-cli 0.146.0",
+    "codexJs": "C:\\home\\user\\.npm\\node_modules\\@openai\\codex\\bin\\codex.js",
+    "resolution": {
+      "ok": true,
+      "codexJs": "C:\\home\\user\\.npm\\node_modules\\@openai\\codex\\bin\\codex.js",
+      "via": "npm shim sibling",
+      "searched": [
+        {
+          "step": "which/where codex",
+          "candidate": "C:\\home\\user\\.npm\\codex · C:\\home\\user\\.npm\\codex.cmd",
+          "found": true
+        },
+        {
+          "step": "npm sibling of the shim",
+          "candidate": "C:\\home\\user\\.npm\\node_modules\\@openai\\codex\\bin\\codex.js",
+          "found": true
+        }
+      ]
+    },
+    "initialize": {
+      "userAgent": "respawnpack-app-server-supervisor/0.146.0 (Windows 10.0.26200; x86_64) xterm-256color (respawnpack-app-server-supervisor; 0.3.0)",
+      "codexHome": "C:\\Users\\user\\.codex",
+      "platformFamily": "windows",
+      "platformOs": "windows"
+    },
+    "schema": {
+      "ok": true,
+      "dir": "C:\\Users\\user\\AppData\\Local\\Temp\\rp-codex-canary-mSnpnu\\.respawnpack\\runtime\\rollover\\_codex-app-server-schema",
+      "methods": 127,
+      "detail": null,
+      "missing": []
+    },
+    "why": null,
+    "verbatim": {
+      "initialize": "{\"id\":1,\"result\":{\"userAgent\":\"respawnpack-app-server-supervisor/0.146.0 (Windows 10.0.26200; x86_64) xterm-256color (respawnpack-app-server-supervisor; 0.3.0)\",\"codexHome\":\"C:\\\\Users\\\\user\\\\.codex\",\"platformFamily\":\"windows\",\"platformOs\":\"windows\"}}",
+      "version": "codex-cli 0.146.0\n"
+    },
+    "observedAt": "2026-08-06T17:54:16.379Z",
+    "ownerAction": null
+  },
+  "threadId": "019fd836-2d07-7330-b018-d9059a2d348c",
+  "observedPolicy": {
+    "approvalPolicy": "never",
+    "sandbox": {
+      "type": "readOnly",
+      "networkAccess": false
+    },
+    "model": "gpt-5.6-sol"
+  },
+  "rollovers": [
+    {
+      "index": 0,
+      "claims": [
+        {
+          "name": "the final threshold fired on a measured context",
+          "outcome": "PASS",
+          "detail": "86.81% (15625 input tokens over a operator-configured denominator) after 0 padding turn(s)",
+          "evidence": {
+            "evaluation": {
+              "measurable": true,
+              "outcome": "PASS",
+              "confidence": "HIGH",
+              "crossed": [
+                "advisory",
+                "checkpoint",
+                "final"
+              ],
+              "fire": [
+                "advisory",
+                "checkpoint",
+                "final"
+              ],
+              "alreadyLatched": [],
+              "actions": [
+                {
+                  "threshold": "advisory",
+                  "atPercent": 60,
+                  "action": "prefer smaller atomic operations from here; a rollover is foreseeable in this cycle"
+                },
+                {
+                  "threshold": "checkpoint",
+                  "atPercent": 75,
+                  "action": "prepare the checkpoint: write the handoff and the candidate memories now, while there is room to do it well"
+                },
+                {
+                  "threshold": "final",
+                  "atPercent": 85,
+                  "action": "finish or stop the current atomic operation and begin the rollover — do not start another model turn"
+                }
+              ],
+              "requiresOperatorConfirmation": false,
+              "why": "86.80555555555556% crossed advisory, checkpoint, final (confidence HIGH)"
+            },
+            "budget": {
+              "tokens": 18000,
+              "source": "operator-configured",
+              "hostReported": false,
+              "why": "the operator configured a 18000-token window; the host published 258400"
+            }
+          }
+        },
+        {
+          "name": "the compaction completed",
+          "outcome": "PASS",
+          "detail": "the host emitted a contextCompaction item/completed (item 019fd836-40a1-7943-9943-c3a696c8713a, pair observed: true) on thread 019fd836-2d07-7330-b018-d9059a2d348c; the immediate {} ack was not read as completion",
+          "evidence": {
+            "raw": "{\"started\":[\"{\\\"method\\\":\\\"item/started\\\",\\\"params\\\":{\\\"item\\\":{\\\"type\\\":\\\"contextCompaction\\\",\\\"id\\\":\\\"019fd836-40a1-7943-9943-c3a696c8713a\\\"},\\\"threadId\\\":\\\"019fd836-2d07-7330-b018-d9059a2d348c\\\",\\\"turnId\\\":\\\"019fd836-4091-78e2-bacb-b09711f35b02\\\",\\\"startedAtMs\\\":1786038861985},\\\"emittedAtMs\\\":1786038861986}\"],\"completed\":[\"{\\\"method\\\":\\\"item/completed\\\",\\\"params\\\":{\\\"item\\\":{\\\"type\\\":\\\"contextCompaction\\\",\\\"id\\\":\\\"019fd836-40a1-7943-9943-c3a696c8713a\\\"},\\\"threadId\\\":\\\"019fd836-2d07-7330-b018-d9059a2d348c\\\",\\\"turnId\\\":\\\"019fd836-4091-78e2-bacb-b09711f35b02\\\",\\\"completedAtMs\\\":1786038864951},\\\"emittedAtMs\\\":1786038864951}\"],\"turnCompleted\":\"{\\\"method\\\":\\\"turn/completed\\\",\\\"params\\\":{\\\"threadId\\\":\\\"019fd836-2d07-7330-b018-d9059a2d348c\\\",\\\"turn\\\":{\\\"id\\\":\\\"019fd836-4091-78e2-bacb-b09711f35b02\\\",\\\"items\\\":[],\\\"itemsView\\\":\\\"notLoaded\\\",\\\"status\\\":\\\"completed\\\",\\\"error\\\":null,\\\"startedAt\\\":1786038861,\\\"completedAt\\\":1786038864,\\\"durationMs\\\":2989}},\\\"emittedAtMs\\\":1786038864960}\"}"
+          }
+        },
+        {
+          "name": "the conversation identity survived",
+          "outcome": "PASS",
+          "detail": "expected and observed threadId are both 019fd836-2d07-7330-b018-d9059a2d348c, and a thread/resume re-check with approvalPolicy re-passed answered 019fd836-2d07-7330-b018-d9059a2d348c",
+          "evidence": {
+            "resume": {
+              "status": "OK",
+              "observedId": "019fd836-2d07-7330-b018-d9059a2d348c",
+              "policyRepassHeld": true,
+              "observedPolicy": {
+                "approvalPolicy": "never",
+                "sandbox": {
+                  "type": "readOnly",
+                  "networkAccess": false
+                }
+              },
+              "raw": "{\"id\":5,\"result\":{\"thread\":{\"id\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"extra\":null,\"sessionId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"forkedFromId\":null,\"parentThreadId\":null,\"preview\":\"Reply with exactly: RESPAWNPACK-CODEX-CANARY-READY\",\"ephemeral\":false,\"isPinned\":false,\"historyMode\":\"legacy\",\"modelProvider\":\"openai\",\"createdAt\":1786038856,\"updatedAt\":1786038856,\"recencyAt\":1786038861,\"status\":{\"type\":\"idle\"},\"path\":\"\\\\\\\\?\\\\C:\\\\Users\\\\user\\\\.codex\\\\sessions\\\\2026\\\\08\\\\06\\\\rollout-2026-08-06T13-54-16-019fd836-2d07-7330-b018-d9059a2d348c.jsonl\",\"cwd\":\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\rp-codex-work-QiLdQP\",\"cliVersion\":\"0.146.0\",\"source\":\"vscode\",\"canAcceptDirectInput\":true,\"threadSource\":null,\"agentNickname\":null,\"agentRole\":null,\"gitInfo\":null,\"name\":null,\"turns\":[{\"id\":\"019fd836-2f2d-7ca2-bbd0-c024bfd938ea\",\"items\":[{\"type\":\"userMessage\",\"id\":\"item-1\",\"clientId\":null,\"content\":[{\"type\":\"text\",\"text\":\"Reply with exactly: RESPAWNPACK-CODEX-CANARY-READY\",\"text_elements\":[]}]},{\"type\":\"agentMessage\",\"id\":\"item-2\",\"text\":\"RESPAWNPACK-CODEX-CANARY-READY\",\"phase\":\"final_answer\",\"memoryCitation\":null}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038857,\"completedAt\":1786038861,\"durationMs\":4180},{\"id\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"items\":[{\"type\":\"contextCompaction\",\"id\":\"item-3\"}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038861,\"completedAt\":1786038864,\"durationMs\":2989}]},\"model\":\"gpt-5.6-sol\",\"modelProvider\":\"openai\",\"serviceTier\":\"default\",\"cwd\":\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\rp-codex-work-QiLdQP\",\"runtimeWorkspaceRoots\":[\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\rp-codex-work-QiLdQP\"],\"instructionSources\":[],\"approvalPolicy\":\"never\",\"approvalsReviewer\":\"user\",\"sandbox\":{\"type\":\"readOnly\",\"networkAccess\":false},\"activePermissionProfile\":null,\"reasoningEffort\":\"xhigh\",\"multiAgentMode\":\"explicitRequestOnly\",\"initialTurnsPage\":null,\"turnsBackwardsCursor\":null,\"itemsBackwardsCursor\":null}}"
+            }
+          }
+        },
+        {
+          "name": "the re-passed approvalPolicy came back in force on resume",
+          "outcome": "PASS",
+          "detail": "thread/resume reports approvalPolicy \"never\"",
+          "evidence": {
+            "observedPolicy": {
+              "approvalPolicy": "never",
+              "sandbox": {
+                "type": "readOnly",
+                "networkAccess": false
+              }
+            }
+          }
+        },
+        {
+          "name": "exactly one context cycle was entered",
+          "outcome": "PASS",
+          "detail": "cycle 0 → 1 (codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af)",
+          "evidence": null
+        },
+        {
+          "name": "the verified handoff was delivered exactly once",
+          "outcome": "PASS",
+          "detail": "the receipt names codex-canary:27992:d0706b at 2026-08-06T17:54:24.976Z, and a second claim was refused with a pointer to it",
+          "evidence": {
+            "receipt": {
+              "kind": "consumption-receipt",
+              "subjectId": "ho_5f159bcb2d929903",
+              "consumerId": "codex-canary:27992:d0706b",
+              "consumedAt": "2026-08-06T17:54:24.976Z",
+              "note": "the rollover handoff was injected into the next context cycle",
+              "extra": {
+                "verifiedDigest": "c866832810dd09bd7d35866b53af8f5dc9a293be9b484247ba60fc492319de1d",
+                "contextCycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed",
+                "exactNextAction": "Reply with exactly: RP-CODEX-7576C3DA87"
+              }
+            }
+          }
+        },
+        {
+          "name": "the handoff reached the next context cycle",
+          "outcome": "PASS",
+          "detail": "the model echoed RP-CODEX-7576C3DA87, which appeared nowhere but in the handoff",
+          "evidence": {
+            "echo": "RP-CODEX-7576C3DA87"
+          }
+        },
+        {
+          "name": "every threshold latch re-armed for the new cycle",
+          "outcome": "PASS",
+          "detail": "the latch record moved from codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed to codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af and holds no latches",
+          "evidence": {
+            "before": {
+              "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed",
+              "latched": [],
+              "rearmed": true
+            },
+            "after": {
+              "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af",
+              "latched": [],
+              "rearmed": true
+            }
+          }
+        }
+      ],
+      "padTurns": 0,
+      "thresholdFired": true,
+      "cycleBefore": {
+        "id": "codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed",
+        "index": 0
+      },
+      "cycleAfter": {
+        "id": "codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af",
+        "index": 1
+      },
+      "latchesBefore": {
+        "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed",
+        "latched": [],
+        "rearmed": true
+      },
+      "latchesAfter": {
+        "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af",
+        "latched": [],
+        "rearmed": true
+      },
+      "occupancy": 86.81,
+      "budgetSource": "operator-configured",
+      "usedTokens": 15625,
+      "nonce": "RP-CODEX-7576C3DA87",
+      "result": {
+        "status": "OK",
+        "rolled": true,
+        "phase": "complete",
+        "why": null,
+        "failure": null
+      },
+      "itemId": "019fd836-40a1-7943-9943-c3a696c8713a",
+      "compactTurnId": "019fd836-4091-78e2-bacb-b09711f35b02"
+    },
+    {
+      "index": 1,
+      "claims": [
+        {
+          "name": "the final threshold fired on a measured context",
+          "outcome": "PASS",
+          "detail": "88.24% (15884 input tokens over a operator-configured denominator) after 0 padding turn(s)",
+          "evidence": {
+            "evaluation": {
+              "measurable": true,
+              "outcome": "PASS",
+              "confidence": "HIGH",
+              "crossed": [
+                "advisory",
+                "checkpoint",
+                "final"
+              ],
+              "fire": [
+                "advisory",
+                "checkpoint",
+                "final"
+              ],
+              "alreadyLatched": [],
+              "actions": [
+                {
+                  "threshold": "advisory",
+                  "atPercent": 60,
+                  "action": "prefer smaller atomic operations from here; a rollover is foreseeable in this cycle"
+                },
+                {
+                  "threshold": "checkpoint",
+                  "atPercent": 75,
+                  "action": "prepare the checkpoint: write the handoff and the candidate memories now, while there is room to do it well"
+                },
+                {
+                  "threshold": "final",
+                  "atPercent": 85,
+                  "action": "finish or stop the current atomic operation and begin the rollover — do not start another model turn"
+                }
+              ],
+              "requiresOperatorConfirmation": false,
+              "why": "88.24444444444445% crossed advisory, checkpoint, final (confidence HIGH)"
+            },
+            "budget": {
+              "tokens": 18000,
+              "source": "operator-configured",
+              "hostReported": false,
+              "why": "the operator configured a 18000-token window; the host published 258400"
+            }
+          }
+        },
+        {
+          "name": "the compaction completed",
+          "outcome": "PASS",
+          "detail": "the host emitted a contextCompaction item/completed (item 019fd836-5308-7520-9e1f-172933570117, pair observed: true) on thread 019fd836-2d07-7330-b018-d9059a2d348c; the immediate {} ack was not read as completion",
+          "evidence": {
+            "raw": "{\"started\":[\"{\\\"method\\\":\\\"item/started\\\",\\\"params\\\":{\\\"item\\\":{\\\"type\\\":\\\"contextCompaction\\\",\\\"id\\\":\\\"019fd836-5308-7520-9e1f-172933570117\\\"},\\\"threadId\\\":\\\"019fd836-2d07-7330-b018-d9059a2d348c\\\",\\\"turnId\\\":\\\"019fd836-52f3-7d50-841d-13a9ee8ee12d\\\",\\\"startedAtMs\\\":1786038866696},\\\"emittedAtMs\\\":1786038866696}\"],\"completed\":[\"{\\\"method\\\":\\\"item/completed\\\",\\\"params\\\":{\\\"item\\\":{\\\"type\\\":\\\"contextCompaction\\\",\\\"id\\\":\\\"019fd836-5308-7520-9e1f-172933570117\\\"},\\\"threadId\\\":\\\"019fd836-2d07-7330-b018-d9059a2d348c\\\",\\\"turnId\\\":\\\"019fd836-52f3-7d50-841d-13a9ee8ee12d\\\",\\\"completedAtMs\\\":1786038868841},\\\"emittedAtMs\\\":1786038868841}\"],\"turnCompleted\":\"{\\\"method\\\":\\\"turn/completed\\\",\\\"params\\\":{\\\"threadId\\\":\\\"019fd836-2d07-7330-b018-d9059a2d348c\\\",\\\"turn\\\":{\\\"id\\\":\\\"019fd836-52f3-7d50-841d-13a9ee8ee12d\\\",\\\"items\\\":[],\\\"itemsView\\\":\\\"notLoaded\\\",\\\"status\\\":\\\"completed\\\",\\\"error\\\":null,\\\"startedAt\\\":1786038866,\\\"completedAt\\\":1786038868,\\\"durationMs\\\":2173}},\\\"emittedAtMs\\\":1786038868850}\"}"
+          }
+        },
+        {
+          "name": "the conversation identity survived",
+          "outcome": "PASS",
+          "detail": "expected and observed threadId are both 019fd836-2d07-7330-b018-d9059a2d348c, and a thread/resume re-check with approvalPolicy re-passed answered 019fd836-2d07-7330-b018-d9059a2d348c",
+          "evidence": {
+            "resume": {
+              "status": "OK",
+              "observedId": "019fd836-2d07-7330-b018-d9059a2d348c",
+              "policyRepassHeld": true,
+              "observedPolicy": {
+                "approvalPolicy": "never",
+                "sandbox": {
+                  "type": "readOnly",
+                  "networkAccess": false
+                }
+              },
+              "raw": "{\"id\":8,\"result\":{\"thread\":{\"id\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"extra\":null,\"sessionId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"forkedFromId\":null,\"parentThreadId\":null,\"preview\":\"Reply with exactly: RESPAWNPACK-CODEX-CANARY-READY\",\"ephemeral\":false,\"isPinned\":false,\"historyMode\":\"legacy\",\"modelProvider\":\"openai\",\"createdAt\":1786038856,\"updatedAt\":1786038856,\"recencyAt\":1786038866,\"status\":{\"type\":\"idle\"},\"path\":\"\\\\\\\\?\\\\C:\\\\Users\\\\user\\\\.codex\\\\sessions\\\\2026\\\\08\\\\06\\\\rollout-2026-08-06T13-54-16-019fd836-2d07-7330-b018-d9059a2d348c.jsonl\",\"cwd\":\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\rp-codex-work-QiLdQP\",\"cliVersion\":\"0.146.0\",\"source\":\"vscode\",\"canAcceptDirectInput\":true,\"threadSource\":null,\"agentNickname\":null,\"agentRole\":null,\"gitInfo\":null,\"name\":null,\"turns\":[{\"id\":\"019fd836-2f2d-7ca2-bbd0-c024bfd938ea\",\"items\":[{\"type\":\"userMessage\",\"id\":\"item-1\",\"clientId\":null,\"content\":[{\"type\":\"text\",\"text\":\"Reply with exactly: RESPAWNPACK-CODEX-CANARY-READY\",\"text_elements\":[]}]},{\"type\":\"agentMessage\",\"id\":\"item-2\",\"text\":\"RESPAWNPACK-CODEX-CANARY-READY\",\"phase\":\"final_answer\",\"memoryCitation\":null}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038857,\"completedAt\":1786038861,\"durationMs\":4180},{\"id\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"items\":[{\"type\":\"contextCompaction\",\"id\":\"item-3\"}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038861,\"completedAt\":1786038864,\"durationMs\":2989},{\"id\":\"019fd836-4c58-78d0-b520-07925453997c\",\"items\":[{\"type\":\"userMessage\",\"id\":\"item-4\",\"clientId\":null,\"content\":[{\"type\":\"text\",\"text\":\"<respawnpack-handoff schema=\\\"2.0.0\\\" handoff=\\\"ho_5f159bcb2d929903\\\" cycle=\\\"codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed\\\">\\nThis thread was compacted in place by RespawnPack. What follows was written and read back\\nBEFORE the compaction, and is delivered exactly once.\\n\\nEXACT NEXT ACTION: Reply with exactly: RP-CODEX-7576C3DA87\\nATOMIC ACTION: codex-canary-rollover-0\\nGIT HEAD: unknown\\nUSER CONSTRAINTS:\\n  · this is an automated canary; take no action other than the exact next action\\nVERIFIED THIS CYCLE:\\n  · padding turns in this cycle: 0\\n  · occupancy at rollover: 86.81%\\n</respawnpack-handoff>\\n\\nFollow the exact next action above and nothing else.\",\"text_elements\":[]}]},{\"type\":\"agentMessage\",\"id\":\"item-5\",\"text\":\"RP-CODEX-7576C3DA87\",\"phase\":\"final_answer\",\"memoryCitation\":null}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038864,\"completedAt\":1786038866,\"durationMs\":1661},{\"id\":\"019fd836-52f3-7d50-841d-13a9ee8ee12d\",\"items\":[{\"type\":\"contextCompaction\",\"id\":\"item-6\"}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038866,\"completedAt\":1786038868,\"durationMs\":2173}]},\"model\":\"gpt-5.6-sol\",\"modelProvider\":\"openai\",\"serviceTier\":\"default\",\"cwd\":\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\rp-codex-work-QiLdQP\",\"runtimeWorkspaceRoots\":[\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\rp-codex-work-QiLdQP\"],\"instructionSources\":[],\"approvalPolicy\":\"never\",\"approvalsReviewer\":\"user\",\"sandbox\":{\"type\":\"readOnly\",\"networkAccess\":false},\"activePermissionProfile\":null,\"reasoningEffort\":\"xhigh\",\"multiAgentMode\":\"explicitRequestOnly\",\"initialTurnsPage\":null,\"turnsBackwardsCursor\":null,\"itemsBackwardsCursor\":null}}"
+            }
+          }
+        },
+        {
+          "name": "the re-passed approvalPolicy came back in force on resume",
+          "outcome": "PASS",
+          "detail": "thread/resume reports approvalPolicy \"never\"",
+          "evidence": {
+            "observedPolicy": {
+              "approvalPolicy": "never",
+              "sandbox": {
+                "type": "readOnly",
+                "networkAccess": false
+              }
+            }
+          }
+        },
+        {
+          "name": "exactly one context cycle was entered",
+          "outcome": "PASS",
+          "detail": "cycle 1 → 2 (codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da)",
+          "evidence": null
+        },
+        {
+          "name": "the verified handoff was delivered exactly once",
+          "outcome": "PASS",
+          "detail": "the receipt names codex-canary:27992:d0706b at 2026-08-06T17:54:28.865Z, and a second claim was refused with a pointer to it",
+          "evidence": {
+            "receipt": {
+              "kind": "consumption-receipt",
+              "subjectId": "ho_3cf72c716db6abc1",
+              "consumerId": "codex-canary:27992:d0706b",
+              "consumedAt": "2026-08-06T17:54:28.865Z",
+              "note": "the rollover handoff was injected into the next context cycle",
+              "extra": {
+                "verifiedDigest": "dc489470d36e71fa4e12d3546427e35c56d91e40ae8e55fe6e3fd1e8317c3d45",
+                "contextCycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af",
+                "exactNextAction": "Reply with exactly: RP-CODEX-FEC80B0A95"
+              }
+            }
+          }
+        },
+        {
+          "name": "the handoff reached the next context cycle",
+          "outcome": "PASS",
+          "detail": "the model echoed RP-CODEX-FEC80B0A95, which appeared nowhere but in the handoff",
+          "evidence": {
+            "echo": "RP-CODEX-FEC80B0A95"
+          }
+        },
+        {
+          "name": "every threshold latch re-armed for the new cycle",
+          "outcome": "PASS",
+          "detail": "the latch record moved from codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af to codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da and holds no latches",
+          "evidence": {
+            "before": {
+              "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af",
+              "latched": [],
+              "rearmed": true
+            },
+            "after": {
+              "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da",
+              "latched": [],
+              "rearmed": true
+            }
+          }
+        }
+      ],
+      "padTurns": 0,
+      "thresholdFired": true,
+      "cycleBefore": {
+        "id": "codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af",
+        "index": 1
+      },
+      "cycleAfter": {
+        "id": "codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da",
+        "index": 2
+      },
+      "latchesBefore": {
+        "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af",
+        "latched": [],
+        "rearmed": true
+      },
+      "latchesAfter": {
+        "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da",
+        "latched": [],
+        "rearmed": true
+      },
+      "occupancy": 88.24,
+      "budgetSource": "operator-configured",
+      "usedTokens": 15884,
+      "nonce": "RP-CODEX-FEC80B0A95",
+      "result": {
+        "status": "OK",
+        "rolled": true,
+        "phase": "complete",
+        "why": null,
+        "failure": null
+      },
+      "itemId": "019fd836-5308-7520-9e1f-172933570117",
+      "compactTurnId": "019fd836-52f3-7d50-841d-13a9ee8ee12d"
+    },
+    {
+      "index": 2,
+      "claims": [
+        {
+          "name": "the final threshold fired on a measured context",
+          "outcome": "PASS",
+          "detail": "89.48% (16107 input tokens over a operator-configured denominator) after 0 padding turn(s)",
+          "evidence": {
+            "evaluation": {
+              "measurable": true,
+              "outcome": "PASS",
+              "confidence": "HIGH",
+              "crossed": [
+                "advisory",
+                "checkpoint",
+                "final"
+              ],
+              "fire": [
+                "advisory",
+                "checkpoint",
+                "final"
+              ],
+              "alreadyLatched": [],
+              "actions": [
+                {
+                  "threshold": "advisory",
+                  "atPercent": 60,
+                  "action": "prefer smaller atomic operations from here; a rollover is foreseeable in this cycle"
+                },
+                {
+                  "threshold": "checkpoint",
+                  "atPercent": 75,
+                  "action": "prepare the checkpoint: write the handoff and the candidate memories now, while there is room to do it well"
+                },
+                {
+                  "threshold": "final",
+                  "atPercent": 85,
+                  "action": "finish or stop the current atomic operation and begin the rollover — do not start another model turn"
+                }
+              ],
+              "requiresOperatorConfirmation": false,
+              "why": "89.48333333333333% crossed advisory, checkpoint, final (confidence HIGH)"
+            },
+            "budget": {
+              "tokens": 18000,
+              "source": "operator-configured",
+              "hostReported": false,
+              "why": "the operator configured a 18000-token window; the host published 258400"
+            }
+          }
+        },
+        {
+          "name": "the compaction completed",
+          "outcome": "PASS",
+          "detail": "the host emitted a contextCompaction item/completed (item 019fd836-68c3-7ef1-b682-56be92b9e08f, pair observed: true) on thread 019fd836-2d07-7330-b018-d9059a2d348c; the immediate {} ack was not read as completion",
+          "evidence": {
+            "raw": "{\"started\":[\"{\\\"method\\\":\\\"item/started\\\",\\\"params\\\":{\\\"item\\\":{\\\"type\\\":\\\"contextCompaction\\\",\\\"id\\\":\\\"019fd836-68c3-7ef1-b682-56be92b9e08f\\\"},\\\"threadId\\\":\\\"019fd836-2d07-7330-b018-d9059a2d348c\\\",\\\"turnId\\\":\\\"019fd836-68b3-7283-ab9b-05dece6ad5e6\\\",\\\"startedAtMs\\\":1786038872259},\\\"emittedAtMs\\\":1786038872259}\"],\"completed\":[\"{\\\"method\\\":\\\"item/completed\\\",\\\"params\\\":{\\\"item\\\":{\\\"type\\\":\\\"contextCompaction\\\",\\\"id\\\":\\\"019fd836-68c3-7ef1-b682-56be92b9e08f\\\"},\\\"threadId\\\":\\\"019fd836-2d07-7330-b018-d9059a2d348c\\\",\\\"turnId\\\":\\\"019fd836-68b3-7283-ab9b-05dece6ad5e6\\\",\\\"completedAtMs\\\":1786038874284},\\\"emittedAtMs\\\":1786038874284}\"],\"turnCompleted\":\"{\\\"method\\\":\\\"turn/completed\\\",\\\"params\\\":{\\\"threadId\\\":\\\"019fd836-2d07-7330-b018-d9059a2d348c\\\",\\\"turn\\\":{\\\"id\\\":\\\"019fd836-68b3-7283-ab9b-05dece6ad5e6\\\",\\\"items\\\":[],\\\"itemsView\\\":\\\"notLoaded\\\",\\\"status\\\":\\\"completed\\\",\\\"error\\\":null,\\\"startedAt\\\":1786038872,\\\"completedAt\\\":1786038874,\\\"durationMs\\\":2048}},\\\"emittedAtMs\\\":1786038874293}\"}"
+          }
+        },
+        {
+          "name": "the conversation identity survived",
+          "outcome": "PASS",
+          "detail": "expected and observed threadId are both 019fd836-2d07-7330-b018-d9059a2d348c, and a thread/resume re-check with approvalPolicy re-passed answered 019fd836-2d07-7330-b018-d9059a2d348c",
+          "evidence": {
+            "resume": {
+              "status": "OK",
+              "observedId": "019fd836-2d07-7330-b018-d9059a2d348c",
+              "policyRepassHeld": true,
+              "observedPolicy": {
+                "approvalPolicy": "never",
+                "sandbox": {
+                  "type": "readOnly",
+                  "networkAccess": false
+                }
+              },
+              "raw": "{\"id\":11,\"result\":{\"thread\":{\"id\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"extra\":null,\"sessionId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"forkedFromId\":null,\"parentThreadId\":null,\"preview\":\"Reply with exactly: RESPAWNPACK-CODEX-CANARY-READY\",\"ephemeral\":false,\"isPinned\":false,\"historyMode\":\"legacy\",\"modelProvider\":\"openai\",\"createdAt\":1786038856,\"updatedAt\":1786038856,\"recencyAt\":1786038872,\"status\":{\"type\":\"idle\"},\"path\":\"\\\\\\\\?\\\\C:\\\\Users\\\\user\\\\.codex\\\\sessions\\\\2026\\\\08\\\\06\\\\rollout-2026-08-06T13-54-16-019fd836-2d07-7330-b018-d9059a2d348c.jsonl\",\"cwd\":\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\rp-codex-work-QiLdQP\",\"cliVersion\":\"0.146.0\",\"source\":\"vscode\",\"canAcceptDirectInput\":true,\"threadSource\":null,\"agentNickname\":null,\"agentRole\":null,\"gitInfo\":null,\"name\":null,\"turns\":[{\"id\":\"019fd836-2f2d-7ca2-bbd0-c024bfd938ea\",\"items\":[{\"type\":\"userMessage\",\"id\":\"item-1\",\"clientId\":null,\"content\":[{\"type\":\"text\",\"text\":\"Reply with exactly: RESPAWNPACK-CODEX-CANARY-READY\",\"text_elements\":[]}]},{\"type\":\"agentMessage\",\"id\":\"item-2\",\"text\":\"RESPAWNPACK-CODEX-CANARY-READY\",\"phase\":\"final_answer\",\"memoryCitation\":null}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038857,\"completedAt\":1786038861,\"durationMs\":4180},{\"id\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"items\":[{\"type\":\"contextCompaction\",\"id\":\"item-3\"}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038861,\"completedAt\":1786038864,\"durationMs\":2989},{\"id\":\"019fd836-4c58-78d0-b520-07925453997c\",\"items\":[{\"type\":\"userMessage\",\"id\":\"item-4\",\"clientId\":null,\"content\":[{\"type\":\"text\",\"text\":\"<respawnpack-handoff schema=\\\"2.0.0\\\" handoff=\\\"ho_5f159bcb2d929903\\\" cycle=\\\"codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed\\\">\\nThis thread was compacted in place by RespawnPack. What follows was written and read back\\nBEFORE the compaction, and is delivered exactly once.\\n\\nEXACT NEXT ACTION: Reply with exactly: RP-CODEX-7576C3DA87\\nATOMIC ACTION: codex-canary-rollover-0\\nGIT HEAD: unknown\\nUSER CONSTRAINTS:\\n  · this is an automated canary; take no action other than the exact next action\\nVERIFIED THIS CYCLE:\\n  · padding turns in this cycle: 0\\n  · occupancy at rollover: 86.81%\\n</respawnpack-handoff>\\n\\nFollow the exact next action above and nothing else.\",\"text_elements\":[]}]},{\"type\":\"agentMessage\",\"id\":\"item-5\",\"text\":\"RP-CODEX-7576C3DA87\",\"phase\":\"final_answer\",\"memoryCitation\":null}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038864,\"completedAt\":1786038866,\"durationMs\":1661},{\"id\":\"019fd836-52f3-7d50-841d-13a9ee8ee12d\",\"items\":[{\"type\":\"contextCompaction\",\"id\":\"item-6\"}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038866,\"completedAt\":1786038868,\"durationMs\":2173},{\"id\":\"019fd836-5b89-7401-9e25-54e9f7d3ad1d\",\"items\":[{\"type\":\"userMessage\",\"id\":\"item-7\",\"clientId\":null,\"content\":[{\"type\":\"text\",\"text\":\"<respawnpack-handoff schema=\\\"2.0.0\\\" handoff=\\\"ho_3cf72c716db6abc1\\\" cycle=\\\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\\\">\\nThis thread was compacted in place by RespawnPack. What follows was written and read back\\nBEFORE the compaction, and is delivered exactly once.\\n\\nEXACT NEXT ACTION: Reply with exactly: RP-CODEX-FEC80B0A95\\nATOMIC ACTION: codex-canary-rollover-1\\nGIT HEAD: unknown\\nUSER CONSTRAINTS:\\n  · this is an automated canary; take no action other than the exact next action\\nVERIFIED THIS CYCLE:\\n  · padding turns in this cycle: 0\\n  · occupancy at rollover: 88.24%\\n</respawnpack-handoff>\\n\\nFollow the exact next action above and nothing else.\",\"text_elements\":[]}]},{\"type\":\"agentMessage\",\"id\":\"item-8\",\"text\":\"RP-CODEX-FEC80B0A95\",\"phase\":\"final_answer\",\"memoryCitation\":null}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038868,\"completedAt\":1786038872,\"durationMs\":3345},{\"id\":\"019fd836-68b3-7283-ab9b-05dece6ad5e6\",\"items\":[{\"type\":\"contextCompaction\",\"id\":\"item-9\"}],\"itemsView\":\"full\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038872,\"completedAt\":1786038874,\"durationMs\":2048}]},\"model\":\"gpt-5.6-sol\",\"modelProvider\":\"openai\",\"serviceTier\":\"default\",\"cwd\":\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\rp-codex-work-QiLdQP\",\"runtimeWorkspaceRoots\":[\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\rp-codex-work-QiLdQP\"],\"instructionSources\":[],\"approvalPolicy\":\"never\",\"approvalsReviewer\":\"user\",\"sandbox\":{\"type\":\"readOnly\",\"networkAccess\":false},\"activePermissionProfile\":null,\"reasoningEffort\":\"xhigh\",\"multiAgentMode\":\"explicitRequestOnly\",\"initialTurnsPage\":null,\"turnsBackwardsCursor\":null,\"itemsBackwardsCursor\":null}}"
+            }
+          }
+        },
+        {
+          "name": "the re-passed approvalPolicy came back in force on resume",
+          "outcome": "PASS",
+          "detail": "thread/resume reports approvalPolicy \"never\"",
+          "evidence": {
+            "observedPolicy": {
+              "approvalPolicy": "never",
+              "sandbox": {
+                "type": "readOnly",
+                "networkAccess": false
+              }
+            }
+          }
+        },
+        {
+          "name": "exactly one context cycle was entered",
+          "outcome": "PASS",
+          "detail": "cycle 2 → 3 (codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883)",
+          "evidence": null
+        },
+        {
+          "name": "the verified handoff was delivered exactly once",
+          "outcome": "PASS",
+          "detail": "the receipt names codex-canary:27992:d0706b at 2026-08-06T17:54:34.309Z, and a second claim was refused with a pointer to it",
+          "evidence": {
+            "receipt": {
+              "kind": "consumption-receipt",
+              "subjectId": "ho_9bbeb7b411b4bad7",
+              "consumerId": "codex-canary:27992:d0706b",
+              "consumedAt": "2026-08-06T17:54:34.309Z",
+              "note": "the rollover handoff was injected into the next context cycle",
+              "extra": {
+                "verifiedDigest": "e3cf0ab4bce4a24aacd508f22387c042ace6a8208183b45fde39dde05697e605",
+                "contextCycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da",
+                "exactNextAction": "Reply with exactly: RP-CODEX-C6FD581901"
+              }
+            }
+          }
+        },
+        {
+          "name": "the handoff reached the next context cycle",
+          "outcome": "PASS",
+          "detail": "the model echoed RP-CODEX-C6FD581901, which appeared nowhere but in the handoff",
+          "evidence": {
+            "echo": "RP-CODEX-C6FD581901"
+          }
+        },
+        {
+          "name": "every threshold latch re-armed for the new cycle",
+          "outcome": "PASS",
+          "detail": "the latch record moved from codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da to codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883 and holds no latches",
+          "evidence": {
+            "before": {
+              "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da",
+              "latched": [],
+              "rearmed": true
+            },
+            "after": {
+              "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883",
+              "latched": [],
+              "rearmed": true
+            }
+          }
+        }
+      ],
+      "padTurns": 0,
+      "thresholdFired": true,
+      "cycleBefore": {
+        "id": "codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da",
+        "index": 2
+      },
+      "cycleAfter": {
+        "id": "codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883",
+        "index": 3
+      },
+      "latchesBefore": {
+        "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da",
+        "latched": [],
+        "rearmed": true
+      },
+      "latchesAfter": {
+        "cycleId": "codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883",
+        "latched": [],
+        "rearmed": true
+      },
+      "occupancy": 89.48,
+      "budgetSource": "operator-configured",
+      "usedTokens": 16107,
+      "nonce": "RP-CODEX-C6FD581901",
+      "result": {
+        "status": "OK",
+        "rolled": true,
+        "phase": "complete",
+        "why": null,
+        "failure": null
+      },
+      "itemId": "019fd836-68c3-7ef1-b682-56be92b9e08f",
+      "compactTurnId": "019fd836-68b3-7283-ab9b-05dece6ad5e6"
+    }
+  ],
+  "claims": [
+    {
+      "name": "the configured integration is active",
+      "outcome": "PASS",
+      "detail": "codex-cli 0.146.0 at C:\\home\\user\\.npm\\node_modules\\@openai\\codex\\bin\\codex.js (resolved via npm shim sibling); the mandatory initialize handshake completed and the host's own schema declares 127 request methods including thread/compact/start",
+      "evidence": {
+        "initialize": {
+          "userAgent": "respawnpack-app-server-supervisor/0.146.0 (Windows 10.0.26200; x86_64) xterm-256color (respawnpack-app-server-supervisor; 0.3.0)",
+          "codexHome": "C:\\Users\\user\\.codex",
+          "platformFamily": "windows",
+          "platformOs": "windows"
+        },
+        "schema": {
+          "ok": true,
+          "dir": "C:\\Users\\user\\AppData\\Local\\Temp\\rp-codex-canary-mSnpnu\\.respawnpack\\runtime\\rollover\\_codex-app-server-schema",
+          "methods": 127,
+          "detail": null,
+          "missing": []
+        }
+      }
+    },
+    {
+      "name": "a supervised thread was started",
+      "outcome": "PASS",
+      "detail": "thread 019fd836-2d07-7330-b018-d9059a2d348c",
+      "evidence": {
+        "observedPolicy": {
+          "approvalPolicy": "never",
+          "sandbox": {
+            "type": "readOnly",
+            "networkAccess": false
+          },
+          "model": "gpt-5.6-sol"
+        },
+        "sessionId": "019fd836-2d07-7330-b018-d9059a2d348c"
+      }
+    },
+    {
+      "name": "the thread runs read-only with approvals disabled",
+      "outcome": "PASS",
+      "detail": "the host reports approvalPolicy \"never\" and sandbox {\"type\":\"readOnly\",\"networkAccess\":false}",
+      "evidence": {
+        "observedPolicy": {
+          "approvalPolicy": "never",
+          "sandbox": {
+            "type": "readOnly",
+            "networkAccess": false
+          },
+          "model": "gpt-5.6-sol"
+        }
+      }
+    },
+    {
+      "name": "the host completed a real model turn (authentication)",
+      "outcome": "PASS",
+      "detail": "turn 019fd836-2f2d-7ca2-bbd0-c024bfd938ea completed; authentication is proven by a completed turn, not by the handshake",
+      "evidence": {
+        "raw": "{\"method\":\"turn/completed\",\"params\":{\"threadId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"turn\":{\"id\":\"019fd836-2f2d-7ca2-bbd0-c024bfd938ea\",\"items\":[{\"type\":\"agentMessage\",\"id\":\"msg_019698625d97c346016a74ca4d45ec81938fe185650514fa63\",\"text\":\"RESPAWNPACK-CODEX-CANARY-READY\",\"phase\":\"final_answer\",\"memoryCitation\":null}],\"itemsView\":\"summary\",\"status\":\"completed\",\"error\":null,\"startedAt\":1786038857,\"completedAt\":1786038861,\"durationMs\":4180}},\"emittedAtMs\":1786038861699}"
+      }
+    },
+    {
+      "name": "3 CONSECUTIVE in-place rollovers",
+      "outcome": "PASS",
+      "detail": "3 of 3 completed on one thread (019fd836-2d07-7330-b018-d9059a2d348c)",
+      "evidence": null
+    },
+    {
+      "name": "the context cycle advanced exactly once per rollover",
+      "outcome": "PASS",
+      "detail": "cycle indices 0 → 1 → 2 → 3",
+      "evidence": null
+    }
+  ],
+  "serverRequests": [],
+  "eventLog": {
+    "file": "C:/Users/user/AppData/Local/Temp/claude/C--Users-user-Documents-Claude-Projects-RespawnPack/2151d3d7-8f07-42d7-b622-7e24caf3e108/scratchpad/w3b/canary-events.jsonl",
+    "bytes": 78057,
+    "sha256": "95fec79deef19645576853e68d51821836d69f0e33f575b20c2ad62891ee77bb",
+    "events": 148
+  },
+  "rawLog": {
+    "file": "C:\\Users\\user\\AppData\\Local\\Temp\\rp-codex-canary-mSnpnu\\app-server-raw.jsonl",
+    "bytes": 78057,
+    "sha256": "95fec79deef19645576853e68d51821836d69f0e33f575b20c2ad62891ee77bb"
+  },
+  "outcome": "PASS",
+  "exitCode": 0,
+  "firstProblem": null,
+  "ownerActions": [],
+  "transport": {
+    "notifications": 123,
+    "events": 148,
+    "unparsed": [],
+    "tornTail": null,
+    "exit": null,
+    "stderr": ""
+  },
+  "capabilityMatrix": {
+    "profile": "codex/app-server",
+    "declarations": [
+      {
+        "capability": "probe",
+        "declaredSupport": "SUPPORTED_WITH_LIMITATIONS",
+        "support": "SUPPORTED_WITH_LIMITATIONS",
+        "downgraded": false,
+        "why": "a live activation canary observed this capability working on 2026-08-06T17:54:36.632Z",
+        "limitations": [
+          "the app server is an EXPERIMENTAL surface: `initialize` must pass capabilities.experimentalApi, and the request inventory is regenerated per run because it can move between builds",
+          "the handshake runs BEFORE credentials are used, so a green probe does not prove authentication — the first COMPLETED turn does"
+        ],
+        "mechanism": "`node <codex.js> --version`, `generate-json-schema --experimental`, and the mandatory `initialize` handshake over the app-server JSONL transport",
+        "canary": {
+          "ran": true,
+          "kind": "codex-app-server-supervisor-activation",
+          "observedAt": "2026-08-06T17:54:36.632Z",
+          "outcome": "PASS",
+          "why": null,
+          "raw": "{\"profile\":\"codex/app-server\",\"codexVersion\":\"codex-cli 0.146.0\",\"codexJs\":\"C:\\\\home\\\\user\\\\.npm\\\\node_modules\\\\@openai\\\\codex\\\\bin\\\\codex.js\",\"threadId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"rollovers\":[{\"index\":0,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed\",\"index\":0},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"itemId\":\"019fd836-40a1-7943-9943-c3a696c8713a\",\"compactTurnId\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":1,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"itemId\":\"019fd836-5308-7520-9e1f-172933570117\",\"compactTurnId\":\"019fd836-52f3-7d50-841d-13a9ee8ee12d\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":2,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883\",\"index\":3},\"itemId\":\"019fd836-68c3-7ef1-b682-56be92b9e08f\",\"compactTurnId\":\"019fd836-68b3-7283-ab9b-05dece6ad5e6\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]}],\"claims\":[{\"name\":\"the configured integration is active\",\"outcome\":\"PASS\"},{\"name\":\"a supervised thread was started\",\"outcome\":\"PASS\"},{\"name\":\"the thread runs read-only with approvals disabled\",\"outcome\":\"PASS\"},{\"name\":\"the host completed a real model turn (authentication)\",\"outcome\":\"PASS\"},{\"name\":\"3 CONSECUTIVE in-place rollovers\",\"outcome\":\"PASS\"},{\"name\":\"the context cycle advanced exactly once per rollover\",\"outcome\":\"PASS\"}],\"eventLog\":{\"file\":\"C:/Users/user/AppData/Local/Temp/claude/C--Users-user-Documents-Claude-Projects-RespawnPack/2151d3d7-8f07-42d7-b622-7e24caf3e108/scratchpad/w3b/canary-events.jsonl\",\"bytes\":78057,\"sha256\":\"95fec79deef19645576853e68d51821836d69f0e33f575b20c2ad62891ee77bb\",\"events\":148}}"
+        },
+        "docs": [
+          "codex app-server generate-json-schema --experimental (ClientRequest.json)",
+          "captured: -32600 \"Not initialized\" for a pre-handshake request"
+        ]
+      },
+      {
+        "capability": "measureContext",
+        "declaredSupport": "SUPPORTED_WITH_LIMITATIONS",
+        "support": "SUPPORTED_WITH_LIMITATIONS",
+        "downgraded": false,
+        "why": "a live activation canary observed this capability working on 2026-08-06T17:54:36.632Z",
+        "limitations": [
+          "the field names inside tokenUsage are undocumented — the event is documented, its shape is read from live capture, so the verbatim payload travels on every measurement record",
+          "for one turn after a compaction the `last` block reports a non-zero totalTokens with every component at 0; occupancy is CANNOT_DETERMINE until the next turn, never 0%",
+          "modelContextWindow is nullable; when the host publishes none there is no denominator and occupancy is CANNOT_DETERMINE unless an operator configures one"
+        ],
+        "mechanism": "thread/tokenUsage/updated: last.inputTokens over modelContextWindow, both published by the host",
+        "canary": {
+          "ran": true,
+          "kind": "codex-app-server-supervisor-activation",
+          "observedAt": "2026-08-06T17:54:36.632Z",
+          "outcome": "PASS",
+          "why": null,
+          "raw": "{\"profile\":\"codex/app-server\",\"codexVersion\":\"codex-cli 0.146.0\",\"codexJs\":\"C:\\\\home\\\\user\\\\.npm\\\\node_modules\\\\@openai\\\\codex\\\\bin\\\\codex.js\",\"threadId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"rollovers\":[{\"index\":0,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed\",\"index\":0},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"itemId\":\"019fd836-40a1-7943-9943-c3a696c8713a\",\"compactTurnId\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":1,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"itemId\":\"019fd836-5308-7520-9e1f-172933570117\",\"compactTurnId\":\"019fd836-52f3-7d50-841d-13a9ee8ee12d\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":2,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883\",\"index\":3},\"itemId\":\"019fd836-68c3-7ef1-b682-56be92b9e08f\",\"compactTurnId\":\"019fd836-68b3-7283-ab9b-05dece6ad5e6\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]}],\"claims\":[{\"name\":\"the configured integration is active\",\"outcome\":\"PASS\"},{\"name\":\"a supervised thread was started\",\"outcome\":\"PASS\"},{\"name\":\"the thread runs read-only with approvals disabled\",\"outcome\":\"PASS\"},{\"name\":\"the host completed a real model turn (authentication)\",\"outcome\":\"PASS\"},{\"name\":\"3 CONSECUTIVE in-place rollovers\",\"outcome\":\"PASS\"},{\"name\":\"the context cycle advanced exactly once per rollover\",\"outcome\":\"PASS\"}],\"eventLog\":{\"file\":\"C:/Users/user/AppData/Local/Temp/claude/C--Users-user-Documents-Claude-Projects-RespawnPack/2151d3d7-8f07-42d7-b622-7e24caf3e108/scratchpad/w3b/canary-events.jsonl\",\"bytes\":78057,\"sha256\":\"95fec79deef19645576853e68d51821836d69f0e33f575b20c2ad62891ee77bb\",\"events\":148}}"
+        },
+        "docs": [
+          "captured: thread/tokenUsage/updated with modelContextWindow 258400",
+          "captured: the post-compaction all-zero-components row"
+        ]
+      },
+      {
+        "capability": "settleOrStop",
+        "declaredSupport": "SUPPORTED",
+        "support": "SUPPORTED",
+        "downgraded": false,
+        "why": "a live activation canary observed this capability working on 2026-08-06T17:54:36.632Z",
+        "limitations": [],
+        "mechanism": "turn/completed for the turn this supervisor started; turn/interrupt is available and is only sent after the turn/started notification",
+        "canary": {
+          "ran": true,
+          "kind": "codex-app-server-supervisor-activation",
+          "observedAt": "2026-08-06T17:54:36.632Z",
+          "outcome": "PASS",
+          "why": null,
+          "raw": "{\"profile\":\"codex/app-server\",\"codexVersion\":\"codex-cli 0.146.0\",\"codexJs\":\"C:\\\\home\\\\user\\\\.npm\\\\node_modules\\\\@openai\\\\codex\\\\bin\\\\codex.js\",\"threadId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"rollovers\":[{\"index\":0,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed\",\"index\":0},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"itemId\":\"019fd836-40a1-7943-9943-c3a696c8713a\",\"compactTurnId\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":1,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"itemId\":\"019fd836-5308-7520-9e1f-172933570117\",\"compactTurnId\":\"019fd836-52f3-7d50-841d-13a9ee8ee12d\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":2,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883\",\"index\":3},\"itemId\":\"019fd836-68c3-7ef1-b682-56be92b9e08f\",\"compactTurnId\":\"019fd836-68b3-7283-ab9b-05dece6ad5e6\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]}],\"claims\":[{\"name\":\"the configured integration is active\",\"outcome\":\"PASS\"},{\"name\":\"a supervised thread was started\",\"outcome\":\"PASS\"},{\"name\":\"the thread runs read-only with approvals disabled\",\"outcome\":\"PASS\"},{\"name\":\"the host completed a real model turn (authentication)\",\"outcome\":\"PASS\"},{\"name\":\"3 CONSECUTIVE in-place rollovers\",\"outcome\":\"PASS\"},{\"name\":\"the context cycle advanced exactly once per rollover\",\"outcome\":\"PASS\"}],\"eventLog\":{\"file\":\"C:/Users/user/AppData/Local/Temp/claude/C--Users-user-Documents-Claude-Projects-RespawnPack/2151d3d7-8f07-42d7-b622-7e24caf3e108/scratchpad/w3b/canary-events.jsonl\",\"bytes\":78057,\"sha256\":\"95fec79deef19645576853e68d51821836d69f0e33f575b20c2ad62891ee77bb\",\"events\":148}}"
+        },
+        "docs": [
+          "captured: turn/start → turn/started → item/* → turn/completed",
+          "captured: -32600 \"no active turn to interrupt\" before turn/started"
+        ]
+      },
+      {
+        "capability": "requestCompact",
+        "declaredSupport": "SUPPORTED",
+        "support": "SUPPORTED",
+        "downgraded": false,
+        "why": "a live activation canary observed this capability working on 2026-08-06T17:54:36.632Z",
+        "limitations": [],
+        "mechanism": "thread/compact/start {threadId} — a first-class request method in the host's own ClientRequest schema",
+        "canary": {
+          "ran": true,
+          "kind": "codex-app-server-supervisor-activation",
+          "observedAt": "2026-08-06T17:54:36.632Z",
+          "outcome": "PASS",
+          "why": null,
+          "raw": "{\"profile\":\"codex/app-server\",\"codexVersion\":\"codex-cli 0.146.0\",\"codexJs\":\"C:\\\\home\\\\user\\\\.npm\\\\node_modules\\\\@openai\\\\codex\\\\bin\\\\codex.js\",\"threadId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"rollovers\":[{\"index\":0,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed\",\"index\":0},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"itemId\":\"019fd836-40a1-7943-9943-c3a696c8713a\",\"compactTurnId\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":1,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"itemId\":\"019fd836-5308-7520-9e1f-172933570117\",\"compactTurnId\":\"019fd836-52f3-7d50-841d-13a9ee8ee12d\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":2,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883\",\"index\":3},\"itemId\":\"019fd836-68c3-7ef1-b682-56be92b9e08f\",\"compactTurnId\":\"019fd836-68b3-7283-ab9b-05dece6ad5e6\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]}],\"claims\":[{\"name\":\"the configured integration is active\",\"outcome\":\"PASS\"},{\"name\":\"a supervised thread was started\",\"outcome\":\"PASS\"},{\"name\":\"the thread runs read-only with approvals disabled\",\"outcome\":\"PASS\"},{\"name\":\"the host completed a real model turn (authentication)\",\"outcome\":\"PASS\"},{\"name\":\"3 CONSECUTIVE in-place rollovers\",\"outcome\":\"PASS\"},{\"name\":\"the context cycle advanced exactly once per rollover\",\"outcome\":\"PASS\"}],\"eventLog\":{\"file\":\"C:/Users/user/AppData/Local/Temp/claude/C--Users-user-Documents-Claude-Projects-RespawnPack/2151d3d7-8f07-42d7-b622-7e24caf3e108/scratchpad/w3b/canary-events.jsonl\",\"bytes\":78057,\"sha256\":\"95fec79deef19645576853e68d51821836d69f0e33f575b20c2ad62891ee77bb\",\"events\":148}}"
+        },
+        "docs": [
+          "ClientRequest.json declares thread/compact/start with required threadId"
+        ]
+      },
+      {
+        "capability": "observeCompact",
+        "declaredSupport": "SUPPORTED_WITH_LIMITATIONS",
+        "support": "SUPPORTED_WITH_LIMITATIONS",
+        "downgraded": false,
+        "why": "a live activation canary observed this capability working on 2026-08-06T17:54:36.632Z",
+        "limitations": [
+          "the contextCompaction item carries only {id,type} — there is no pre/post token metadata to corroborate the compaction with",
+          "a genuine no-op compaction has never been observed on this host, so an ack plus a turn/completed with no item is reported as COMPLETION_UNOBSERVED with a no-op-candidate flag rather than resolved either way"
+        ],
+        "mechanism": "the contextCompaction item reaching item/completed on the same threadId; the immediate `{}` ack is never read as completion",
+        "canary": {
+          "ran": true,
+          "kind": "codex-app-server-supervisor-activation",
+          "observedAt": "2026-08-06T17:54:36.632Z",
+          "outcome": "PASS",
+          "why": null,
+          "raw": "{\"profile\":\"codex/app-server\",\"codexVersion\":\"codex-cli 0.146.0\",\"codexJs\":\"C:\\\\home\\\\user\\\\.npm\\\\node_modules\\\\@openai\\\\codex\\\\bin\\\\codex.js\",\"threadId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"rollovers\":[{\"index\":0,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed\",\"index\":0},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"itemId\":\"019fd836-40a1-7943-9943-c3a696c8713a\",\"compactTurnId\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":1,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"itemId\":\"019fd836-5308-7520-9e1f-172933570117\",\"compactTurnId\":\"019fd836-52f3-7d50-841d-13a9ee8ee12d\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":2,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883\",\"index\":3},\"itemId\":\"019fd836-68c3-7ef1-b682-56be92b9e08f\",\"compactTurnId\":\"019fd836-68b3-7283-ab9b-05dece6ad5e6\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]}],\"claims\":[{\"name\":\"the configured integration is active\",\"outcome\":\"PASS\"},{\"name\":\"a supervised thread was started\",\"outcome\":\"PASS\"},{\"name\":\"the thread runs read-only with approvals disabled\",\"outcome\":\"PASS\"},{\"name\":\"the host completed a real model turn (authentication)\",\"outcome\":\"PASS\"},{\"name\":\"3 CONSECUTIVE in-place rollovers\",\"outcome\":\"PASS\"},{\"name\":\"the context cycle advanced exactly once per rollover\",\"outcome\":\"PASS\"}],\"eventLog\":{\"file\":\"C:/Users/user/AppData/Local/Temp/claude/C--Users-user-Documents-Claude-Projects-RespawnPack/2151d3d7-8f07-42d7-b622-7e24caf3e108/scratchpad/w3b/canary-events.jsonl\",\"bytes\":78057,\"sha256\":\"95fec79deef19645576853e68d51821836d69f0e33f575b20c2ad62891ee77bb\",\"events\":148}}"
+        },
+        "docs": [
+          "captured: item/started → item/completed, same item id, ~1.8s, on a 15.7k/258.4k thread"
+        ]
+      },
+      {
+        "capability": "injectHandoff",
+        "declaredSupport": "SUPPORTED",
+        "support": "SUPPORTED",
+        "downgraded": false,
+        "why": "a live activation canary observed this capability working on 2026-08-06T17:54:36.632Z",
+        "limitations": [],
+        "mechanism": "the verified handoff is claimed exactly once through the O_EXCL receipt and prepended to the next turn/start input",
+        "canary": {
+          "ran": true,
+          "kind": "codex-app-server-supervisor-activation",
+          "observedAt": "2026-08-06T17:54:36.632Z",
+          "outcome": "PASS",
+          "why": null,
+          "raw": "{\"profile\":\"codex/app-server\",\"codexVersion\":\"codex-cli 0.146.0\",\"codexJs\":\"C:\\\\home\\\\user\\\\.npm\\\\node_modules\\\\@openai\\\\codex\\\\bin\\\\codex.js\",\"threadId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"rollovers\":[{\"index\":0,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed\",\"index\":0},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"itemId\":\"019fd836-40a1-7943-9943-c3a696c8713a\",\"compactTurnId\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":1,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"itemId\":\"019fd836-5308-7520-9e1f-172933570117\",\"compactTurnId\":\"019fd836-52f3-7d50-841d-13a9ee8ee12d\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":2,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883\",\"index\":3},\"itemId\":\"019fd836-68c3-7ef1-b682-56be92b9e08f\",\"compactTurnId\":\"019fd836-68b3-7283-ab9b-05dece6ad5e6\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]}],\"claims\":[{\"name\":\"the configured integration is active\",\"outcome\":\"PASS\"},{\"name\":\"a supervised thread was started\",\"outcome\":\"PASS\"},{\"name\":\"the thread runs read-only with approvals disabled\",\"outcome\":\"PASS\"},{\"name\":\"the host completed a real model turn (authentication)\",\"outcome\":\"PASS\"},{\"name\":\"3 CONSECUTIVE in-place rollovers\",\"outcome\":\"PASS\"},{\"name\":\"the context cycle advanced exactly once per rollover\",\"outcome\":\"PASS\"}],\"eventLog\":{\"file\":\"C:/Users/user/AppData/Local/Temp/claude/C--Users-user-Documents-Claude-Projects-RespawnPack/2151d3d7-8f07-42d7-b622-7e24caf3e108/scratchpad/w3b/canary-events.jsonl\",\"bytes\":78057,\"sha256\":\"95fec79deef19645576853e68d51821836d69f0e33f575b20c2ad62891ee77bb\",\"events\":148}}"
+        },
+        "docs": [
+          "core/lifecycle/consumable.js"
+        ]
+      },
+      {
+        "capability": "resume",
+        "declaredSupport": "SUPPORTED_WITH_LIMITATIONS",
+        "support": "SUPPORTED_WITH_LIMITATIONS",
+        "downgraded": false,
+        "why": "a live activation canary observed this capability working on 2026-08-06T17:54:36.632Z",
+        "limitations": [
+          "approvalPolicy is NOT persisted across an app-server restart (sandbox is), so every thread/resume must re-pass the whole policy set — a resume that omits it silently reverts to on-request",
+          "a resumed thread renumbers its items item-1, item-2, …, so nothing may be correlated across a cold resume by item id"
+        ],
+        "mechanism": "the threadId is constant across compaction and is re-checked against a thread/resume every rollover",
+        "canary": {
+          "ran": true,
+          "kind": "codex-app-server-supervisor-activation",
+          "observedAt": "2026-08-06T17:54:36.632Z",
+          "outcome": "PASS",
+          "why": null,
+          "raw": "{\"profile\":\"codex/app-server\",\"codexVersion\":\"codex-cli 0.146.0\",\"codexJs\":\"C:\\\\home\\\\user\\\\.npm\\\\node_modules\\\\@openai\\\\codex\\\\bin\\\\codex.js\",\"threadId\":\"019fd836-2d07-7330-b018-d9059a2d348c\",\"rollovers\":[{\"index\":0,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:0:f8ec8a86a4ed\",\"index\":0},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"itemId\":\"019fd836-40a1-7943-9943-c3a696c8713a\",\"compactTurnId\":\"019fd836-4091-78e2-bacb-b09711f35b02\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":1,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:1:b9f0d5f1e5af\",\"index\":1},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"itemId\":\"019fd836-5308-7520-9e1f-172933570117\",\"compactTurnId\":\"019fd836-52f3-7d50-841d-13a9ee8ee12d\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]},{\"index\":2,\"cycleBefore\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:2:0d20163f16da\",\"index\":2},\"cycleAfter\":{\"id\":\"codex:019fd836-2d07-7330-b018-d9059a2d348c:3:127dbaf40883\",\"index\":3},\"itemId\":\"019fd836-68c3-7ef1-b682-56be92b9e08f\",\"compactTurnId\":\"019fd836-68b3-7283-ab9b-05dece6ad5e6\",\"claims\":[{\"name\":\"the final threshold fired on a measured context\",\"outcome\":\"PASS\"},{\"name\":\"the compaction completed\",\"outcome\":\"PASS\"},{\"name\":\"the conversation identity survived\",\"outcome\":\"PASS\"},{\"name\":\"the re-passed approvalPolicy came back in force on resume\",\"outcome\":\"PASS\"},{\"name\":\"exactly one context cycle was entered\",\"outcome\":\"PASS\"},{\"name\":\"the verified handoff was delivered exactly once\",\"outcome\":\"PASS\"},{\"name\":\"the handoff reached the next context cycle\",\"outcome\":\"PASS\"},{\"name\":\"every threshold latch re-armed for the new cycle\",\"outcome\":\"PASS\"}]}],\"claims\":[{\"name\":\"the configured integration is active\",\"outcome\":\"PASS\"},{\"name\":\"a supervised thread was started\",\"outcome\":\"PASS\"},{\"name\":\"the thread runs read-only with approvals disabled\",\"outcome\":\"PASS\"},{\"name\":\"the host completed a real model turn (authentication)\",\"outcome\":\"PASS\"},{\"name\":\"3 CONSECUTIVE in-place rollovers\",\"outcome\":\"PASS\"},{\"name\":\"the context cycle advanced exactly once per rollover\",\"outcome\":\"PASS\"}],\"eventLog\":{\"file\":\"C:/Users/user/AppData/Local/Temp/claude/C--Users-user-Documents-Claude-Projects-RespawnPack/2151d3d7-8f07-42d7-b622-7e24caf3e108/scratchpad/w3b/canary-events.jsonl\",\"bytes\":78057,\"sha256\":\"95fec79deef19645576853e68d51821836d69f0e33f575b20c2ad62891ee77bb\",\"events\":148}}"
+        },
+        "docs": [
+          "captured: resume without approvalPolicy came back \"on-request\" on a thread started \"never\"",
+          "captured: live item ids are uuidv7, persisted ids are item-N"
+        ]
+      }
+    ],
+    "undeclared": [],
+    "rolloverCapable": true,
+    "unmet": [],
+    "downgraded": [],
+    "outcome": "PASS"
+  },
+  "machine": {
+    "state": "ACTIVE",
+    "cycleIndex": 3,
+    "counts": {
+      "transitions": 21,
+      "noops": 0,
+      "refusals": 0,
+      "halts": 0,
+      "consumptions": 3,
+      "repairs": 0
+    },
+    "dir": "C:\\Users\\user\\AppData\\Local\\Temp\\rp-codex-canary-mSnpnu\\.respawnpack\\runtime\\rollover\\codex-019fd836-2d07-7330-b018-d9059a2d348c",
+    "halted": null
+  }
+}

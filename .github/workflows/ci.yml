@@ -1,0 +1,440 @@
+# RespawnPack pack CI (validates this repo's own installer and workflow scripts)
+#
+# WHY THIS EXISTS: RespawnPack ships an installer and a set of governance hooks that other
+# repos depend on sight-unseen. If the installer's syntax breaks, or the workflow scripts it
+# copies into a target's .claude/workflows/ don't parse, every downstream install fails silently
+# until someone runs it by hand. This is the self-dogfooding gate: the pack proves its own
+# scripts are sound on every push, on both platforms the pack claims to support.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: this workflow only ever reads the repo.
+permissions:
+  contents: read
+
+jobs:
+  syntax-and-install:
+    # WHY the matrix: hooks/README.md claims the hooks are tested in CI on Windows and Linux,
+    # with macOS expected but unverified (Node was chosen over bash+jq so the same hook logic
+    # runs unmodified on both tested platforms). A syntax or path-separator bug that only shows
+    # up on one OS would ship straight to every installer user's target repo, so both tested
+    # platforms run every time. Adding a third leg, macos-latest, to the os: list below is one
+    # line; it is left out today because the owner has not authorized the added CI minutes, not
+    # because it would not work.
+    name: Syntax + install smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Syntax-check the installer + uninstaller + upgrader
+        run: |
+          node --check install/install.js
+          node --check install/uninstall.js
+          node --check install/upgrade.js
+
+      - name: Syntax-check every workflow template and the shipped pre-push shell boundary
+        # These get copied verbatim into targets. The shell wrapper is production enforcement too: its
+        # behavioral suite covers range semantics, while `sh -n` catches a syntax break on both runners.
+        shell: bash
+        run: |
+          for f in workflows/*.workflow.js; do
+            echo "checking $f"
+            node --check "$f"
+          done
+          sh -n hooks/pre-push
+
+      - name: License contract
+        # license-contract.test.mjs. A license is not one file: this pack states its own at eleven
+        # sites (LICENSE, two manifests, a lockfile root, and prose in ATTRIBUTION.md,
+        # library/README.md, and docs/vision/VISION.md). Change LICENSE alone and the package
+        # contradicts itself, leaving a reader no way to tell which statement is the real one.
+        # Asserts in both directions — no conflicting claim about RespawnPack's own license
+        # survives, AND the third-party credits in ATTRIBUTION.md are still intact. The second half
+        # matters as much as the first: those credits are obligations owed to other people under
+        # their own licenses, so a sweep that removed them would turn a tidy-up into a violation.
+        run: node --test license-contract.test.mjs
+
+      - name: Installer unit tests
+        # Authored alongside this workflow at install/install.test.mjs. Covers the
+        # skip-vs-force placement logic, the settings.json hook merge, and the CLAUDE.md
+        # managed-block handling described in install/install.js.
+        run: node --test install/install.test.mjs
+
+      - name: Uninstaller unit tests
+        # install/uninstall.test.mjs. Its round-trip completeness sweep is the lockstep
+        # fence between install.js and uninstall.js: a placement added to the installer
+        # without a matching uninstall inventory entry (or deliberate keep) fails here,
+        # so inventory drift breaks this job instead of leaking files into targets.
+        run: node --test install/uninstall.test.mjs
+
+      - name: Skill-eval harness (structural lint + trigger-collision detection)
+        # skills/skills.test.mjs, per the prior-art findings, theme T1, Stage 1 + 2.
+        # Model-free: frontmatter/name/length-cap lint across every shipped skill (skills/*, ops/*,
+        # ops/mcp/*/SKILL.base.md, memory/knowledge), the aggregate skill-listing-budget ratchet, and
+        # exact-phrase/TF-IDF trigger-collision detection across the whole catalog. Runs on both OS runners
+        # for the same reason the installer suite does — it spawns install.js as a subprocess to resolve
+        # cross-skill links against the real installed layout, so a path-separator bug would only show up
+        # on one platform.
+        run: node --test skills/skills.test.mjs
+
+      - name: Hook behavior tests
+        # hooks/hooks.test.mjs. WHY THIS IS SEPARATE FROM THE SYNTAX CHECK ABOVE: `node --check` proves a
+        # hook parses, and the installer suite proves it gets wired. Neither proves it DOES anything, and
+        # three shipped defects survived both for months — a PreCompact hook emitting a field that event
+        # has no channel for (so its message was never once delivered), a Stop hook that fired on
+        # pre-existing dirt rather than session work, and a context monitor speaking only on a
+        # user-visible field while being documented as agent enforcement. This suite feeds every hook
+        # realistic stdin in a throwaway git repo and asserts exact output JSON, decisions, and on-disk
+        # side effects. Both OS runners: the hooks resolve paths and spawn git, so a separator or
+        # process bug would only surface on one platform.
+        run: node --test hooks/hooks.test.mjs
+
+      - name: State-kernel acceptance fixtures
+        # kernel/kernel.test.mjs. Each block reproduces an acceptance scenario that came from an
+        # observed dogfood failure: a stale count in derived prose must FAIL savepoint and pass again
+        # when restored (E) · an implementation that qualifies its own high-risk work stops at
+        # `candidate` (F) · evidence stops counting when the revision moves (G) · omitting a mandatory
+        # row makes a gate INCOMPLETE and never shrinks its denominator (H) · a blocker stops its
+        # dependents, not the project (I). Plus the rule the whole layer rests on: a check that parsed
+        # zero claims returns CANNOT_DETERMINE, with its own exit code, never PASS.
+        run: node --test kernel/kernel.test.mjs
+
+      - name: RespawnPack dogfoods its own killed-feature contract
+        # The registry and config must travel as a pair, current ADR evidence must remain scannable, and
+        # zero/partial coverage cannot be accepted as green. This runs the production CLI, not a fixture.
+        run: node kernel/respawnpack.js removals --dir .
+
+      - name: Atomic-write and lock guarantees under REAL contention
+        # kernel/concurrency.test.mjs. WHY THIS IS SEPARATE FROM THE KERNEL SUITE: those fixtures
+        # exercise the compiler's logic; none of them ever creates a second process, so none could
+        # observe what `writeAtomic` does while another writer is inside it. HANDOFF.json carried
+        # "implemented but not yet independently fuzz/concurrency-tested" for the whole program, and it
+        # was right — six writers racing one STATE.json killed a child outright with an uncaught EPERM
+        # on rename. Every fixture here that claims contention launches real children behind a shared
+        # start timestamp, because this repository has already shipped two "concurrent" fixtures that
+        # called spawnSync in a callback and therefore ran strictly sequentially. Both OS runners
+        # matter more here than anywhere else in this file: the replacement semantics being asserted
+        # are precisely the ones that differ between Windows and POSIX.
+        run: node --test kernel/concurrency.test.mjs
+
+      - name: Declared artifact schemas (and the fences that keep them true)
+        # kernel/schema.test.mjs + schemas/. The pack validates its state artifacts PROCEDURALLY, which
+        # answers "did this loader accept this document" and cannot answer "what is the format" — the
+        # question every reviewer and every integrating project actually has. The schemas are normative
+        # declarations verified here; the loaders stay the production validators, and no dependency was
+        # added to the zero-dependency runtime. The fences are the real deliverable: artifacts CAPTURED
+        # FROM REAL RUNS are validated with additionalProperties:false (code → schema), every declared
+        # property must appear in its writer (schema → code), every JSON write site in kernel/ and
+        # hooks/ must be classified as a registered family or a justified exclusion (so a new artifact
+        # cannot be invisible), and every exclusion's justification is CHECKED rather than asserted.
+        run: node --test kernel/schema.test.mjs
+
+      - name: The fixture generator still matches its committed output
+        # schemas/fixtures.gen.mjs OWNS schemas/fixtures/ outright — it clears the directory and
+        # rewrites all 30 families — and the output is COMMITTED. So the generator and the bytes it is
+        # supposed to produce can drift apart with nothing noticing until someone re-runs it, which is
+        # exactly how the clear-the-root bug survived: regenerating DELETED seven families' tracked
+        # fixtures, and the only signal was the schema suite failing on a family the author had never
+        # touched. Re-running it here and demanding an empty diff makes that drift fail on the commit
+        # that causes it, against the author who can still explain it.
+        #
+        # This step is what makes single ownership pay: because the generator writes EVERY registered
+        # family, an empty diff is a statement about the whole directory rather than about the half
+        # some other process happened not to touch.
+        #
+        # `git diff` is safe on both runners because .gitattributes pins LF everywhere; running it on
+        # both is also what proves the generator is deterministic across platforms rather than only on
+        # the one that last regenerated.
+        #
+        # The generator's own fence runs BEFORE its destructive clear and exits non-zero on its own:
+        # a registered family missing from FAMILIES, or a FAMILIES entry registry.json does not
+        # declare, fails HERE — with nothing deleted — rather than as a confusing schema-suite
+        # failure later.
+        shell: bash
+        run: |
+          node schemas/fixtures.gen.mjs
+          git diff --exit-code -- schemas/fixtures/
+          # --exit-code says nothing about files the generator created but never committed.
+          test -z "$(git status --porcelain -- schemas/fixtures/)" || {
+            echo "::error::the generator left untracked or removed files under schemas/fixtures/:"
+            git status --porcelain -- schemas/fixtures/
+            exit 1
+          }
+
+      - name: DF-005 task/gap reconciliation
+        # kernel/reconcile.test.mjs. The finding: "the harness task list and the project's gap/gate
+        # records drift independently, WRONG IN BOTH DIRECTIONS AT ONCE" — two lists each holding items
+        # the other has never heard of, while every surface reading either one reports confidently. The
+        # first fixture is the literal acceptance case: drift injected in both directions in the same
+        # run, with the failure required to name BOTH sets, because a reconciliation that walks one
+        # direction finds half of it and reads as thorough. The rule outranking everything else here is
+        # that reading zero task records or zero project records can never be spelled PASS.
+        run: node --test kernel/reconcile.test.mjs
+
+      - name: Markdown renderer goldens (every archetype, plus the pack's own generated blocks)
+        # kernel/site.test.mjs. kernel/lib/site.js is a CommonMark subset written in this pack rather
+        # than a vendored library (owner decision 20: an unattended run does not download), so nothing
+        # upstream notices when its output changes — the goldens in kernel/site-fixtures/ are the
+        # specification and every comparison is on whole files. The inputs are real: the markdown
+        # ops/_project-fixtures.mjs materialises for docs-only, ops-infra and greenfield-app, this
+        # repo's own spine/derived templates, documents rendered by kernel/lib/render.js itself so the
+        # GENERATED and NOTE markers are the ones render.js spells, and hand-written edge cases. The
+        # load-bearing negative is that raw HTML in a source document is escaped and never passed
+        # through, which is the property the loopback viewer rests on.
+        run: node --test kernel/site.test.mjs
+
+      - name: Rollover core unit fixtures
+        # core/core.test.mjs. The host-neutral rollover core behind v0.3's in-place rollover: the
+        # lifecycle state machine (no COMPACTING without a read-back-verified handoff, no ACTIVE
+        # without an identity check), typed evidence records, per-context-cycle threshold latches,
+        # the exactly-once consumption receipt, and the append-only journal's crash semantics.
+        # Both OS runners: the journal and receipts rest on rename/wx semantics that differ
+        # between Windows and POSIX, same reason the concurrency suite runs on both.
+        run: node --test core/core.test.mjs
+
+      - name: Rollover conformance traces (known-good AND known-bad)
+        # conformance/conformance.test.mjs + conformance/fixtures/. Replays recorded lifecycle
+        # traces through the real state machine and asserts the final state and journal. The
+        # known-bad half is the point: duplicate completion events, torn handoffs, observe
+        # timeouts, and identity mismatches must land in HALTED/CANNOT_DETERMINE — a runner that
+        # cannot fail proves nothing (the same discriminating-control rule the kernel enforces).
+        run: node --test conformance/conformance.test.mjs
+
+      - name: Codex hooks profile (black-box child-process contract tests)
+        # adapters/codex/codex-hooks.test.mjs. Drives each Codex hook script as a real child process
+        # with realistic stdin: the PreCompact veto fires only for a confirmed compaction with an
+        # unverifiable handoff (and the escape hatch is loud and audited), SessionStart(compact)
+        # consumes the handoff exactly once (duplicates get a pointer note, never the content), and
+        # malformed stdin always exits 0 conservatively. Both OS runners: the hooks spawn git and
+        # resolve paths, so separator/spawn bugs are platform-local.
+        run: node --test adapters/codex/codex-hooks.test.mjs
+
+      - name: Claude SDK-supervisor stream contract (captured + labeled-synthetic fixtures)
+        # adapters/claude-code/sdk-supervisor/stream.test.mjs. The compaction verdict must key on the
+        # documented signals (compact_boundary, compact_result:"failed", the host's own no-op text) and
+        # NEVER on the result envelope — a failed compaction still reports is_error:false/subtype:
+        # "success" (captured live). Mutation-tested in both directions; fixture digests are fenced so
+        # a captured stream cannot be silently replaced by a synthetic one.
+        run: node --test adapters/claude-code/sdk-supervisor/stream.test.mjs
+
+      - name: Claude SDK-supervisor rollover loop (offline, machine-routed)
+        # adapters/claude-code/sdk-supervisor/supervisor.test.mjs. The managed rollover driven end to
+        # end against a fake spawn layer: every step routes through core's lifecycle machine, duplicate
+        # boundaries NOOP, a no-op compaction advances nothing, identity mismatch halts, and the
+        # continuation is consumed exactly once through the wx receipt.
+        run: node --test adapters/claude-code/sdk-supervisor/supervisor.test.mjs
+
+      - name: Codex app-server RPC framing and refusal contract
+        # adapters/codex/app-server/rpc.test.mjs. JSONL framing, the mandatory initialize handshake,
+        # executable resolution with every miss recorded, and the typed default-deny responder for
+        # server->client requests: denial shapes where the protocol declares one, a JSON-RPC error
+        # where only a grant shape exists — the one answer that cannot read as consent.
+        run: node --test adapters/codex/app-server/rpc.test.mjs
+
+      - name: Codex app-server rollover loop (offline vs digest-fenced live captures)
+        # adapters/codex/app-server/supervisor.test.mjs. The managed Codex rollover against a fake
+        # transport plus the checked-in live-canary event log (digest-fenced): the {} compact ack is
+        # never read as completion, only the contextCompaction item pair is; a null
+        # modelContextWindow measures CANNOT_DETERMINE; and the hooks-profile SessionStart script,
+        # spawned as a real child against this supervisor's journal, reports the verified rollover
+        # its own banner promises — with a control pinning the honest refusal on a hooks-only machine.
+        run: node --test adapters/codex/app-server/supervisor.test.mjs
+
+      - name: OpenAI-compatible provider client and probe (offline, injected fetch)
+        # adapters/openai-compatible/client.test.mjs. One generic client for any provider that speaks the
+        # OpenAI chat-completions protocol, with the key read from the environment at CALL time and never
+        # written, logged or echoed (anti-drift item 52). Every test injects its own `fetch` and its own
+        # environment carrying a distinctive sentinel value; the fixture base URL is api.example.invalid,
+        # which cannot resolve, so this step contacts no host and needs no credential on the runner. The
+        # deliverable is the redaction fence: every result, every thrown error and every probe report is
+        # serialised and searched for the sentinel, the request the fake received is asserted to carry it
+        # in the Authorization header and nowhere else, and one scenario has the fake host echo the header
+        # back so the fence proves a mechanism rather than an absence. Both OS runners, like every other
+        # adapter suite here.
+        run: node --test adapters/openai-compatible/client.test.mjs
+
+      - name: Offload path across the three providers (offline, all three faked)
+        # adapters/providers/offload.test.mjs. One bounded, hookless unit of work carried to whichever
+        # family the capability register and this machine's reachability agree on, with a receipt that
+        # records the route. All three ways out are faked at their own boundary: the Claude family
+        # through an injected runTurn beside the REAL path resolver pointed at a fake claude script, the
+        # Codex family through a fake app-server transport, and the OpenAI-compatible family through an
+        # injected fetch against api.example.invalid. No real claude and no real codex is spawned, so
+        # this step needs no CLI and no credential on the runner. The deliverables it proves: the four
+        # golden per-family envelopes, the route on the receipt, a receipt created with O_EXCL that a
+        # second run cannot replace, an unreachable family skipped with the probe's own words, a failed
+        # turn as exit 2 carrying the provider's kind, a dry run that writes nothing, and the redaction
+        # fence held end to end including a host that echoes the Authorization header back. Both OS
+        # runners, like every other adapter suite here.
+        run: node --test adapters/providers/offload.test.mjs
+
+      - name: Claude interactive profile declaration and probe
+        # adapters/claude-code/interactive/interactive.test.mjs. The hooks-profile capability
+        # declaration and its activation probe: fired-artifact freshness is the only accepted
+        # activation evidence — installed files alone never are.
+        run: node --test adapters/claude-code/interactive/interactive.test.mjs
+
+      - name: Statusline tee (documented-source context measurement, opt-in)
+        # adapters/claude-code/statusline/statusline.test.mjs. The statusline script is both an
+        # executable and a requireable module (require.main guard — requiring it for its exports must
+        # start nothing, or the test runner's open stdin holds the event loop forever; that hang
+        # shipped once and is fenced now). Tees a fresh reading only when the host sent a real one:
+        # current_usage null reads as no measurement, never 0%.
+        run: node --test adapters/claude-code/statusline/statusline.test.mjs
+
+      - name: Counts fence (doc count lines vs directory-derived truth)
+        # counts-fence.test.mjs. The pack's docs carry load-bearing numbers ("32 tool-scoped
+        # subagents", "fifteen governance hooks", "21 checklists") that rot silently as the
+        # directories evolve. Two-sided: a count line that drifts from the tree fails, and a
+        # count line reworded out from under its fence regex fails too.
+        run: node --test counts-fence.test.mjs
+
+      - name: Library content-scan (vendored third-party text)
+        # library/library.test.mjs — the CI mirror of the runtime injection-scan hook. library/ is the one
+        # place third-party-authored content physically lives in the repo (compliance checklists + reference
+        # PDFs today; more may be vendored later); vendored text is an injection AND a provenance surface, so
+        # this gate walks every text file and: scans it for the hook's own injection + unsafe-link signatures
+        # (imported from hooks/injection-scan.js — single source of truth, so the gate and the runtime scanner
+        # can't drift), asserts every non-index file carries its `> Source:` provenance header (and every
+        # binary PDF is cited by name in SOURCES.md), and flags executable/encoded payloads. Runs on both OS
+        # runners like the two suites above — a path-separator bug in the recursive walk would only surface on
+        # one platform.
+        run: node --test library/library.test.mjs
+
+      - name: Project-fixture helper (the four archetypes, deterministic)
+        # ops/project-fixtures.test.mjs. ops/_project-fixtures.mjs is the shared helper task F-0 landed
+        # so every later task's fixtures come from one vocabulary instead of a hand-rolled tree apiece:
+        # docs-only, ops-infra, greenfield-app and mature-product. This proves two materialisations of
+        # the same kind list the same files and the same bytes, that each kind ships the files its class
+        # of task needs (the AWS example key, the fake Stripe key, the injection phrase, and so on), and
+        # that its KINDS list matches install/install.js's own PROJECT_TYPE_DROPS in both directions. It
+        # never installs the pack and never touches a real target.
+        run: node --test ops/project-fixtures.test.mjs
+
+      - name: Installer smoke test (install into a scratch target)
+        shell: bash
+        run: |
+          # $RUNNER_TEMP / ${{ runner.temp }} is the correct cross-platform scratch dir on both
+          # ubuntu-latest and windows-latest runners. os.tmpdir() would also work, but this
+          # matches what the runner already provisions and cleans up.
+          TARGET="${RUNNER_TEMP}/respawnpack-install-smoke"
+          mkdir -p "$TARGET"
+          node install/install.js "$TARGET"
+
+      - name: Assert docs/README.md landed in the target
+        shell: bash
+        # A small node -e check instead of `test -f` / `Test-Path`: one assertion that
+        # behaves identically in bash on ubuntu-latest and git-bash on windows-latest, rather
+        # than maintaining a shell-specific check per OS.
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const target = path.join(process.env.RUNNER_TEMP, 'respawnpack-install-smoke', 'docs', 'README.md');
+            if (!fs.existsSync(target)) {
+              console.error('expected file missing: ' + target);
+              process.exit(1);
+            }
+            console.log('found ' + target);
+          "
+
+  detect-memory-engine-changes:
+    # WHY this job exists: the `memory-engine` job below needs a job-level `if:` so a docs-only
+    # or unrelated push (or PR) skips it outright — reporting "skipped" in the checks UI, not a
+    # trivial "success" — instead of paying for `npm ci` plus this package's full test suite for
+    # nothing (Gap 2, the core-adapters-ops audit section 2). A job's own `if:` can only read
+    # `needs.*.outputs`, never a step inside the same job, so the path check has to live in its
+    # own small, fast job rather than as a step of `memory-engine` itself. This uses plain
+    # `git diff` against the triggering event's own commit range, not a `paths-filter`-style
+    # marketplace action — matching the rest of this file's discipline of adding no dependency
+    # beyond `actions/checkout` and `actions/setup-node`.
+    #
+    # WHY NOT the workflow-level `on.push.paths`/`paths-ignore` filter instead: this workflow's
+    # single `on:` block above is shared by `syntax-and-install`, and a top-level path filter
+    # gates whether the WHOLE workflow run is triggered at all — it would silence the
+    # installer/hook suite on a docs-only push too, which this task does not want. Scoping the
+    # filter to this one job keeps `syntax-and-install` running on every push, unfiltered,
+    # exactly as before.
+    name: Detect memory/engine changes
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.diff.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Diff the triggering push/PR range for memory/engine/** or this workflow file
+        id: diff
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+            HEAD="${{ github.sha }}"
+          fi
+
+          # An all-zero/empty BASE (a new branch's first push has no prior commit to diff
+          # against) leaves nothing sound to compare. Per this pack's own CANNOT_DETERMINE
+          # discipline, an unclear read is never quietly treated as a pass: that counts as
+          # relevant rather than a skip, because a filter that is too narrow silently stops
+          # testing the subproject, which is worse than an occasional unneeded run.
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            echo "no usable base commit; treating as relevant"
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED="$(git diff --name-only "$BASE" "$HEAD")" || {
+            echo "git diff failed; treating as relevant"
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+          echo "$CHANGED"
+
+          if echo "$CHANGED" | grep -qE '^memory/engine/|^\.github/workflows/ci\.yml$'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  memory-engine:
+    # WHY separate job: the memory engine is its own npm package (memory/engine/package.json)
+    # with its own dependency tree and test runner, separate from the installer's zero-dependency
+    # fs/path-only design. Isolating it keeps a memory-engine dependency issue from blocking the
+    # installer smoke test, and vice versa.
+    #
+    # WHY the `if:` below: a push or PR touching only docs/** or unrelated code should not pay
+    # for `npm ci` plus this package's full test suite (Gap 2, the core-adapters-ops audit section 2).
+    # See `detect-memory-engine-changes` above for exactly how `relevant` is computed: a change
+    # under `memory/engine/**`, or to this workflow file itself (`.github/workflows/ci.yml`, so
+    # editing this job's own definition still exercises it), counts as relevant; anything else
+    # does not run this job at all — it reports "skipped" in the checks UI, not a trivial pass.
+    # If this job is unexpectedly not running, that is why: check whether the push or PR
+    # actually touched `memory/engine/**` or `.github/workflows/ci.yml`.
+    needs: detect-memory-engine-changes
+    if: needs.detect-memory-engine-changes.outputs.relevant == 'true'
+    name: Memory engine tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: memory/engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npm test

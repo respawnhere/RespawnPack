@@ -1,0 +1,1533 @@
+{
+  "schemaVersion": "1.0.0",
+  "asOf": "2026-09-03",
+  "reVerifyAfter": "2026-10-03",
+  "evidenceBase": "spine/reference/models/capability-evidence.md",
+  "why": [
+    "Orchestration rule 5 names three model tiers and no models, so every dispatch picks by habit or by whatever the operator last read. This register is what a choice can rest on instead: which model family suits which task class, dated, with the source beside each claim.",
+    "A RATING WITHOUT A SOURCE IS AN OPINION WITH A SCHEMA AROUND IT. `preferred` and `capable` cannot be written here without at least one URL, the date it was read, and the claim that source actually supports; everything else is `unproven` with an empty evidence list and a stated gap. schemas/capability-register.schema.json makes the other shapes unspellable and kernel/schema.test.mjs checks the real file against it.",
+    "The gaps are the useful half. Code review, long-context quality, orchestration and extraction have no published benchmark covering the current lineup, so every model reads `unproven` in the classes where that is true. A hand-made table would have guessed, and a guess is indistinguishable from a measurement once it is in a table.",
+    "Nothing here was measured on this machine. `probes` is empty on every entry and a bounded live probe per model is the owner's action. Reading this register touches no provider and costs nothing.",
+    "Across the three families a lineup change landed roughly every two to three weeks through 2026, so `reVerifyAfter` is a month out and any vendor launch invalidates the entries it touches."
+  ],
+  "taskClasses": ["coding", "review", "security-testing", "long-context", "planning", "writing", "research", "extraction"],
+  "families": [
+    {
+      "id": "anthropic",
+      "name": "Anthropic Claude",
+      "access": {
+        "how": "The Claude Code CLI the operator is already signed in to, driven through the pack's own host adapter. The pack composes a turn and never authenticates.",
+        "credential": "host-session",
+        "note": "Hook-bearing work stays here whatever this register says: the hooks are the anti-drift core, and no other provider runs them."
+      },
+      "promptingPractice": "docs/reference/models/prompting-anthropic.md",
+      "notes": [
+        "Every Claude model id is a pinned snapshot, including the dateless ids used from the 4.6 generation on (vendor, models overview).",
+        "Claude Fable 5.1, Claude Fable 5 and Claude Opus 5 carry safety classifiers that can decline a request: the refusal arrives as HTTP 200 with `stop_reason: \"refusal\"` and a `stop_details.category` among cyber, bio, frontier_llm, reasoning_extraction and general_harms. A caller that reads only the HTTP status will record a refusal as a success.",
+        "The permitted server-side fallback targets for Claude Fable 5.1 are Claude Opus 4.8 and Claude Opus 5. Claude Opus 4.8 is not listed as a model below because nothing in the evidence base gives it a capability claim of its own for these task classes; it appears here as the fallback target it is documented to be."
+      ]
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "access": {
+        "how": "The Codex CLI, signed in by the operator with `codex login` (browser OAuth against their own ChatGPT account), driven through the existing Codex host adapter. The pack never handles the sign-in and never sees a token.",
+        "credential": "account-sign-in",
+        "note": "Which models a sign-in can reach is the vendor's Codex models page, not this register: the ChatGPT sign-in lists the GPT-5.6 family and gpt-5.5, and an unavailable model is a routing skip with the reason recorded, never a substitution."
+      },
+      "promptingPractice": "docs/reference/models/prompting-openai.md",
+      "notes": [
+        "The vendor also documents an API-key sign-in for the same CLI, in which the key is piped on stdin and never placed on a command line. This pack does not use it and holds no key for this family.",
+        "`gpt-5.4` and `gpt-5.4-mini` retired from Codex on 2026-08-31 and are not listed below.",
+        "No `gpt-5.4-codex`, `gpt-5.5-codex` or `gpt-5.6-codex` id exists; the vendor's code-generation guide recommends the latest general-purpose model for most code generation."
+      ]
+    },
+    {
+      "id": "minimax",
+      "name": "MiniMax",
+      "access": {
+        "how": "The OpenAI-compatible chat-completions endpoint at https://api.minimax.io/v1, reached over HTTP by the generic OpenAI-compatible adapter. The bearer value is read from the environment at call time, used for that one request, and never stored, logged, echoed or written to a receipt.",
+        "credential": "environment-variable",
+        "envVar": "MINIMAX_API_KEY",
+        "note": "The NAME above is the whole of what this pack records. No value of it appears in this register, in the config, in a receipt or in an error message, and the schema declares no property one could be written into."
+      },
+      "promptingPractice": "docs/reference/models/prompting-minimax.md",
+      "notes": [
+        "Keys are region-bound: the vendor states the region follows the platform the service was bought on, `cn` for the China token plan and `global` for the international one. The China-mainland hostname is left out of this register because the vendor page and third-party sources disagree about it and the evidence base marks it unverified.",
+        "The endpoint can return HTTP 200 carrying a non-zero `base_resp.status_code`, so a client that checks only the HTTP status will read a failure as a success. Quota exhaustion surfaces as 1008 (pay-as-you-go balance) or 2056 (token-plan window); rate limiting as 1002.",
+        "An Anthropic-compatible endpoint also exists at https://api.minimax.io/anthropic. An open vendor-repository issue reports that layer advertising a 200K window for MiniMax-M3, so a client that trusts the advertised metadata compacts early against a 1M model."
+      ]
+    }
+  ],
+  "models": [
+    {
+      "id": "claude-fable-5-1",
+      "family": "anthropic",
+      "name": "Claude Fable 5.1",
+      "status": "current",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "vendorPositioning": {
+        "text": "For demanding reasoning and long-horizon agentic work.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://platform.claude.com/docs/en/models/fable-5-1/overview",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's own one-line positioning on the model's overview page, which marks it \"Latest. Released September 1, 2026.\""
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "preferred",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker lists \"Agentic coding over long sessions, including multi-file features, large refactors and migrations, debugging, and code review across sessions that run for hours\" among this model's capability gains."
+            },
+            {
+              "url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-09",
+              "claim": "Maker-reported Terminal-Bench 4.0 55.8% and CursorBench 3.2.0 73.4%, both above Claude Opus 5 and GPT-5.6 Sol in the same table."
+            },
+            {
+              "url": "https://www.vals.ai/benchmarks/terminal-bench-2-1",
+              "kind": "third-party",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-09-01",
+              "claim": "Neutral harness (Terminus 2): Terminal-Bench 2.1 85.02%, second by 0.75 points to GPT-5.6 Sol at 85.77%, with Claude Opus 5 third at 84.64% and a gap of ten points to fourth place."
+            }
+          ],
+          "why": "A tie at the frontier, not a win. The three leaders sit within 1.2 points of each other on the one neutral dated leaderboard found, and each maker's own table orders them differently because each uses its own harness and version."
+        },
+        "review": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker names \"code review across sessions that run for hours\" among this model's gains."
+            }
+          ],
+          "why": "Maker's word only. No third-party code-review benchmark covering any current model was found, so nothing outside the vendor has measured this."
+        },
+        "security-testing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-09",
+              "claim": "The maker states the model \"can now be used to discover software vulnerabilities, though not to develop exploits for them\", and that its cyber safeguards \"block 60% fewer false positives than before\"."
+            },
+            {
+              "url": "https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker documents a `cyber` refusal category on this model: \"The request could enable cyber harm, such as malware or exploit development. Benign cybersecurity work can also trigger this category.\""
+            }
+          ],
+          "why": "Vulnerability discovery in source code only. Exploit development and penetration testing are classifier-blocked on this model, so half of this task class has no destination here and the register does not invent one."
+        },
+        "long-context": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker names \"Long-context work, reasoning over and connecting details across the full 1M token context window\" among this model's gains."
+            },
+            {
+              "url": "https://platform.claude.com/docs/en/models/overview",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "Maker specification: 1M-token context window, 128K maximum output."
+            }
+          ],
+          "why": "No published long-context QUALITY measurement exists for any current model, so this class rests on window size plus the maker's statement. That is why no model in this register is `preferred` here."
+        },
+        "planning": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker's guidance for this model is to let the lead agent keep working while subagents run, for a lower time to completion at similar cost."
+            },
+            {
+              "url": "https://platform.claude.com/docs/en/models/fable-5-1/overview",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker positions the model for \"long-horizon agentic work\"."
+            }
+          ],
+          "why": "No orchestration or subagent benchmark covering any current model was found; this is positioning, not measurement."
+        },
+        "writing": {
+          "rating": "preferred",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/fable-5-1/overview",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker states the model brings \"stronger long-running agentic coding, multistep research, and document, spreadsheet, and slide work\"."
+            },
+            {
+              "url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-09",
+              "claim": "GDPval-AA v2 (knowledge work, Elo) 1853, the highest in the maker's own comparison table, above Claude Opus 5 at 1824 and GPT-5.6 Sol at 1711."
+            }
+          ],
+          "why": "The only knowledge-work figure found for the current lineup is the maker's own table, and no writing or documentation benchmark exists outside it. `preferred` here means best-evidenced, not independently confirmed."
+        },
+        "research": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker names \"Research and search, with higher accuracy on multistep web research and deep-research tasks\" among this model's gains, and publishes no figure with it."
+            }
+          ],
+          "why": "No figure, and the three families' research claims each come from a different benchmark reported by its own maker, so no model in this register is `preferred` in this class."
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No maker positioning and no evaluation for high-volume classification or extraction was found for this model, and at $10/$50 per million tokens it sits outside the cost-sensitive tier every maker names for this work. No extraction or classification benchmark covering any current model exists in the evidence base at all."
+        }
+      },
+      "notes": [
+        "Thinking is adaptive and always on; depth is set with `effort`, default `high`. Non-default `temperature`, `top_p` and `top_k` are rejected, and so is a forced `tool_choice` of \"any\" or \"tool\".",
+        "The conversation history must be append-only: an edited prefix, including a rewritten thinking block, is a 400.",
+        "Summaries may reproduce passages of the source without marking them as quotations. The family's prompting standard carries the remedy."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "claude-opus-5",
+      "family": "anthropic",
+      "name": "Claude Opus 5",
+      "status": "current",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "vendorPositioning": {
+        "text": "For complex agentic coding and enterprise work.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://platform.claude.com/docs/en/models/opus-5/overview",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's own one-line positioning on the model's overview page, which marks it \"Latest. Released July 24, 2026.\""
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "preferred",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/opus-5/whats-new-opus-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker describes \"a step-change improvement over Claude Opus 4.8, with the largest gains in deep reasoning, agentic and long-horizon tasks, and test-time compute scaling\", at \"half the cost of Claude Fable 5\"."
+            },
+            {
+              "url": "https://www.vals.ai/benchmarks/terminal-bench-2-1",
+              "kind": "third-party",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-09-01",
+              "claim": "Neutral harness (Terminus 2): Terminal-Bench 2.1 84.64%, third of three frontier entries inside a 1.2-point spread."
+            }
+          ],
+          "why": "Same tie at the frontier as Claude Fable 5.1 and GPT-5.6 Sol. The maker's own claim for this model is cost: CursorBench 3.2 within 0.5% of Fable 5's peak at half the price."
+        },
+        "review": {
+          "rating": "preferred",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker states the model \"reviews code with high precision and recall: it finds real bugs at a high rate per pass, and its additional findings are mostly real issues rather than false positives. Accuracy holds at lower effort settings.\""
+            },
+            {
+              "url": "https://platform.claude.com/docs/en/models/opus-5/whats-new-opus-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "\"Code review and bug-finding, surfacing real bugs at a high rate per pass with few false positives, and staying accurate at lower effort levels\" is listed first among this model's strengths."
+            }
+          ],
+          "why": "This is the most specific review claim any maker publishes about any current model, and it is still the maker's own: no third-party code-review benchmark covers the current lineup. The accuracy-at-lower-effort part is what makes it the routing answer rather than the most expensive model being it."
+        },
+        "security-testing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/claude-opus-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-07-24",
+              "claim": "The maker states the model \"remains behind Mythos 5 on cybersecurity tasks\", and that it can find vulnerabilities while classifiers block exploit generation and penetration testing (paraphrase of the announcement's safety section)."
+            },
+            {
+              "url": "https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker lists this model among those carrying safety classifiers that can decline a request under a `cyber` category."
+            }
+          ],
+          "why": "Vulnerability discovery only, and behind the restricted twin by the maker's own statement. Exploit development and penetration testing are blocked."
+        },
+        "long-context": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/opus-5/whats-new-opus-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker names \"Long-context work, with a 1M token context window as both the default and the maximum, and consistent instruction following, tool calling, and reasoning throughout the window\"."
+            }
+          ],
+          "why": "The strongest long-context statement any maker publishes, and still a statement: no measured long-context quality figure exists for any current model."
+        },
+        "planning": {
+          "rating": "preferred",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/opus-5/whats-new-opus-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker names \"Multi-agent coordination, running teams of subagents with effective writer-verifier patterns and few cases of agents overwriting each other's work\" among this model's strengths."
+            },
+            {
+              "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker's prompting page for this model says it coordinates teams of subagents well and delegates to subagents more readily than prior models, and advises capping that."
+            }
+          ],
+          "why": "Maker positioning only; no orchestration benchmark covers the current lineup. The one dated third-party-visible measurement of the pattern is the maker's own 2025 engineering post on a previous generation, which is cited in the prompting standard rather than counted as evidence for this model."
+        },
+        "writing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/opus-5/whats-new-opus-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "\"Office and document tasks\" is listed among this model's strengths."
+            },
+            {
+              "url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-09",
+              "claim": "GDPval-AA v2 (knowledge work, Elo) 1824, second to Claude Fable 5.1's 1853 in the maker's own table."
+            }
+          ],
+          "why": "Second on the one knowledge-work figure that exists, and that figure is the maker's own."
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker's pages for this model name coding, review, multi-agent coordination, long context and office tasks, and name no web-research capability or figure at all. No third-party research benchmark covers the current lineup either, so there is nothing to rate this model on."
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No maker positioning and no evaluation for high-volume classification or extraction was found for this model, and its price places it outside the cost-sensitive tier the makers name for this work."
+        }
+      },
+      "notes": [
+        "Written deliverables run long on this model and `effort` does not reliably change visible response length, so the output contract has to state the length.",
+        "Remove \"double-check\" and \"use a subagent to verify\" instructions: the maker reports they cause over-verification on this model.",
+        "Prefer thinking enabled at low effort over disabling thinking; with thinking off, tool calls can leak into the text."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "claude-sonnet-5",
+      "family": "anthropic",
+      "name": "Claude Sonnet 5",
+      "status": "current",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "vendorPositioning": {
+        "text": "The best combination of speed and intelligence.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://platform.claude.com/docs/en/models/sonnet-5/overview",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's own one-line positioning, on a page that marks the model \"Latest. Released June 30, 2026.\" and calls it a drop-in upgrade for Claude Sonnet 4.6."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/claude-sonnet-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-30",
+              "claim": "The maker calls it \"the most agentic Sonnet model yet\": \"It can make plans, use tools like browsers and terminals, and run autonomously.\""
+            },
+            {
+              "url": "https://www.vellum.ai/blog/claude-sonnet-5-benchmarks-explained",
+              "kind": "third-party",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-30",
+              "claim": "A named third party summarising the maker's launch materials reports Terminal-Bench 2.1 80.4 and SWE-Bench Pro 63.2 for this model, against 74.6 and 69.2 for Claude Opus 4.8."
+            }
+          ],
+          "why": "The value tier: below the frontier three on the same harness line, at a fifth of Fable 5.1's price."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker's only review-specific text for this model is a migration caveat, that harnesses tuned for earlier models may initially see lower recall because this model follows a \"only report high-severity issues\" instruction more faithfully. That is a harness note, not a capability claim, and no third-party review benchmark covers the current lineup."
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No cyber positioning and no cyber evaluation for this model appears anywhere in the evidence base, and the maker's refusals documentation names Fable 5.1, Fable 5 and Opus 5 rather than this model, so even the shape of its safeguards is undocumented here."
+        },
+        "long-context": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/overview",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "Maker specification: 1M-token context window, 128K maximum output, on a new tokenizer where 1M tokens is roughly 555k words."
+            }
+          ],
+          "why": "Window size only. The maker publishes no long-context quality statement for this model, and no measured figure exists for any current model."
+        },
+        "planning": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/claude-sonnet-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-30",
+              "claim": "The maker states it \"can make plans, use tools like browsers and terminals, and run autonomously\", and reports Humanity's Last Exam 46.8% with tools against 34.6% for Claude Sonnet 4.6."
+            }
+          ],
+          "why": "Planning is named in the maker's own sentence; no orchestration benchmark covers the current lineup."
+        },
+        "writing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.vellum.ai/blog/claude-sonnet-5-benchmarks-explained",
+              "kind": "third-party",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-30",
+              "claim": "A named third party summarising the maker's materials reports GDPval-AA v2 1,618 for this model against 1,615 for Claude Opus 4.8."
+            }
+          ],
+          "why": "A knowledge-work Elo attributed to the maker by a third party, roughly 235 Elo below the current flagship on the same GDPval-AA v2 scale."
+        },
+        "research": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/claude-sonnet-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-30",
+              "claim": "The maker reports improved BrowseComp cost-performance across effort levels for this model, and publishes no single figure with it."
+            }
+          ],
+          "why": "The maker names the benchmark and withholds the number, so the rating is that the class was addressed, not how well."
+        },
+        "extraction": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker states the model \"interprets prompts literally\" and \"performs better for API use cases with carefully tuned prompts, structured extraction, and pipelines\"."
+            }
+          ],
+          "why": "The most direct extraction statement any maker publishes about any model, but at $2/$10 per million tokens this is not the cost-sensitive tier the class is about, and no extraction benchmark exists for any current model."
+        }
+      },
+      "notes": [
+        "Non-default `temperature`, `top_p` or `top_k` return a 400 on this model.",
+        "The maker reports that this model at medium is comparable to Claude Sonnet 4.6 at high, and at high to 4.6 at max, so an effort level carried over from an older model is not the same amount of thinking.",
+        "Remove periodic self-summarisation instructions such as \"after every 3 tool calls, summarize progress\": the maker reports they degrade this model."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "claude-haiku-4-5-20251001",
+      "family": "anthropic",
+      "name": "Claude Haiku 4.5",
+      "status": "current",
+      "contextWindow": 200000,
+      "maxOutput": 64000,
+      "vendorPositioning": {
+        "text": "The fastest model with near-frontier intelligence.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://platform.claude.com/docs/en/models/haiku-4-5/overview",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's own one-line positioning, on a page that marks the model \"Released October 15, 2025.\" with a retirement not sooner than 2026-10-15."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/claude-haiku-4-5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2025-10-15",
+              "claim": "Maker-reported SWE-bench Verified 73.3% and Terminal-Bench 41.75% with thinking."
+            }
+          ],
+          "why": "Dated maker figures from a previous generation, on benchmark versions the current lineup no longer reports. Comparable to nothing else in this register."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The only model-level code-review figure found anywhere for this model comes from a third-party benchmark seen in search results and never confirmed against a fetched page, so it is not evidence and does not enter here."
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No cyber positioning and no cyber evaluation for this model appears in the evidence base."
+        },
+        "long-context": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker documents a 200K context window, a fifth of every other current model here and below the size this class exists to serve. No long-context quality figure exists for any current model either."
+        },
+        "planning": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker positions this model as the SUBAGENT in an orchestration rather than the orchestrator: its own launch text describes Claude Sonnet 4.5 breaking work into plans and then orchestrating a team of multiple Haiku 4.5s. Being delegated to is not a planning claim."
+        },
+        "writing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No writing, document or knowledge-work positioning or figure for this model appears in the evidence base."
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No web-research positioning or figure for this model appears in the evidence base."
+        },
+        "extraction": {
+          "rating": "preferred",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/about-claude/models/choosing-a-model",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker lists this model for \"Real-time applications, high-volume intelligent processing, cost-sensitive deployments needing strong reasoning, sub-agent tasks\"."
+            },
+            {
+              "url": "https://platform.claude.com/docs/en/models/haiku-4-5/overview",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "Maker specification: $1 per million input tokens and $5 per million output tokens, the cheapest in this family's current lineup."
+            }
+          ],
+          "why": "The maker names this class for this model by name and by price. No extraction or classification benchmark exists for any current model, so `preferred` here means best-positioned, not measured."
+        }
+      },
+      "notes": [
+        "The alias `claude-haiku-4-5` resolves to this pinned id.",
+        "Extended thinking is manual on this model (a `budget_tokens` budget); the adaptive-thinking `effort` knob the 5-generation models use is not supported.",
+        "For classification, the maker recommends structured outputs or a tool enum rather than a prefill; prefill returns a 400 from the 4.6 generation on."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "claude-mythos-5-1",
+      "family": "anthropic",
+      "name": "Claude Mythos 5.1",
+      "status": "restricted",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "vendorPositioning": {
+        "text": "Claude Mythos 5.1 is identical to Fable 5.1, but it offers more permissive safeguards for vetted individuals and organizations.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": "2026-09",
+            "claim": "The maker's own sentence. The same page states the model \"demonstrates the strongest cyber capabilities of any model we've released\", that access runs through a Cyber Verification Program \"for defensive security work\" and a Life Sciences Verification Program, and that \"Currently, it is only available to a set of US organizations\"."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access. The maker limits this model to vetted parties through Project Glasswing and the Cyber Verification Program, and states it is currently available only to a set of US organizations, so there is no rating a general owner could act on. Its published figures are recorded in the notes rather than as ratings for exactly that reason."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, as above: a rating this register cannot route to would be a recommendation that fails at the request."
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, and this is the class where that matters most. The maker states this model has the strongest cyber capabilities it has released and gates it behind the Cyber Verification Program for defensive security work; a general owner cannot reach it, so this register records the restriction rather than a rating. It is also the honest answer to \"which model for penetration testing\": on the publicly available models, exploit development and penetration testing are blocked by design."
+        },
+        "long-context": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access. The maker states this model shares Claude Fable 5.1's specifications, so its window is documented, and a window a general owner cannot reach is still not a rating."
+        },
+        "planning": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access. Whatever this model could coordinate, a general owner has no way to ask it to, so the register records the restriction instead."
+        },
+        "writing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, and no writing or knowledge-work figure is published for this model apart from its Fable twin's."
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, and no web-research figure is published for this model apart from its Fable twin's."
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, and at its twin's pricing this model is not the cost-sensitive tier this class is about in any case."
+        }
+      },
+      "notes": [
+        "The maker states this model \"shares Claude Fable 5.1's specifications and pricing\" and \"offers the same capabilities to Project Glasswing participants only\".",
+        "Maker-reported Terminal-Bench 4.0 60.9%, the highest figure in its own comparison table. Recorded here as a fact about the model, not as a rating, because no general owner can route to it.",
+        "The maker's own words on the risk: Mythos-class models \"excel at discovering and exploiting software vulnerabilities. They can thus make cyberattacks substantially easier and cheaper to commit.\"",
+        "Access routes the maker names: Project Glasswing, the Cyber Verification Program (reduced cyber safeguards for defensive security work), Claude Security for enterprise codebase scanning, and partner integrations in which a user \"would not have a way to prompt the model to, say, develop an exploit for a vulnerability\"."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "claude-opus-4-6",
+      "family": "anthropic",
+      "name": "Claude Opus 4.6",
+      "status": "legacy",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "vendorPositioning": {
+        "text": "Legacy. Released February 5, 2026.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://platform.claude.com/docs/en/models/opus-4-6/overview",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker marks this model legacy on its own overview page, with a retirement not sooner than 2027-02-05 and a 1M context window."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/claude-opus-4-6",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-02-05",
+              "claim": "Maker-reported SWE-bench Verified 81.42% \"(with prompt modification)\" and the highest Terminal-Bench 2.0 score at the time of the announcement."
+            }
+          ],
+          "why": "Superseded twice over: three later models in this family report higher figures on newer harness versions, and this model is marked legacy."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No code-review positioning or figure for this model appears in the evidence base."
+        },
+        "security-testing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/claude-opus-4-6",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-02-05",
+              "claim": "The maker states this model \"finds real vulnerabilities in codebases better than any other model\", evaluated on CyberGym at default effort with no thinking mode, and frames the capability as defensive: \"We're also accelerating the cyber defensive uses of the model, using it to help find and patch vulnerabilities in open-source software.\""
+            },
+            {
+              "url": "https://anthropic.com/glasswing",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-04-07",
+              "claim": "Maker-reported CyberGym vulnerability reproduction: Mythos Preview 83.1% against Claude Opus 4.6 at 66.6%, two months after this model's launch."
+            }
+          ],
+          "why": "VULNERABILITY FINDING, NOT PENETRATION TESTING. The maker's own text for this model is defensive vulnerability discovery under safeguards; it never recommends the model for penetration testing, and its CyberGym figure was exceeded by the restricted line within two months. See this model's notes."
+        },
+        "long-context": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.claude.com/docs/en/models/opus-4-6/overview",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "Maker specification: 1M-token context window (a beta at launch), 128K maximum output."
+            }
+          ],
+          "why": "Window size only, on a legacy model."
+        },
+        "planning": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No orchestration or planning positioning for this model appears in the evidence base."
+        },
+        "writing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/claude-opus-4-6",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-02-05",
+              "claim": "The maker reports this model outperforming GPT-5.2 on GDPval-AA by about 144 Elo points."
+            }
+          ],
+          "why": "A knowledge-work Elo against a model no longer in either lineup, on a legacy entry."
+        },
+        "research": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/claude-opus-4-6",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-02-05",
+              "claim": "The maker reported this model as better than any other model on BrowseComp at the time of the announcement, and MCP Atlas 62.7% at high effort."
+            }
+          ],
+          "why": "\"Better than any other model\" was a February 2026 claim about a February 2026 field. It is recorded with its date and is not a claim about today."
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No extraction or classification positioning or figure for this model appears in the evidence base."
+        }
+      },
+      "notes": [
+        "THE OWNER'S EXAMPLE, RECORDED AS THE SOURCES ACTUALLY READ. \"Opus 4.6 for pentesting\" is not a maker recommendation. The maker's own page frames this model's cyber capability as vulnerability finding under safeguards, adds that it built six new cybersecurity probes to track misuse, and points the capability at finding and patching vulnerabilities in open-source software.",
+        "On the publicly available models of both families, exploit development and penetration testing are classifier-blocked; they are documented only on the restricted models, Claude Mythos 5.1 through Project Glasswing or the Cyber Verification Program and `gpt-5.6-cyber` through Daybreak Red. That is the honest answer to the question, and it is a different answer from the one the example assumed.",
+        "One further claim about this model's cyber work, that it produced the best results in 38 of 40 blind-ranked investigations, appears only in search results against a system card that could not be fetched. It is not recorded as evidence anywhere in this register.",
+        "Thinking on this model is \"Adaptive (extended deprecated)\"."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "gpt-5.6-sol",
+      "family": "openai",
+      "name": "GPT-5.6 Sol",
+      "status": "current",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "vendorPositioning": {
+        "text": "Flagship model for complex professional work.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://developers.openai.com/api/docs/models",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's own one-line description on its models page, with a 1,050,000-token context window, 128,000 maximum output and a 2026-02-16 knowledge cutoff. The alias `gpt-5.6` resolves here."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "preferred",
+          "evidence": [
+            {
+              "url": "https://community.openai.com/t/introducing-gpt-5-6-series-sol-terra-and-luna-coming-july-9-10am-pt/1384931",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-26",
+              "claim": "The maker's own staff announcement calls Sol \"built for frontier reasoning and long-horizon agentic work\" and claims a new state of the art on Terminal-Bench 2.1, \"command-line workflows requiring planning, iteration, and tool coordination\"."
+            },
+            {
+              "url": "https://www.vals.ai/benchmarks/terminal-bench-2-1",
+              "kind": "third-party",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-09-01",
+              "claim": "Neutral harness (Terminus 2): Terminal-Bench 2.1 85.77%, first, 0.75 points above Claude Fable 5.1 and 1.13 above Claude Opus 5."
+            }
+          ],
+          "why": "First on the one neutral dated leaderboard found, by less than the spread between the next two. Anthropic's own table on its own harness version puts this model well below both of its models, which is what a tie at the frontier looks like from inside two competing measurement systems."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No maker page in the evidence base names code review for this model. Codex ships a \"Guardian review\" feature in its changelog, which is a product entry rather than a capability claim or an evaluation, and no third-party review benchmark covers the current lineup."
+        },
+        "security-testing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://learn.chatgpt.com/docs/models",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker's Codex models page states this model has the \"strongest capability for complex coding, computer use, research, and cybersecurity\" of the models Codex offers."
+            },
+            {
+              "url": "https://community.openai.com/t/introducing-gpt-5-6-series-sol-terra-and-luna-coming-july-9-10am-pt/1384931",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-26",
+              "claim": "The maker's staff announcement names ExploitBench and reports Sol as competitive while using \"roughly one-third of the output tokens compared with another leading frontier system\"."
+            }
+          ],
+          "why": "Vulnerability research only, and the ceiling is documented: on the maker's own internal Advanced Cybersecurity Completion Rate, which measures exploit-chain development, authentication bypass and privilege escalation, this model scores 1.5% against 95% for its gated cyber model. Public models refuse or fail advanced offensive work by design; see the notes."
+        },
+        "long-context": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "Maker specification: \"1,050,000 context window\", \"128,000 max output tokens\"."
+            }
+          ],
+          "why": "Window size only. No measured long-context quality figure exists for any current model."
+        },
+        "planning": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://developers.openai.com/api/docs/guides/latest-model",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker documents GPT-5.6 multi-agent use, coordinating multiple subagents in parallel and synthesizing their results, as a beta in the Responses API."
+            },
+            {
+              "url": "https://community.openai.com/t/introducing-gpt-5-6-series-sol-terra-and-luna-coming-july-9-10am-pt/1384931",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-26",
+              "claim": "The maker positions Sol for \"long-horizon agentic work\"."
+            }
+          ],
+          "why": "A beta and a positioning line; no orchestration benchmark covers the current lineup."
+        },
+        "writing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://developers.openai.com/api/docs/models",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker describes this model as its \"Flagship model for complex professional work\"."
+            }
+          ],
+          "why": "The only cross-family knowledge-work figure found, GDPval-AA v2, is reported by the competing maker and places this model at 1711 against 1853 and 1824 for its own two models. A number from one side of a comparison is recorded as what it is and is not treated as a neutral measurement."
+        },
+        "research": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://simonwillison.net/2026/Jul/9/gpt-5-6/",
+              "kind": "third-party",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-07-09",
+              "claim": "A named third party quoting the maker's launch materials: \"GPT-5.6 Sol sets a new high of 53.6 [Agents' Last Exam], eclipsing Claude Fable 5 (adaptive reasoning) by 13.1 points.\""
+            },
+            {
+              "url": "https://learn.chatgpt.com/docs/models",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker's Codex models page names research among this model's strongest capabilities."
+            }
+          ],
+          "why": "A maker's claim carried by a named third party on a benchmark no other family reports. A widely quoted BrowseComp figure for this model was found only in search results and is excluded."
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker positions the cost-sensitive member of this family, `gpt-5.6-luna`, for this workload and names no extraction or classification capability for the flagship. No extraction benchmark covers any current model."
+        }
+      },
+      "notes": [
+        "`reasoning.effort` supports none, low, medium (default), high, xhigh and max; the maker advises reserving max for the hardest quality-first work. Codex offers Low through Ultra and defaults to a recommended model, typically this one at medium.",
+        "Pricing at the time of reading: $4 per million input tokens and $20 per million output, a promotional rate the maker states holds at least through 2026-11-21, with cached input at $0.40.",
+        "On the maker's own internal Advanced Cybersecurity Completion Rate, reported by a named third party, this model scores 1.5% against 57.3% for GPT-5.5-Cyber and 95% for `gpt-5.6-cyber`. Routing offensive security work to a public model is a refusal waiting to happen, not a capability gap this register can price around."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "gpt-5.6-terra",
+      "family": "openai",
+      "name": "GPT-5.6 Terra",
+      "status": "current",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "vendorPositioning": {
+        "text": "GPT-5.6 model that balances intelligence and cost.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://developers.openai.com/api/docs/models",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's own one-line description, with the same 1,050,000-token window, 128,000 maximum output and 2026-02-16 cutoff as the rest of the family."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://community.openai.com/t/introducing-gpt-5-6-series-sol-terra-and-luna-coming-july-9-10am-pt/1384931",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-26",
+              "claim": "The maker's staff announcement calls Terra a \"balanced everyday model with GPT-5.5-competitive performance at 2x lower cost\"."
+            }
+          ],
+          "why": "A cost-parity claim against the previous flagship, with no benchmark of its own. The value tier by the maker's own framing."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No review positioning or figure for this model appears in the evidence base."
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No cyber positioning or figure for this model appears in the evidence base; the maker's cyber statements name Sol and the gated cyber model."
+        },
+        "long-context": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://developers.openai.com/api/docs/models",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "Maker specification: 1,050,000-token context window, 128,000 maximum output."
+            }
+          ],
+          "why": "Window size only, as for every model in this class."
+        },
+        "planning": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker's agentic and multi-agent statements for this generation name Sol; nothing in the evidence base names this model for planning or orchestration."
+        },
+        "writing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No writing, document or knowledge-work positioning or figure for this model appears in the evidence base."
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No web-research positioning or figure for this model appears in the evidence base."
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker names `gpt-5.6-luna` for cost-sensitive workloads and says nothing about extraction or classification for this model."
+        }
+      },
+      "notes": [
+        "Launch pricing reported by a named third party was $2.50 per million input tokens and $15 per million output, cut by 20% on 2026-07-30. The post-cut figure was not confirmed against a maker page and is not recorded here as a number."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "gpt-5.6-luna",
+      "family": "openai",
+      "name": "GPT-5.6 Luna",
+      "status": "current",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "vendorPositioning": {
+        "text": "GPT-5.6 model optimized for cost-sensitive workloads.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://developers.openai.com/api/docs/models",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's own one-line description; the staff announcement calls Luna the \"fastest, most affordable member of the family\"."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker publishes no coding claim and no coding figure for this model; its whole positioning is speed and price."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No review positioning or figure for this model appears in the evidence base."
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No cyber positioning or figure for this model appears in the evidence base."
+        },
+        "long-context": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://developers.openai.com/api/docs/models",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "Maker specification: 1,050,000-token context window, 128,000 maximum output, the same as the rest of the family."
+            }
+          ],
+          "why": "Window size only, and the cheapest window of that size in this register, which is the whole of the claim."
+        },
+        "planning": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No planning or orchestration positioning for this model appears in the evidence base."
+        },
+        "writing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No writing or knowledge-work positioning or figure for this model appears in the evidence base."
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No web-research positioning or figure for this model appears in the evidence base."
+        },
+        "extraction": {
+          "rating": "preferred",
+          "evidence": [
+            {
+              "url": "https://developers.openai.com/api/docs/models",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker describes this model as \"optimized for cost-sensitive workloads\" and the fastest, most affordable member of the GPT-5.6 family."
+            },
+            {
+              "url": "https://developers.openai.com/api/docs/changelog",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker's API changelog records an 80% price cut for Luna on 2026-07-30."
+            }
+          ],
+          "why": "Positioning and a dated price cut, not a measurement: no extraction or classification benchmark covers any current model, and the post-cut per-token price could not be confirmed against a maker page, so it is not stated here."
+        }
+      },
+      "notes": [
+        "Launch pricing reported by a named third party was $1 per million input tokens and $6 per million output. The maker's changelog records an 80% cut on 2026-07-30 and the resulting figure was not confirmed, so this register carries the cut and not a price."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "gpt-5.6-cyber",
+      "family": "openai",
+      "name": "GPT-5.6 Cyber",
+      "status": "restricted",
+      "contextWindow": null,
+      "maxOutput": null,
+      "vendorPositioning": {
+        "text": "Most advanced cybersecurity model for authorized vulnerability research.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://developers.openai.com/api/docs/models",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's own one-line description on its models page, listed beside the `gpt-daybreak-red-latest` and `gpt-daybreak-blue-latest` aliases. The page carries no context-window or output specification for this model."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access. The maker's programme requires an application, SOC 2 Type II or ISO 27001, mandatory hardware security keys, and access through approved enterprise accounts only, so there is no rating a general owner could act on."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access: the Daybreak Red programme admits approved enterprise accounts only, so no rating here is one a general owner could act on."
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, and this is the class the model exists for. The maker describes it as \"a specialized model designed to perform advanced vulnerability research and exploit development for approved defenders\", reachable only through the Daybreak Red programme by approved enterprise account. A general owner cannot route to it, so this register records the restriction rather than a rating."
+        },
+        "long-context": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, and the maker publishes no context-window specification for this model."
+        },
+        "planning": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, as for every class here, and the maker publishes no agentic or orchestration claim for this model."
+        },
+        "writing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, and the maker publishes no writing or knowledge-work claim for this model."
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, and the maker's research claims for this generation name the public flagship rather than this model."
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "Restricted access, and nothing about this model's positioning is cost-sensitive high-volume work."
+        }
+      },
+      "notes": [
+        "The maker's API changelog records the introduction of `gpt-5.6-cyber`, `gpt-daybreak-red-latest` and `gpt-daybreak-blue-latest` for security testing on 2026-08-07.",
+        "A named third party reporting the maker's statements gives an internal Advanced Cybersecurity Completion Rate of 95% for this model against 57.3% for GPT-5.5-Cyber and 1.5% for the public `gpt-5.6-sol`, measured over exploit-chain development, authentication bypass and privilege escalation.",
+        "Two access tiers are named: Daybreak Red (the gated cyber model) and Daybreak Blue (`gpt-5.6-sol` with adjusted safeguards for defensive tasks)."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "gpt-5.5",
+      "family": "openai",
+      "name": "GPT-5.5",
+      "status": "legacy",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "vendorPositioning": {
+        "text": "A flagship model for the most complex professional work.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://developers.openai.com/api/docs/models/gpt-5.5",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's own description on the model page (snapshot `gpt-5.5-2026-04-23`), with a 1,050,000-token window, 128,000 maximum output and a 2025-12-01 knowledge cutoff. Codex lists it as the previous-generation flagship, reachable from either sign-in method."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://community.openai.com/t/gpt-5-5-is-here-available-in-the-api-codex-and-chatgpt-today/1379630",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-04-23",
+              "claim": "The maker's staff announcement: the model can \"understand complex goals, use tools, check its work, and carry more tasks through to completion\", and in Codex \"uses significantly fewer tokens to complete the same Codex tasks\"."
+            },
+            {
+              "url": "https://en.wikipedia.org/wiki/GPT-5.5",
+              "kind": "third-party",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "A named third party citing the maker's announcement reports Terminal-Bench 2.0 82.7% for this model."
+            }
+          ],
+          "why": "A generation behind on a harness version the current lineup no longer reports. Widely quoted SWE-bench figures for this model appear only in search results and are excluded."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No review positioning or figure for this model appears in the evidence base."
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker's cyber offering for this generation is GPT-5.5-Cyber, a separate limited-preview variant for vetted teams under a Trusted Access programme, which is a different model from this one. Nothing in the evidence base gives this model a cyber capability."
+        },
+        "long-context": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://developers.openai.com/api/docs/models/gpt-5.5",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "Maker specification: 1,050,000-token context window, with prompts over 272K input tokens priced at 2x input and 1.5x output for the whole session."
+            }
+          ],
+          "why": "Window size, with a documented price cliff above 272K that the other 1M-token models in this register do not carry."
+        },
+        "planning": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker's announcement describes carrying tasks through to completion, which is execution rather than planning or subagent orchestration, and no planning figure for this model appears in the evidence base."
+        },
+        "writing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://community.openai.com/t/gpt-5-5-is-here-available-in-the-api-codex-and-chatgpt-today/1379630",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-04-23",
+              "claim": "The maker states that in Codex this model \"outperforms GPT-5.4 on documents, spreadsheets, and slide decks\"."
+            }
+          ],
+          "why": "A comparison against a retired model, which places it relative to nothing currently available."
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No web-research positioning or figure for this model appears in the evidence base."
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No extraction or classification positioning or figure for this model appears in the evidence base, and at $5/$30 per million tokens it is not the cost-sensitive tier."
+        }
+      },
+      "notes": [
+        "`reasoning.effort` supports none, low, medium (default), high and xhigh on this model, one level short of the GPT-5.6 family's max.",
+        "Reachable from both the ChatGPT sign-in and an API-key sign-in in Codex, which is why it stays listed here while `gpt-5.4` and `gpt-5.4-mini` do not."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "MiniMax-M3",
+      "family": "minimax",
+      "name": "MiniMax-M3",
+      "status": "current",
+      "contextWindow": 1000000,
+      "maxOutput": null,
+      "vendorPositioning": {
+        "text": "Latest M-series language model for agentic reasoning.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://platform.minimax.io/docs/release-notes/models",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": null,
+            "claim": "The maker's release notes entry for 2026-06-01. The model's product page adds \"Up to 1M tokens with guaranteed minimum of 512K tokens\"; no maximum-output figure appears on the pages read."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.minimax.io/blog/minimax-m3",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-01",
+              "claim": "The maker states \"M3 reaches frontier-level performance on specialized tasks such as coding\", \"approaching the level of leading overseas closed-source models in areas such as bugfix, frontend/backend development, and performance optimization\", and reports SWE-Bench Pro 59.0% and Terminal-Bench 2.1 66.0%."
+            },
+            {
+              "url": "https://huggingface.co/MiniMaxAI/MiniMax-M3",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker's model card reports SWE-bench Verified 80.5 and SWE-bench Pro 59 for a roughly 428B-parameter model with roughly 23B activated."
+            }
+          ],
+          "why": "The value tier: roughly twenty points below the frontier three on the same Terminal-Bench 2.1 line, at $0.30/$1.20 per million tokens by a named third party's pricing page."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No code-review positioning or figure for this model appears in the evidence base."
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No cyber positioning and no cyber evaluation was found for ANY MiniMax model: the maker's model cards list no cyber benchmark at all. This is an absence in the sources, not a low score."
+        },
+        "long-context": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://platform.minimax.io/docs/guides/text-generation",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "Maker specification: 1,000,000-token context window, against 204,800 for every other model on the same page."
+            },
+            {
+              "url": "https://www.minimax.io/blog/minimax-m3",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-01",
+              "claim": "The maker attributes the 1M window to its MSA attention work and states a guaranteed minimum of 512K tokens."
+            }
+          ],
+          "why": "Window size only, as for every model in this class, with one caveat that matters at the wire: an open issue on the maker's own repository reports the Anthropic-compatible endpoint advertising 200K for this model."
+        },
+        "planning": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.minimax.io/blog/minimax-m3",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-01",
+              "claim": "The maker reports MCP Atlas 74.2% and states that with thinking enabled the model \"is suited to complex reasoning, agentic tasks\"."
+            }
+          ],
+          "why": "A tool-orchestration benchmark reported by the maker; no subagent or orchestration benchmark covers any current model."
+        },
+        "writing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.minimax.io/blog/minimax-m3",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-06-01",
+              "claim": "The maker states \"M3 performs strongly on commonly used office workflows like search and Office-suite tasks\"."
+            }
+          ],
+          "why": "Positioning with no knowledge-work figure of its own; the family's one GDPval-AA number belongs to MiniMax-M2.7."
+        },
+        "research": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.minimax.io/models/text/m3",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker's product page reports BrowseComp 83.5 for this model against 79.3 for Claude Opus 4.7."
+            }
+          ],
+          "why": "A maker-reported figure against a model that is not in this register, on a benchmark the other two families do not report comparably. No neutral head-to-head exists for this class."
+        },
+        "extraction": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://artificialanalysis.ai/models/minimax-m3",
+              "kind": "third-party",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "A named third party lists $0.30 per million input tokens and $1.20 per million output with an 80% cache discount, at 89.9 tokens per second, for open weights under the MiniMax Community License."
+            },
+            {
+              "url": "https://platform.minimax.io/docs/token-plan/prompting-best-practices",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker's own usage guidance is to skip deep reasoning for \"extraction, rewriting, or formatting\", and the model exposes `thinking` as enabled, adaptive or disabled."
+            }
+          ],
+          "why": "Price and a reasoning switch the maker tells you to turn off for this work. No extraction or classification benchmark covers any current model, and no official per-token price page was reachable, so the price here is a third party's."
+        }
+      },
+      "notes": [
+        "The maker's recommended sampling for this model is temperature 1.0 and top_p 0.95.",
+        "An open issue on the maker's repository, unanswered at the time of reading, reports the Anthropic-compatible endpoint returning 200K as this model's metadata window, which makes a client compact at roughly 167K against a 1M model.",
+        "Rate limits are 200 requests per minute and 10,000,000 tokens per minute for this model.",
+        "The maker's token-plan page and its M3 blog give different subscription prices for the same tiers, which is a sign this pricing changes without a dated notice."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    },
+    {
+      "id": "MiniMax-M2.7",
+      "family": "minimax",
+      "name": "MiniMax-M2.7",
+      "status": "current",
+      "contextWindow": 204800,
+      "maxOutput": null,
+      "vendorPositioning": {
+        "text": "M2.7 is our first model deeply participating in its own evolution.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://www.minimax.io/news/minimax-m27-en",
+            "kind": "vendor",
+            "accessedAt": "2026-09-03",
+            "publishedAt": "2026-03-18",
+            "claim": "The maker's own announcement, which positions the model for \"Agent Teams, complex Skills, and dynamic tool search\" and \"end-to-end full project delivery\"."
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.minimax.io/news/minimax-m27-en",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-03-18",
+              "claim": "Maker-reported SWE-Pro 56.22%, described as matching GPT-5.3-Codex, plus Terminal Bench 2 57.0%, SWE Multilingual 76.5 and Multi SWE Bench 52.7."
+            }
+          ],
+          "why": "Below MiniMax-M3 on the maker's own figures and a generation behind it; kept in the register because it remains callable and its highspeed variants are the family's throughput answer."
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No code-review positioning or figure for this model appears in the evidence base."
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No cyber positioning and no cyber evaluation was found for any MiniMax model."
+        },
+        "long-context": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "The maker documents a 204,800-token window, a fifth of the 1M-token models this class is about. A third-party source states that figure is the combined input-plus-output total, which the evidence base could not confirm, so even the size is less certain than it looks."
+        },
+        "planning": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.minimax.io/news/minimax-m27-en",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-03-18",
+              "claim": "The maker positions this model for \"Agent Teams, complex Skills, and dynamic tool search\", and reports Toolathon 46.3% and an MLE Bench Lite medal rate of 66.6%, second to Claude Opus 4.6 at 75.7%."
+            }
+          ],
+          "why": "Maker positioning plus a tool-use figure; no orchestration benchmark covers any current model."
+        },
+        "writing": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://www.minimax.io/news/minimax-m27-en",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": "2026-03-18",
+              "claim": "Maker-reported GDPval-AA Elo 1495, which the maker calls the highest among open-source models."
+            }
+          ],
+          "why": "The one MiniMax knowledge-work figure in the evidence base, and it is reported on GDPval-AA rather than the GDPval-AA v2 the Anthropic table uses, so the two numbers are not directly comparable and this register does not rank them against each other."
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "No web-research positioning or figure for this model appears in the evidence base; the family's BrowseComp number belongs to MiniMax-M3."
+        },
+        "extraction": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://artificialanalysis.ai/models/minimax-m2-7",
+              "kind": "third-party",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "A named third party lists $0.30 per million input tokens and $1.20 per million output at 77.6 tokens per second for a 230B-total, 10B-active model."
+            },
+            {
+              "url": "https://platform.minimax.io/docs/api-reference/text-openai-api",
+              "kind": "vendor",
+              "accessedAt": "2026-09-03",
+              "publishedAt": null,
+              "claim": "The maker accepts `MiniMax-M2.7-highspeed` as a model name on the OpenAI-compatible interface, alongside the standard variant."
+            }
+          ],
+          "why": "Price and a throughput variant, not a measurement of extraction quality: no extraction benchmark covers any current model."
+        }
+      },
+      "notes": [
+        "The maker's recommended sampling for this model is temperature 1.0, top_p 0.95 and top_k 40.",
+        "A named third-party benchmarking service marks this model deprecated for its own purposes and continues only its default workload, so third-party figures for it will stop moving.",
+        "Rate limits are 500 requests per minute and 20,000,000 tokens per minute for this model and its highspeed variant.",
+        "The maker also accepts MiniMax-M2.5, MiniMax-M2.1 and MiniMax-M2 on the same interfaces. They are absent from this register because the evidence base found no maker page with a dated capability claim for them, and a status this register invented would read exactly like one the maker published."
+      ],
+      "asOf": "2026-09-03",
+      "probes": []
+    }
+  ]
+}

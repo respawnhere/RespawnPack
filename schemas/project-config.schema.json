@@ -1,0 +1,385 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/project-config.schema.json",
+  "title": "respawnpack.config.json — the project's own configuration",
+  "description": "Seeded by install/install.js, then OWNED AND EDITED BY THE FOUNDER. additionalProperties is TRUE at every level EXCEPT WHERE A DECLARATION IS A POLICY INSTRUMENT RATHER THAN A FOUNDER NOTE: a `posture.overrides` entry is exactly {verdict, reason} and nothing else, and an `exceptions` entry is exactly its declared fields with a `match` of exactly the four subject kinds, because an unrecognised field inside either one would be a rule nobody applied or an allowance nobody granted. What is declared is exactly the surface this pack READS — the removal contract, the quality gate, the validator adapters, the memory engine, the posture and the declared exceptions. ⛔ IT IS ALSO A COMPILER INPUT: hooks/_manifest.js digests it, so editing every key here except `posture` makes STATE.json STALE, which is intended and is why it appears in the freshness manifest rather than only here. `posture` is the one deliberate exception (ADR-003, manifest v2): it decides which outcome a check returns and is read by no compiler, so the digest removes it before hashing a canonical serialization of everything else.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "respawnpack": { "type": "string" },
+    "installedAt": { "type": "string" },
+    "upgradedAt": { "type": "string" },
+    "routeSource": {
+      "description": "How routes are discovered, for /savepoint's routes↔matrix drift-check. ⛔ ABSENT IS A REAL STATE AND IT IS NOT GREEN: an omitted key is UNDECIDED, reported by `doctor` as onboarding-incomplete, and never inferred into a value or into a not-applicable. Older installers seeded the literal `<set ROUTE_SOURCE>`; that string still VALIDATES here because it is a founder-owned document nothing rewrites underneath its owner, and kernel/lib/applicability.js classifies it INVALID with the remedy rather than reading it as a glob.",
+      "$ref": "#/$defs/declaredSourceOrOptOut"
+    },
+    "opsTargets": {
+      "description": "A MAP of detected infrastructure, not a list — e.g. {host: 'fly', edge: 'cloudflare'}. Each key is a role and each value the provider detected for it, so a project cannot accidentally declare two hosts. ⛔ This was declared as an array until the installed-target release smoke validated a config written by the REAL installer rather than by a fixture; the schema suite's own capture used a hand-made config and could not see it.",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "codeTruth": {
+      "description": "The canonical-by-code paths (design tokens, copy strings, schema) that outrank prose in /savepoint's code↔docs drift-check. Same three shapes and the same absent-is-UNDECIDED rule as routeSource.",
+      "$ref": "#/$defs/declaredSourceOrOptOut"
+    },
+    "extras": { "type": "array" },
+    "note": { "type": "string" },
+    "qualityGate": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "notApplicable": { "type": "boolean" },
+        "reason": { "description": "NOT_APPLICABLE must be DECLARED with a reason — never inferred from finding no checks.", "type": "string" },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": true,
+            "properties": {
+              "name": { "type": "string" }, "root": { "type": "string" },
+              "command": { "type": "string" }, "args": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "removals": {
+          "type": "object",
+          "additionalProperties": true,
+          "allOf": [{
+            "anyOf": [
+              { "not": { "required": ["notApplicable"], "properties": { "notApplicable": { "const": true } } } },
+              { "required": ["notApplicable", "reason"], "properties": { "notApplicable": { "const": true }, "reason": { "type": "string", "pattern": "\\S" } } }
+            ]
+          }],
+          "properties": {
+            "registry": { "type": "string", "pattern": "^(?![\\\\/])(?![A-Za-z]:[\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))\\S(?:.*\\S)?$" },
+            "notApplicable": {
+              "description": "Current form is boolean true plus a non-empty `reason`. A non-empty string remains valid as the legacy one-field reason so existing founder-owned configs stay readable; runtime accepts exactly these two forms.",
+              "anyOf": [{ "type": "boolean" }, { "type": "string", "pattern": "\\S" }]
+            },
+            "reason": { "description": "Required by runtime whenever removals.notApplicable is true.", "type": "string", "pattern": "\\S" },
+            "liveContentDirs": {
+              "description": "Zero configured directories is CANNOT_DETERMINE, not a pass — the run-A defect was a live assertion in `story/` passing a docs-only scan.",
+              "type": "array", "items": { "type": "string", "pattern": "^(?![\\\\/])(?![A-Za-z]:[\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))\\S(?:.*\\S)?$" }
+            },
+            "extensions": { "type": "array", "items": { "type": "string", "pattern": "\\S" } },
+            "historyPaths": { "type": "array", "items": { "type": "string", "pattern": "^(?![\\\\/])(?![A-Za-z]:[\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))\\S(?:.*\\S)?$" } },
+            "exclude": { "type": "array", "items": { "type": "string", "pattern": "^(?![\\\\/])(?![A-Za-z]:[\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))\\S(?:.*\\S)?$" } }
+          }
+        },
+        "adapters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "name": { "type": "string" },
+              "command": { "type": "string" },
+              "args": { "type": "array", "items": { "type": "string" } },
+              "critical": { "type": "boolean" },
+              "controls": {
+                "description": "A CRITICAL adapter without discriminating controls has its verdict DISCARDED as CANNOT_DETERMINE.",
+                "type": "object", "additionalProperties": true,
+                "properties": { "good": { "type": "string" }, "bad": { "type": "string" } }
+              },
+              "timeoutMs": { "type": "number" }
+            }
+          }
+        },
+        "reconcile": {
+          "description": "DF-005. The generic pack assumes NO task system: a project declares both sides, or gets NOT_CONFIGURED — which is a real answer and not a failure.",
+          "type": "object",
+          "additionalProperties": true,
+          "allOf": [{
+            "anyOf": [
+              { "not": { "required": ["notApplicable"], "properties": { "notApplicable": { "const": true } } } },
+              {
+                "required": ["notApplicable", "reason"],
+                "properties": { "notApplicable": { "const": true }, "reason": { "type": "string", "pattern": "\\S" } },
+                "not": { "anyOf": [{ "required": ["tasks"] }, { "required": ["project"] }] }
+              }
+            ]
+          }],
+          "properties": {
+            "notApplicable": { "type": "boolean" },
+            "reason": { "description": "Required whenever notApplicable is true. An opt-out nobody has to justify is an opt-out nobody reviews.", "type": "string" },
+            "tasks": { "$ref": "#/$defs/reconcileSource" },
+            "project": { "$ref": "#/$defs/reconcileSource" },
+            "openStatuses": { "type": "array", "items": { "type": "string" } },
+            "closedStatuses": { "type": "array", "items": { "type": "string" } },
+            "ignore": {
+              "description": "Declared exclusions. Always REPORTED, never hidden — a silent exclusion is an unaudited one — and an entry with no reason says so in the report.",
+              "type": "array",
+              "items": {
+                "type": "object", "required": ["id"], "additionalProperties": true,
+                "properties": { "id": { "type": "string" }, "reason": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "posture": {
+      "description": "ADR-003. How rigid this pack is on this project, declared as ONE value inside the config-driven axis `opsTargets` and the MCP gate already use — not a fifth optionality mechanism. ⛔ ABSENT RESOLVES TO `strict`, AND `strict` IS DEFINED AS EXACTLY WHAT 0.3.0 DOES, so a project that says nothing keeps today's behaviour byte for byte (install/fixtures/strict-settings.json is that claim as a comparison rather than a promise). A posture is DECLARED here or it is strict; it is never inferred from the shape of a tree, for the same reason `routeSource` is not. Declaring the key in this schema is what makes a malformed value INVALID instead of a founder key quietly carried along. hooks/_posture.js is the ONE reader.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "profile": {
+          "description": "`light` lets Claude commit and push and makes the kernel's onboarding rows advisory; `standard` is the recommendation for new installs; `strict` is today. Anything else is INVALID rather than defaulted, because a posture nobody can spell is a posture nobody chose.",
+          "enum": ["light", "standard", "strict"]
+        },
+        "overrides": {
+          "description": "Per-rule exceptions, keyed by RULE id rather than by hook, because one hook carries several rules and they are not relaxed together: `index-guard` has its own row for editor containment, the no-Bash rule, the unmodelled construct and the writer lease, plus three more (the wave sweep, the foreign-staged intersection and the control plane) that no posture may reach at all. ⛔ THE KEYS THAT ARE REFUSED ARE THE POINT: every id in the propertyNames exclusion below is fixed in all three postures by the anti-drift core, hooks/_posture.js has NO KEY for one, and naming one here is INVALID rather than ignored, because a silently discarded override is the same class of lie as a silently loosened guard. The nine kernel rows among them are the ones whose relaxation would FORGE A GREEN (R10-R14, R18, R21, R22, R24); the other seven have no false-positive class at all (R7, R8, R19, R20, R23, R25, R26), so loosening them would buy no correct behaviour and cost the refusal outright.",
+          "type": "object",
+          "propertyNames": {
+            "not": {
+              "enum": [
+                "lockdown", "worktree-guard",
+                "index-guard:wave-sweep", "index-guard:foreign-staged", "index-guard:control-plane",
+                "push-guard:tier2", "shell-guard:catastrophe", "secret-scan", "docker-session-tag:label",
+                "injection-scan", "context-monitor", "session-routing-nudge:boot", "runtime:baseline",
+                "stop-savepoint:detect", "precompact:handoff-write",
+                "kernel:R7", "kernel:R8",
+                "kernel:R10", "kernel:R11", "kernel:R12", "kernel:R13", "kernel:R14",
+                "kernel:R18", "kernel:R19", "kernel:R20", "kernel:R21", "kernel:R22",
+                "kernel:R23", "kernel:R24", "kernel:R25", "kernel:R26"
+              ]
+            }
+          },
+          "additionalProperties": {
+            "description": "One override. `reason` is REQUIRED and non-empty, mirroring the rule the kernel already enforces on every opt-out it accepts: an override nobody has to justify is an override nobody reviews. additionalProperties is FALSE here alone, so a misspelled field is a rejected override rather than a rule that quietly did not change.",
+            "type": "object",
+            "required": ["verdict", "reason"],
+            "additionalProperties": false,
+            "properties": {
+              "verdict": {
+                "description": "`deny` is a permissionDecision:\"deny\", a decision:\"block\", or a non-zero outcome; `advise` is additionalContext plus systemMessage, or a non-PASS row at exit 0; `off` is a silent exit 0. Declaring a rule NOT APPLICABLE is the separate {notApplicable, reason} contract this file already carries, judged against the project rather than dialled by a posture.",
+                "enum": ["off", "advise", "deny"]
+              },
+              "reason": { "type": "string", "pattern": "\\S" }
+            }
+          }
+        }
+      }
+    },
+    "exceptions": {
+      "description": "P1-E-1a. DECLARED EXCEPTIONS TO A GUARD, one reviewed SUBJECT at a time. ⛔ AN EXCEPTION NAMES A SUBJECT AND NEVER A VERDICT, WHICH IS THE WHOLE LINE BETWEEN THIS KEY AND `posture.overrides`: an override moves a rule's verdict for EVERY subject and is refused on the ids the anti-drift core fixes, while an exception carves out ONE subject and leaves the rule denying everything else — so it is accepted on rules a posture may never reach, the security column included. Anti-drift item 25 still holds in both halves: the rule fires on every other subject, and this file is already in index-guard's CONTROL_PLANE, so no subagent can write itself an allowance. ⛔ IT IS DIGESTED LIKE EVERY OTHER KEY (only `posture` is removed by hooks/_manifest.js's MANIFEST_EXCLUDED), so declaring or removing an exception makes STATE.json STALE and the next savepoint records it — which is intended: an allowance that changed without a trace is the reason the `.respawnpack/<hook>.off` markers are not reviewable. hooks/_exceptions.js is the ONE reader, and an entry it refuses makes the WHOLE list INVALID, lifting nothing, rather than being partly honoured.",
+      "type": "array",
+      "items": {
+        "description": "One exception. `additionalProperties` is FALSE here, as it is for a posture override and for the same reason: an exception is a policy instrument rather than a founder note, so a misspelled field is a REJECTED declaration and not an allowance that quietly did not apply.",
+        "type": "object",
+        "required": ["id", "rule", "match", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "What a lifted hit is REPORTED under. A guard that lifts a hit prints `allowed by exception <id>`, so an entry nobody can name would lift a guard silently.",
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "rule": {
+            "description": "⛔ EXACTLY THE RULES THAT HAVE A SUBJECT. A rule not in this list has nothing for an exception to name, so an entry aimed at one would read as accepted and lift nothing. Derived from hooks/_exceptions.js's EXCEPTION_RULES and fenced against it in both directions by hooks/hooks.test.mjs.",
+            "enum": [
+              "secret-scan", "injection-scan", "shell-guard:catastrophe", "push-guard:tier2",
+              "worktree-guard", "index-guard:unmodelled", "readiness"
+            ]
+          },
+          "match": {
+            "description": "The subject, in this grammar's four kinds. ⛔ AT LEAST ONE KEY, AND EVERY DECLARED KEY MUST MATCH (AND): `{fingerprint, path}` means \"this line, in this file\", never \"this line OR this file\", because an OR would grant a wider allowance than the one that was reviewed. A subject that does not carry a declared key never matches.",
+            "type": "object",
+            "additionalProperties": false,
+            "anyOf": [
+              { "required": ["path"] },
+              { "required": ["fingerprint"] },
+              { "required": ["command"] },
+              { "required": ["item"] }
+            ],
+            "properties": {
+              "path": {
+                "description": "A glob, relative to the project root: `*` and `?` inside one segment, `**` across segments. POSIX separators; a Windows separator in the SUBJECT is normalised before comparison.",
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "fingerprint": { "$ref": "#/$defs/subjectDigest" },
+              "command": { "$ref": "#/$defs/subjectDigest" },
+              "item": {
+                "description": "A checklist item id, compared exactly.",
+                "type": "string",
+                "pattern": "\\S"
+              }
+            }
+          },
+          "reason": {
+            "description": "REQUIRED and non-empty, the same rule this pack already enforces on every other opt-out it accepts: an allowance nobody has to justify is an allowance nobody reviews.",
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "declaredBy": { "type": "string", "pattern": "\\S" },
+          "declaredAt": { "$ref": "#/$defs/exceptionDate" },
+          "expires": {
+            "description": "The instant this allowance stops lifting anything. A date-only value is midnight UTC of that day, and the reader fails CLOSED on the boundary: an expired entry matches nothing and is COUNTED by doctor, so a stale allowance is reported rather than silently honoured.",
+            "$ref": "#/$defs/exceptionDate"
+          }
+        },
+        "allOf": [
+          {
+            "$comment": "secret-scan sees the added line and the file it was added to.",
+            "anyOf": [
+              { "not": { "required": ["rule"], "properties": { "rule": { "const": "secret-scan" } } } },
+              { "properties": { "match": { "additionalProperties": false, "properties": { "fingerprint": true, "path": true } } } }
+            ]
+          },
+          {
+            "$comment": "injection-scan sees only where a tool result came from, so a fingerprint here could never match.",
+            "anyOf": [
+              { "not": { "required": ["rule"], "properties": { "rule": { "const": "injection-scan" } } } },
+              { "properties": { "match": { "additionalProperties": false, "properties": { "path": true } } } }
+            ]
+          },
+          {
+            "$comment": "shell-guard's catastrophe class sees a command line.",
+            "anyOf": [
+              { "not": { "required": ["rule"], "properties": { "rule": { "const": "shell-guard:catastrophe" } } } },
+              { "properties": { "match": { "additionalProperties": false, "properties": { "command": true } } } }
+            ]
+          },
+          {
+            "$comment": "push-guard tier 2 sees a command line.",
+            "anyOf": [
+              { "not": { "required": ["rule"], "properties": { "rule": { "const": "push-guard:tier2" } } } },
+              { "properties": { "match": { "additionalProperties": false, "properties": { "command": true } } } }
+            ]
+          },
+          {
+            "$comment": "worktree-guard sees a path.",
+            "anyOf": [
+              { "not": { "required": ["rule"], "properties": { "rule": { "const": "worktree-guard" } } } },
+              { "properties": { "match": { "additionalProperties": false, "properties": { "path": true } } } }
+            ]
+          },
+          {
+            "$comment": "index-guard's unmodelled-construct refusal sees a command line.",
+            "anyOf": [
+              { "not": { "required": ["rule"], "properties": { "rule": { "const": "index-guard:unmodelled" } } } },
+              { "properties": { "match": { "additionalProperties": false, "properties": { "command": true } } } }
+            ]
+          },
+          {
+            "$comment": "readiness sees a checklist item id.",
+            "anyOf": [
+              { "not": { "required": ["rule"], "properties": { "rule": { "const": "readiness" } } } },
+              { "properties": { "match": { "additionalProperties": false, "properties": { "item": true } } } }
+            ]
+          }
+        ]
+      }
+    },
+    "projectType": {
+      "description": "P6-5-7. What KIND of repository this is, declared beside `posture` and read by install/install.js alone, to compose CLAUDE.md's managed block from the digest sections that can apply here. ⛔ IT IS A SIBLING OF `posture`, NOT A FIELD INSIDE IT, because `posture` is the one key hooks/_manifest.js's MANIFEST_EXCLUDED removes before digesting (manifest v2), and nesting a second key there would widen that one deliberate hole in the freshness contract to cover something else. This key digests like every other, so editing it makes STATE.json stale, which is the ordinary rule. ⛔ ABSENT IS A REAL STATE: no declaration composes today's block byte for byte, and a type this installer does not know is REFUSED with a notice and writes no block at all, rather than being guessed at from the shape of the tree — the same rule ADR-003 states for `posture` and this file states for `routeSource`. A variant only ever subtracts sections marked `conditional` in templates/CLAUDE.md; the five `fixed` sections, the safety-check digest among them, are unreachable by any type.",
+      "enum": ["docs-only", "ops-infra", "greenfield-app", "mature-product"]
+    },
+    "providers": {
+      "description": "P4-M-3. The model providers this project may reach over the OpenAI chat-completions protocol, keyed by the name the project calls each one. ⛔ A PROVIDER BLOCK CARRIES AN ENVIRONMENT VARIABLE'S NAME AND NEVER A VALUE (anti-drift item 52): `adapters/openai-compatible/client.js` reads `env[apiKeyEnv]` at CALL TIME into a local, puts it into one request header, and never writes, logs or echoes it, so a key that appeared here would be the one copy of the credential that lives in a tracked file. That is why `additionalProperties` is FALSE inside a block AND why `propertyNames` refuses the five names a value would most naturally be written under — a misspelled field is a rejected declaration rather than a setting that quietly did nothing, and a field called `apiKey` is refused BY NAME rather than merely being unrecognised. ⛔ ABSENT IS A REAL STATE: a project that declares no providers reaches none, which is the state every project is in until an owner decides otherwise; nothing infers a provider from an environment variable that happens to be exported. This key digests like every other (only `posture` is removed by hooks/_manifest.js's MANIFEST_EXCLUDED), so declaring a provider makes STATE.json stale, which is the ordinary rule. The top level of this file is `additionalProperties: true`, so declaring the key here is the only thing that makes a malformed block INVALID instead of a founder note.",
+      "type": "object",
+      "additionalProperties": {
+        "description": "One provider. `protocol` says which adapter speaks to it, `baseUrl` is the API root the adapter appends `/chat/completions` and `/models` to, `apiKeyEnv` is the NAME of the environment variable holding the credential, and `models` is the id list `adapters/openai-compatible/probe.js` checks against the host's own list.",
+        "type": "object",
+        "required": ["protocol", "baseUrl", "apiKeyEnv", "models"],
+        "additionalProperties": false,
+        "propertyNames": {
+          "description": "⛔ THE REFUSED NAMES ARE THE POINT. A value can never be declared where the NAME belongs: a property called `apiKey`, `api_key`, `key`, `token` or `secret` is REFUSED here, not carried, so the mistake fails at declaration time in the founder's own editor rather than at review time in a repository that now has a credential in its history. `additionalProperties: false` above would already reject each of them as unrecognised; this clause exists so the refusal is deliberate and named, and so it survives any future widening of that flag.",
+          "not": { "enum": ["apiKey", "api_key", "key", "token", "secret"] }
+        },
+        "properties": {
+          "protocol": {
+            "description": "Which adapter reaches this provider. One today: `openai-compatible` (adapters/openai-compatible/). Anything else is INVALID rather than defaulted, because a protocol nobody has written an adapter for is a provider nothing can reach.",
+            "enum": ["openai-compatible"]
+          },
+          "baseUrl": {
+            "description": "The API root, https only. A credential travels on this connection, so a plaintext URL is refused here and again by the client rather than warned about. No trailing path beyond the version segment: the adapter appends `/chat/completions` and `/models`.",
+            "type": "string",
+            "pattern": "^https://\\S+$"
+          },
+          "apiKeyEnv": {
+            "description": "The NAME of the environment variable that holds the key, e.g. `MINIMAX_API_KEY`. Shouting snake case, which is what an environment variable is: the pattern is also what makes an accidentally pasted VALUE fail here, since a real key is neither all-caps nor underscore-only.",
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "models": {
+            "description": "The model id strings this project may ask this provider for, verbatim as the vendor spells them. Non-empty: a provider with no models is a provider nothing can route to, and `probe()` reports a configured id the host does not list as a FAIL naming it.",
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "pattern": "\\S" }
+          },
+          "note": { "description": "A founder note. The one free-text field in a block that is otherwise a policy instrument.", "type": "string" }
+        }
+      }
+    },
+    "memory": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "engine": {
+          "type": "object", "additionalProperties": true,
+          "properties": {
+            "entry": { "type": "string" },
+            "node": { "description": "An installer-resolved ABSOLUTE Node path. Nothing depends on a global `rmem` and nothing mutates PATH (OD-2).", "type": "string" },
+            "installedAt": { "type": "string" },
+            "dependencies": {}
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "subjectDigest": {
+      "description": "A subject digest, `sha256:` plus 64 lowercase hex characters — byte for byte the string hooks/_exceptions.js's `fingerprint()` produces and a guard PRINTS on the deny being excepted, so the founder pastes rather than retypes. The text is trimmed with internal whitespace runs collapsed to one space before hashing, so a reformat does not silently expire the declaration.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "exceptionDate": {
+      "description": "A calendar day (YYYY-MM-DD) or a full ISO instant. A date nobody can parse would decide when an allowance stops working, so the reader refuses one rather than guessing.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}([T ]\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:?\\d{2})?)?$"
+    },
+    "declaredSourceOrOptOut": {
+      "description": "One founder-facing source declaration, in the SAME opt-out language state.removals, state.reconcile and qualityGate already use — a founder who has learned one opt-out should not have to learn a third. A non-empty string or a non-empty list of them is the declaration; `{notApplicable: true, reason}` is the decision that this project has none, and the reason is REQUIRED because an opt-out nobody has to justify is an opt-out nobody reviews. Omitting the key entirely is the third state, UNDECIDED, and it is the only one that blocks release readiness.",
+      "anyOf": [
+        { "type": "string", "pattern": "\\S" },
+        { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "\\S" } },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["notApplicable", "reason"],
+          "properties": {
+            "notApplicable": { "const": true },
+            "reason": { "type": "string", "pattern": "\\S" }
+          }
+        }
+      ]
+    },
+    "reconcileSource": {
+      "description": "One side of the DF-005 comparison. `requirements` reads the kernel's own approved denominator, so the common case needs no adapter at all; `json` reads a structured file the project maintains; `adapter` invokes the project's own tool and INTERPRETS its JSON — never reimplements it.",
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": true,
+      "properties": {
+        "kind": { "enum": ["json", "adapter", "requirements"] },
+        "path": { "type": "string", "pattern": "^(?![\\\\/])(?![A-Za-z]:[\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))\\S(?:.*\\S)?$" },
+        "pointer": { "description": "A dotted path to the record array. Absent means the document root.", "type": "string" },
+        "command": { "type": "string" },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "timeoutMs": { "type": "number" },
+        "critical": { "type": "boolean" },
+        "controls": {
+          "description": "Required when critical is true. A critical check never shown to answer differently for known-good and known-bad input has its verdict DISCARDED — DF-007 #7 was exactly a check that answered the same for both and was believed.",
+          "type": "object", "required": ["good", "bad"], "additionalProperties": true,
+          "properties": { "good": { "type": "array" }, "bad": { "type": "array" } }
+        }
+      }
+    }
+  }
+}

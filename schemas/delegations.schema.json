@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/delegations.schema.json",
+  "title": ".respawnpack/runtime/delegations.json — the delegation closure archive",
+  "description": "Written by kernel/lib/closeout.js completeDelegation(), bounded to the last 50. GITIGNORED. ⛔ THE ASYMMETRY WITH GOAL COMPLETION IS DELIBERATE AND IS RECORDED IN THE DATA: a goal closes MECHANICALLY and refuses on an unmet or unevaluable criterion; a delegation closes by ATTESTATION, because acceptance criteria are prose nothing can evaluate. What is mechanised instead is that every recorded criterion must be restated. The `attestation` field says so in the archive itself, so a later reader cannot mistake the record for a proof.",
+  "type": "object",
+  "required": ["schemaVersion", "completed"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "completed": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": ["task", "acceptance", "attestedAt", "attestation", "evidence", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "task": { "type": ["string", "null"] },
+          "acceptance": { "type": "array", "items": { "type": "string" } },
+          "attestedAt": { "type": "string" },
+          "attestation": { "const": "the closing caller restated every recorded acceptance criterion; this is a claim, not a proof" },
+          "evidence": { "type": ["string", "null"] },
+          "note": { "type": ["string", "null"] },
+          "alsoClaimed": {
+            "description": "Present only when the caller attested to criteria that were never recorded — kept rather than dropped, because a closure that claims more than was asked is worth seeing.",
+            "type": "array", "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

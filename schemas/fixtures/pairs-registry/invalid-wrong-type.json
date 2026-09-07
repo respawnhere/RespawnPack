@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0.0",
+  "reason": "fixture register — mirrors the real shape for schema testing only",
+  "shapes": {
+    "A": "set-diff completeness over an enumerable-now set",
+    "D": "n-way semantic agreement checked by a shared test vector"
+  },
+  "pairs": {}
+}

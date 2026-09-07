@@ -1,0 +1,402 @@
+{
+  "schemaVersion": "1.0.0",
+  "title": "RespawnPack machine-readable artifact registry",
+  "generatedBy": "hand-authored; fenced against the code by kernel/schema.test.mjs",
+  "why": [
+    "A schema nobody points at drifts from its artifact silently, and an artifact nobody declared is invisible to every review that reads this directory.",
+    "⛔ AN INVENTORY BUILT FROM WHAT IS PRESENT CANNOT REPORT AN ABSENCE. That sentence has been the finding of two separate correction rounds in this program — hooks derived from readdirSync, then kernel subsystems derived from readdirSync — so this registry is DECLARED, and the fences run in BOTH directions: every write site in the code must map to a family here, and every family here must name a schema that exists and a writer that exists.",
+    "Schemas are NORMATIVE DECLARATIONS verified in tests. The procedural loaders in kernel/lib/ remain the production validators; nothing here runs on an installed target's critical path, and no dependency was added to the zero-dependency runtime."
+  ],
+  "durabilityClasses": {
+    "tracked": "Committed to the project's repository. Survives a clone. The founder or their tooling may edit it.",
+    "runtime": "Under .respawnpack/, gitignored, machine-local. Autonomy and session state must NEVER travel in a clone.",
+    "ci-artifact": "Produced by a CI run, uploaded, and discarded. Never committed."
+  },
+  "families": [
+    {
+      "family": "compiled-state",
+      "schema": "state.schema.json",
+      "path": "docs/derived/STATE.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": "kernel/lib/state.js",
+      "alsoWrittenBy": ["kernel/lib/removals.js", "kernel/lib/lineage.js", "hooks/_manifest.js"],
+      "alsoWrittenByNote": "state.js composes the document, but three blocks inside it are produced elsewhere and passed through verbatim: the removal verdict (including each violation's file/phrase/line) by removals.js, the provenance block (status, counts and the bounded failing list) by lineage.js, and every sourceManifest by _manifest.js — which is the shared definition of `an input changed` the boot path uses, so the writer and the reader cannot drift.",
+      "readers": ["kernel/lib/state.js", "kernel/lib/render.js", "kernel/lib/closeout.js", "kernel/respawnpack.js", "hooks/_runtime.js", "hooks/session-routing-nudge.js"]
+    },
+    {
+      "family": "requirements",
+      "schema": "requirements.schema.json",
+      "path": "docs/derived/state/requirements.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "schemaVersionEnforced": false,
+      "schemaVersionNote": "⛔ PRESENT BY CONVENTION, ENFORCED BY NOTHING. Real requirements.json files carry `schemaVersion`, and kernel/lib/state.js never reads it — the field reaches the kernel only as bytes inside the freshness manifest digest. Declaring it as a const here would make this schema STRICTER than the code it documents, which is the opposite of documenting it. Recorded as a known gap rather than closed by tightening a declaration about someone else's file.",
+      "writer": null,
+      "writerNote": "AUTHORED by the project. This pack has no writer, which is deliberate: the approved denominator is the project's own, and a tool that could rewrite it could make its own gate easier.",
+      "readers": ["kernel/lib/state.js", "hooks/_manifest.js", "kernel/respawnpack.js"]
+    },
+    {
+      "family": "task-queue",
+      "schema": "tasks.schema.json",
+      "path": "docs/derived/state/tasks.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": null,
+      "writerNote": "AUTHORED by the planner, the same class as requirements.json (the rework task list, decision 2.1: reuse `contract delegate --task --acceptance` / `contract complete --met` for execution and attestation, and add only this durable, ordered queue). This pack has no writer for the same reason requirements.json has none — the task list is the planner's own record, not a document this pack's tooling should be able to rewrite to make its own gate easier.",
+      "readers": ["adapters/claude-code/task-runner/runner.js"],
+      "readersNote": "The task runner is the first and only reader (the hooks-and-install audit §6 item 1, 'Read the task record'). It validates the document PROCEDURALLY — the way hooks/_artifact.js validates requirements.json and goal.json — rather than by loading schemas/validate.mjs, because schemas/ is never installed to a target (anti-drift item 34) and a runtime reader cannot depend on it being there. It reads and never writes: a refused, failed or unauthenticated run leaves the row exactly as the planner had it."
+    },
+    {
+      "family": "evidence",
+      "schema": "evidence.schema.json",
+      "path": "docs/derived/state/evidence/*.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": null,
+      "writerNote": "AUTHORED by the project's qualifying tooling.",
+      "readers": ["kernel/lib/state.js", "hooks/_manifest.js"]
+    },
+    {
+      "family": "goal-contract",
+      "schema": "goal.schema.json",
+      "path": "docs/derived/state/goal.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": "kernel/lib/state.js",
+      "alsoWrittenBy": ["kernel/lib/closeout.js", "kernel/respawnpack.js"],
+      "readers": ["kernel/lib/state.js", "kernel/lib/closeout.js", "kernel/respawnpack.js", "hooks/_runtime.js", "hooks/_manifest.js"]
+    },
+    {
+      "family": "removals-registry",
+      "schema": "removals-registry.schema.json",
+      "path": "docs/derived/state/removals.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": null,
+      "writerNote": "AUTHORED by the project; the path is overridable via respawnpack.config.json state.removals.registry.",
+      "readers": ["kernel/lib/removals.js", "hooks/_manifest.js"]
+    },
+    {
+      "family": "lineage",
+      "schema": "lineage.schema.json",
+      "path": "docs/derived/state/lineage.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": null,
+      "writerNote": "AUTHORED by the founder or the planner, the same class as requirements.json and removals.json. This pack has no writer for the DECLARATION and that is the point: a tool that could rewrite which source a file is supposed to come from could make its own verdict easier. `lineage stamp` (P2-P-3) writes a MARKER into a derived file, which is a different artifact — the claim being checked, not the contract checking it — and `lineage seed` (P2-P-2) prints a proposal a human commits.",
+      "readers": ["kernel/lib/lineage.js", "kernel/lib/state.js", "kernel/respawnpack.js", "hooks/_manifest.js"],
+      "readersNote": "kernel/lib/lineage.js is the only one that interprets the document; state.js compiles its verdict into STATE.json's `lineage` block, respawnpack.js runs the verb, the savepoint stage and the doctor row over it, and _manifest.js DIGESTS its bytes for the freshness manifest without parsing a field of it."
+    },
+    {
+      "family": "reconciliation-source",
+      "schema": "reconciliation-source.schema.json",
+      "path": "<state.reconcile.tasks.path> · <state.reconcile.project.path> · or an adapter's stdout",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": null,
+      "writerNote": "AUTHORED by the project, or printed by a project adapter. DF-005: this pack owns the invocation and the outcome semantics; it owns no task system, and no path belonging to any particular project appears in kernel/lib/reconcile.js — a fence in kernel/reconcile.test.mjs checks exactly that.",
+      "readers": ["kernel/lib/reconcile.js"]
+    },
+    {
+      "family": "skill-meta",
+      "schema": "skill-meta.schema.json",
+      "path": "<skillDir>/.skill-meta.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": "kernel/lib/living.js",
+      "alsoWrittenBy": ["install/uninstall.js"],
+      "readers": ["kernel/lib/living.js", "install/uninstall.js", "kernel/respawnpack.js"]
+    },
+    {
+      "family": "project-config",
+      "schema": "project-config.schema.json",
+      "path": "respawnpack.config.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": false,
+      "writer": "install/install.js",
+      "writerNote": "Seeded by the installer, then owned and edited by the founder — which is why additionalProperties is TRUE at every level of its schema.",
+      "readers": ["kernel/lib/gate.js", "kernel/lib/removals.js", "kernel/lib/memory.js", "kernel/respawnpack.js", "hooks/_manifest.js"]
+    },
+    {
+      "family": "runtime-contract",
+      "schema": "runtime-contract.schema.json",
+      "path": ".respawnpack/runtime/contract.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "⛔ A REAL GAP, DECLARED. readContract() degrades anything it cannot interpret to {mode:'collaborate'}, so an unrecognised future shape fails safe rather than being mis-read. That is why it has not bitten; it is not the same as it being right.",
+      "writer": "kernel/lib/closeout.js",
+      "readers": ["kernel/lib/closeout.js", "kernel/respawnpack.js", "hooks/_runtime.js", "hooks/session-routing-nudge.js", "hooks/context-monitor.js", "hooks/precompact-ledger-nudge.js", "hooks/stop-savepoint.js", "adapters/claude-code/task-runner/runner.js"],
+      "readersNote": "The task runner reads this document through core/_io.js's classifying boundary rather than through hooks/_runtime.js readContract, and the difference is deliberate: readContract degrades an unreadable file to `collaborate`, which is the conservative answer for a HOOK deciding how much ceremony a session owes, and the DANGEROUS one here — `collaborate` is exactly what a closed delegation looks like, so degrading would turn a read failure into 'the task was completed'. hooks/stop-savepoint.js (P5-CT-7) is the third reader in that position and takes the same route for the same reason: its delegation gate asks whether a bounded task was ever closed, and a degraded read that answered `collaborate` would report an unattested delegation as a finished one."
+    },
+    {
+      "family": "delegation-archive",
+      "schema": "delegations.schema.json",
+      "path": ".respawnpack/runtime/delegations.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": true,
+      "writer": "kernel/lib/closeout.js",
+      "readers": ["kernel/lib/closeout.js", "adapters/claude-code/task-runner/runner.js"],
+      "readersNote": "This archive is where a `contract complete --met` attestation actually lands: closing a delegation returns the runtime pointer to collaborate, so contract.json alone can say a delegation is no longer open and cannot say WHICH criteria were restated. The task runner therefore reads both — contract.json for openness, this for the attestation record — and treats a closed contract with no matching record here as CANNOT_DETERMINE."
+    },
+    {
+      "family": "session-baseline",
+      "schema": "session-baseline.schema.json",
+      "path": ".respawnpack/runtime/session-<sessionId>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Rewritten every boot and never migrated, so a version field would gate nothing.",
+      "writer": "hooks/_runtime.js",
+      "readers": ["hooks/_runtime.js", "hooks/stop-savepoint.js", "hooks/precompact-ledger-nudge.js"]
+    },
+    {
+      "family": "stop-decision",
+      "schema": "stop-decision.schema.json",
+      "path": ".respawnpack/runtime/stop-<sessionId>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Same as session-baseline: single-session lifetime, never migrated.",
+      "writer": "hooks/_runtime.js",
+      "readers": ["hooks/_runtime.js", "hooks/stop-savepoint.js"]
+    },
+    {
+      "family": "savepoint-attempt",
+      "schema": "savepoint-attempt.schema.json",
+      "path": ".respawnpack/runtime/savepoint-attempt.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Same as stop-decision: it describes the most recent run and is rewritten wholesale by the next one, so there is never an older shape to migrate.",
+      "writer": "kernel/respawnpack.js",
+      "why": "the 2026-08-07 field run §4. Without a receipt, \"nobody ran a savepoint\" and \"a savepoint ran and could not finish\" are indistinguishable, so the Stop hook repeated an instruction that could not succeed once per turn for eight hours. This is the one artifact that crosses the kernel/hooks boundary in the WRITE direction — the kernel writes it, only the hook tree reads it — which is why it is a registered family rather than a marker file: two components agreeing on a shape is exactly what this registry exists to keep from drifting.",
+      "readers": ["hooks/stop-savepoint.js"]
+    },
+    {
+      "family": "task-attempt",
+      "schema": "task-attempt.schema.json",
+      "path": ".respawnpack/runtime/task-attempt-<taskId>-<attempt>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": true,
+      "writer": "adapters/claude-code/task-runner/runner.js",
+      "why": "the hooks-and-install audit §6 items 4-6 and the core-adapters-ops audit §3 items 3-4. The receipt of ONE task attempt: which out-of-band gates the runner ran in its own process, whether the kernel archived a `contract complete --met` attestation for every recorded acceptance criterion, and whether the handoff for the next reader survived. It exists so that 'a task session ran' and 'the task is done' can never again be the same observation — the failure the savepoint receipt already closed one level down.",
+      "writerNote": "⛔ CREATED WITH open(path,'wx') AND NEVER REPLACED (anti-drift item 40), which is why the attempt number is in the FILENAME rather than the file being one fixed name rewritten by the next run the way savepoint-attempt.json is. The number is the same as the turn record it describes, so task-attempt-T-1-003.json pairs with .respawnpack/runtime/tasks/T-1/turn-003.json; a receipt path that is already taken is reported with the first record it holds, never resolved by overwriting it. First registered family whose writer lives under adapters/ — adapters/ is pack-repo-only today (install/_sources.js copies adapters/claude-code/interactive and nothing else), so this artifact appears in a TARGET only when the runner is pointed at one from a pack checkout.",
+      "readers": [],
+      "readersNote": "No reader in this tree yet. The hooks-and-install audit §6 item 5 names hooks/stop-savepoint.js and the next session as the intended consumers, and that wiring is P5-T-16c and P5-CT-7 — both of which gate on the CONTRACT rather than on this receipt, so neither needs it to do its job. Named here in prose rather than as a `readers` entry because listing a reader that does not read it would make this registry's own reader fence a check of nothing."
+    },
+    {
+      "family": "offload-receipt",
+      "schema": "offload-receipt.schema.json",
+      "path": ".respawnpack/runtime/offload-<id>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": true,
+      "writer": "adapters/providers/offload.js",
+      "why": "the class audit Class G, 'The offload path'. The receipt of ONE bounded, hookless unit of work carried to a model provider: which capability register decided the route, what the three cheap probes said about each family BEFORE anything was spent, which family and model were chosen and why, which prompt envelope composed the request, what the provider reported, and the digests of the input and the output. It exists so that 'a model answered' and 'this model, chosen for this reason, answered' can never be the same observation — the same failure the task-attempt receipt closes one layer up, applied to a choice nobody could previously audit because receipts recorded the tool list and never the model.",
+      "writerNote": "⛔ CREATED WITH open(path,'wx') AND NEVER REPLACED (anti-drift item 40), and the id in the FILENAME is DERIVED from the input digest and the task class rather than generated. That is deliberate: a random id would make every run a new path and the exclusive create a formality, whereas a derived one makes the same unit of work against the same project land on the same path, so a repeat is refused rather than recorded twice with two answers and no way to tell which one the operator acted on. ⛔ AND NO CREDENTIAL HAS A FIELD TO TRAVEL IN (anti-drift item 52): the schema declares no property for a prompt, a response body, a header set or an environment value, and the writer never reads `env[apiKeyEnv]` at all — the environment MAP is handed to adapters/openai-compatible/client.js, which reads the variable inside the request that needs it and scrubs its own results before they come back. Like task-attempt, this writer lives under adapters/, which install/_sources.js does not copy, so this artifact appears in a TARGET only when the offload is pointed at one from a pack checkout.",
+      "readers": [],
+      "readersNote": "No reader in this tree. The audience is the operator and a later reviewer asking which model produced a given answer and on what evidence, which is the question Class G opens with. Named in prose rather than as a `readers` entry because listing a reader that does not read it would make this registry's own reader fence a check of nothing."
+    },
+    {
+      "family": "precompact-handoff",
+      "schema": "precompact-handoff.schema.json",
+      "path": ".respawnpack/runtime/precompact-<sessionId>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": true,
+      "writer": "hooks/precompact-ledger-nudge.js",
+      "alsoWrittenBy": ["hooks/_runtime.js"],
+      "alsoWrittenByNote": "markPrecompactConsumed() stamps `consumedAt` — the field that stops a handoff being injected twice. The write lives with the READER because consumption is the reader's act, not the writer's.",
+      "readers": ["hooks/_runtime.js", "hooks/session-routing-nudge.js"]
+    },
+    {
+      "family": "atomic-task",
+      "schema": "atomic-task.schema.json",
+      "path": ".respawnpack/runtime/atomic-task-<sessionId>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "writer": null,
+      "writerNote": "⛔ NO WRITER IN THIS PACK, and no reader names a field of it. Its schema is deliberately open; see the schema's own description for why constraining it would manufacture failures out of someone else's file.",
+      "readers": ["hooks/precompact-ledger-nudge.js", "hooks/session-routing-nudge.js"]
+    },
+    {
+      "family": "index-lease",
+      "schema": "index-lease.schema.json",
+      "path": ".respawnpack/runtime/index-lease-<sha16>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Bounded by a 15-minute TTL; a record cannot outlive a version change.",
+      "writer": "hooks/_index-lease.js",
+      "readers": ["hooks/_index-lease.js", "hooks/index-guard.js"]
+    },
+    {
+      "family": "index-ownership",
+      "schema": "index-owned.schema.json",
+      "path": ".respawnpack/runtime/index-owned-<sessionId>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Single-session lifetime; pruned on every record.",
+      "writer": "hooks/_index-lease.js",
+      "readers": ["hooks/_index-lease.js", "hooks/index-guard.js"]
+    },
+    {
+      "family": "spawn-counter",
+      "schema": "spawn-state.schema.json",
+      "path": ".respawnpack/spawn-state-<sessionId>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "A 30-minute staleness window decides validity by mtime; an unreadable record is CANNOT_DETERMINE, never 0.",
+      "writer": "hooks/spawn-guard.js",
+      "readers": ["hooks/spawn-guard.js", "hooks/index-guard.js"]
+    },
+    {
+      "family": "rollover-handoff",
+      "schema": "rollover-handoff.schema.json",
+      "path": ".respawnpack/runtime/rollover/<host>-<conversationId>/<handoffId>.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": true,
+      "writer": "core/state/handoff.js",
+      "alsoWrittenBy": ["hooks/precompact-ledger-nudge.js"],
+      "alsoWrittenByNote": "handoff.js's writeVerified() performs the write+readback; precompact-ledger-nudge.js constructs the document's fields (identity, contextCycleId, exactNextAction, git facts) before calling it — the same split registered above for precompact-handoff and _runtime.js.",
+      "readers": ["hooks/session-routing-nudge.js"]
+    },
+    {
+      "family": "handoff-verification-receipt",
+      "schema": "handoff-verification-receipt.schema.json",
+      "path": ".respawnpack/runtime/rollover/<host>-<conversationId>/<handoffId>.verified.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "A receipt with a single-purpose lifetime bound to one handoffId, written once and never rewritten — there is no format an old reader could disagree about.",
+      "writer": "core/state/handoff.js",
+      "readers": ["hooks/session-routing-nudge.js"]
+    },
+    {
+      "family": "consumption-receipt",
+      "schema": "consumption-receipt.schema.json",
+      "path": ".respawnpack/runtime/rollover/<host>-<conversationId>/<subjectId>.consumed.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Created once with O_EXCL and never rewritten — there is no format an old reader could disagree about.",
+      "writer": "core/lifecycle/consumable.js",
+      "alsoWrittenBy": ["core/state/handoff.js"],
+      "alsoWrittenByNote": "consumable.js's consume() performs the O_EXCL create; core/state/handoff.js's own consume() wrapper supplies the handoff-specific `extra` payload ({verifiedDigest, contextCycleId, exactNextAction}) this generic primitive stores opaquely.",
+      "readers": []
+    },
+    {
+      "family": "threshold-latches",
+      "schema": "threshold-latches.schema.json",
+      "path": ".respawnpack/runtime/rollover/<host>-<conversationId>/thresholds.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Replaced wholesale — never migrated — the instant its own cycleId stops matching the machine's current one (forCycle()); there is no format an old reader could disagree about.",
+      "writer": "core/policy/thresholds.js",
+      "alsoWrittenBy": ["hooks/context-monitor.js"],
+      "alsoWrittenByNote": "thresholds.js supplies forCycle/readLatches/writeLatches; context-monitor.js writes the record's `latched` entries directly (its own two-value advisory stage set does not fit thresholds.js's named advisory/checkpoint/final vocabulary — see the schema's own description) rather than through the module's latch() helper.",
+      "readers": ["hooks/context-monitor.js"]
+    },
+    {
+      "family": "cycle-record",
+      "schema": "cycle-record.schema.json",
+      "path": ".respawnpack/runtime/rollover/<host>-<conversationId>/cycle.json",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Re-minted with a fresh nonce on every advance and re-derived from the journal's fold on every restart — there is no format an old reader could disagree about.",
+      "writer": "core/lifecycle/cycle.js",
+      "readers": ["hooks/context-monitor.js", "hooks/session-routing-nudge.js"]
+    },
+    {
+      "family": "rollover-journal",
+      "schema": "rollover-journal.schema.json",
+      "path": ".respawnpack/runtime/rollover/<host>-<conversationId>/journal.jsonl (rows) and state.json (snapshot)",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Rows and the snapshot carry a numeric `v` (JOURNAL_VERSION) — a codec marker for the journal format itself, not this registry's string schemaVersion convention.",
+      "writer": "core/lifecycle/journal.js",
+      "alsoWrittenBy": ["core/lifecycle/machine.js"],
+      "alsoWrittenByNote": "journal.js owns the append/read/fold/snapshot mechanics; machine.js constructs every row's and the snapshot's actual field content (transition, evidence, result, state, counts, ...).",
+      "readers": ["hooks/session-routing-nudge.js"]
+    },
+    {
+      "family": "push-authorization",
+      "schema": "push-consumed.schema.json",
+      "path": ".respawnpack/push.consumed",
+      "durability": "runtime",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Governed by a grace window measured in minutes.",
+      "writer": "hooks/push-guard.js",
+      "readers": ["hooks/push-guard.js"]
+    },
+    {
+      "family": "gate-verdict",
+      "schema": "gate-verdict.schema.json",
+      "path": "<--verdict-file>, conventionally gate-verdict.json",
+      "durability": "ci-artifact",
+      "declaresSchemaVersion": false,
+      "declaresSchemaVersionNote": "Consumed by the CI run that produced it and by nothing else in this repository — stated in the schema rather than hidden, because an artifact nobody reads is where drift is free.",
+      "writer": "kernel/respawnpack.js",
+      "alsoWrittenBy": ["kernel/lib/gate.js"],
+      "alsoWrittenByNote": "respawnpack.js serialises the document; runGate() in gate.js is what BUILDS it — the profiles, the per-check results and the `ran` count that makes a vacuous green unspellable.",
+      "readers": []
+    },
+    {
+      "family": "candidate-memory",
+      "schema": "candidate-memory.schema.json",
+      "path": "memory/candidates/<id>.json (one candidate record) and memory/candidates/audit.jsonl (the append-only capture/promote/reject audit)",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": "core/memory/candidates.js",
+      "writerNote": "kernel/respawnpack.js never writes a candidate-memory byte directly: savepoint's automatic capture and the `memory candidates promote|reject` verb both call capture()/promote()/reject() here, which own the read-modify-write. The SAME promotion also writes a canonical entity to memory/graph/<type>/<slug>.md (memory/knowledge-graph.md's file-backed schema) — markdown, not this family, classified separately as an excluded write site in kernel/schema.test.mjs.",
+      "readers": ["core/memory/candidates.js", "kernel/respawnpack.js", "hooks/session-routing-nudge.js"]
+    },
+    {
+      "family": "pairs-registry",
+      "schema": "pairs.schema.json",
+      "path": "docs/derived/state/pairs.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": null,
+      "writerNote": "HAND-AUTHORED — by this pack's own maintainers or an agent under review, as part of the hardening program that produces and audits it, the same way kernel/schema.test.mjs and this registry file are hand-authored rather than generated. NOT the founder of a project this pack is installed into (unlike requirements or removals-registry, which are that founder's own files): pairs.json is an inventory of THIS pack's internal invariants, so a code writer for it would be the pack grading its own homework.",
+      "readers": ["counts-fence.test.mjs"]
+    },
+    {
+      "family": "capability-register",
+      "schema": "capability-register.schema.json",
+      "path": "spine/reference/models/capability-register.json",
+      "durability": "tracked",
+      "declaresSchemaVersion": true,
+      "writer": null,
+      "writerNote": "HAND-AUTHORED by this pack's own maintainers, the same class as docs/derived/state/pairs.json and for a sharper version of the same reason: this document says which model suits which task, and a tool that could write its own capability ratings would be grading the thing it is about to choose. Every entry is transcribed from dated, published sources named in the file itself, and the schema makes a rating without a source unspellable. NOT the founder's file either (unlike requirements.json or lineage.json) — it is the pack's inventory of what third parties published, so it ships with the pack rather than being authored per project.",
+      "pathNote": "A PACK-SOURCE path, which is new for this registry: every other tracked family names a path inside an installed target. spine/reference/models/ is the standards tree the installer copies to docs/reference/, so this document's eventual installed path is docs/reference/models/capability-register.json — the path the `promptingPractice` fields inside it already use. The installer does not place the models subtree yet (task M-1 was scoped out of install/install.js), so today the file exists only in the pack, which is why the path recorded here is the pack-relative one that is actually on disk and can be validated.",
+      "readers": ["kernel/schema.test.mjs", "adapters/providers/offload.js"],
+      "readersNote": "core/policy/routing.js remains the module that INTERPRETS this document — `route(taskClass, register, available)` prefers `preferred`, then `capable`, then the general fallback — and it is still not a reader in this registry's sense: it never opens a file, because core/ touches no host (anti-drift item 36), so the caller reads the bytes and hands it the parsed object. adapters/providers/offload.js (task M-4) is that caller and IS a real reader: it opens the TARGET's docs/reference/models/capability-register.json first and falls back to this pack's own copy when the target has none, through core/_io.js's classifying reader so absent, unreadable and malformed stay three answers, and it records which of the two decided the route on the offload receipt. kernel/schema.test.mjs is the other real reader: it validates the document against this schema on every run, checks that every rating other than `unproven` carries a URL, an access date and a claim, and checks that the JSON and the rendered capability-register.md name the same models in both directions."
+    }
+  ],
+  "excluded": [
+    {
+      "path": "docs/hardening/HANDOFF.json",
+      "class": "audit-history",
+      "reason": "A hardening-program record, not a product runtime artifact. NO CODE READS IT — verified by the reader-coverage fence. It is hand- and agent-authored prose-in-JSON whose shape is deliberately free to grow as the program records new findings; schematising it would freeze an audit log."
+    },
+    {
+      "path": "docs/hardening/*.md · docs/dogfood/*",
+      "class": "audit-history",
+      "reason": "The same class as HANDOFF.json, in markdown: the truth audits, the evidence map, the overclaim inventory and the dogfood transcripts. They are append-only records of what was found and when, read by people rather than by code, and their value comes precisely from being free to record a finding in whatever shape that finding has. A schema over an audit log would freeze the vocabulary of the next defect before it is known."
+    },
+    {
+      "path": ".claude/settings.json",
+      "class": "host-owned",
+      "reason": "Claude Code owns this format. The installer MERGES into it and the uninstaller removes only what it placed; declaring a schema for someone else's file would invite this pack to enforce a shape it does not define. The install↔uninstall lockstep fence in install/uninstall.test.mjs is what actually protects it."
+    },
+    {
+      "path": ".mcp.json",
+      "class": "host-owned",
+      "reason": "Claude Code owns this format. Only the presence of the `respawn-memory` server entry is ever read; no field of it is accessed."
+    },
+    {
+      "path": "hooks/settings.snippet.json",
+      "class": "pack-source",
+      "reason": "Shipped SOURCE, not a generated artifact — it is the input the installer merges. Its correctness is fenced by the per-(event, matcher) tuple comparison against the installed settings.json, which is a stronger check than any schema."
+    },
+    {
+      "path": "package.json · package-lock.json",
+      "class": "ecosystem",
+      "reason": "npm owns these formats, publishes them, and changes them between major versions. They are also not RespawnPack state: nothing in kernel/ or hooks/ writes either file, and the only thing read from a package.json anywhere is its EXISTENCE, as the evidence that proves a Node profile to the quality gate. A schema here would document npm's decisions as if they were this pack's."
+    }
+  ]
+}

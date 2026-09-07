@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/spawn-state.schema.json",
+  "title": ".respawnpack/spawn-state-<sessionId>.json — the subagent dispatch counter",
+  "description": "Written by hooks/spawn-guard.js writeCount(), read by spawn-guard and by hooks/index-guard.js waveInFlight(). GITIGNORED. ⛔ NOTE THE PATH: directly under .respawnpack/, NOT under runtime/ — one counter per project, resolved through projectRoot(), so a hook invoked from a subdirectory cannot start a second one. ⛔ AND STALENESS IS DECIDED BY FILE MTIME, NOT BY updatedAt: the field is for humans. A read that cannot establish the count is CANNOT_DETERMINE and never 0, because a guard that reads 'I could not tell' as 'nothing in flight' is not a guard.",
+  "type": "object",
+  "required": ["count", "updatedAt"],
+  "additionalProperties": false,
+  "properties": {
+    "count": { "type": "integer", "minimum": 0 },
+    "updatedAt": { "type": "string" }
+  }
+}

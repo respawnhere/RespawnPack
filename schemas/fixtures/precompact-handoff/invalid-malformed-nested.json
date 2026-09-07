@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "precompact-handoff",
+  "sessionId": "s-1",
+  "trigger": "auto",
+  "writtenAt": "2026-08-04T00:00:00.000Z",
+  "head": "0000000000000000000000000000000000000000",
+  "uncommittedFiles": [
+    "src/a.ts"
+  ],
+  "uncommittedTruncated": false,
+  "sessionDelta": {
+    "status": "MAYBE",
+    "files": [
+      "src/a.ts"
+    ],
+    "headMoved": false
+  },
+  "ledgerPresent": true,
+  "ledgerLastCommit": "abc1234",
+  "ledgerBehindHead": false,
+  "atomicTask": {
+    "task": "finish the CSV writer"
+  },
+  "contract": "goal",
+  "readBackVerified": true
+}

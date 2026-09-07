@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "tasks": [
+    {
+      "id": "T-3",
+      "title": "review the token-exchange path for injection and replay",
+      "specPointer": "PLAN.md P4-M-5",
+      "scope": {
+        "files": [
+          "src/auth.ts"
+        ],
+        "dirs": []
+      },
+      "intent": "Route this row to the model the capability register's evidence prefers for security review, not the coding default.",
+      "acceptance": [
+        "the auth module's new token-exchange path is reviewed for injection and replay"
+      ],
+      "taskClass": "summarizing",
+      "gates": {
+        "savepoint": true,
+        "gate": true
+      },
+      "dependsOn": [],
+      "state": "ready",
+      "risk": "medium; touches the token exchange path",
+      "provenance": {
+        "createdBy": "planner",
+        "createdAt": "2026-08-04T00:00:00.000Z"
+      }
+    }
+  ]
+}

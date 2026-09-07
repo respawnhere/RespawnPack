@@ -1,0 +1,7 @@
+{
+  "kind": "consumption-receipt",
+  "subjectId": "continue:claude-code:sess-compact-1:0:aabbccddeeff",
+  "consumerId": "sdk-supervisor:1234:ab12cd34",
+  "consumedAt": "2026-08-06T12:05:00.000Z",
+  "note": null
+}

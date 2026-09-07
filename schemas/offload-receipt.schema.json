@@ -1,0 +1,418 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/offload-receipt.schema.json",
+  "title": ".respawnpack/runtime/offload-<id>.json — what one bounded offload asked, of whom, and what came back",
+  "description": "Written by adapters/providers/offload.js after ONE bounded, hookless unit of work is carried to a model provider, with open(path,'wx') — created exactly once and NEVER replaced (anti-drift item 40). The id is derived from the input digest and the task class rather than generated, so the same unit of work against the same project lands on the same path and a second run is refused instead of recorded twice with two answers and no way to tell which one the operator acted on. GITIGNORED, machine-local. ⛔ WHAT THIS DOCUMENT DOES AND DOES NOT CLAIM. `route` is the choice core/policy/routing.js made from the register named in `register` and the availability map in `availability`, which the writer gathered from three cheap probes before anything was spent; it is a record of a decision, never a claim that the chosen model was good at the work. `outcome` may be PASS or CANNOT_DETERMINE and there is no third value: a provider that would not answer says nothing about whether the work could be done, so FAIL is unspellable here rather than merely discouraged, and `exitCode` is 0 or 2 for the same reason. `retry` records that nothing was attempted on a second provider, in words and with the fields a fallback would have to fill in, so adding one would be a visible change to the record rather than an invisible change in behaviour. ⛔ AND NO CREDENTIAL HAS A FIELD TO TRAVEL IN. There is no property here for a prompt, a response body, a header set or an environment value: the input and the output are recorded as digests and byte counts, which is what an auditor needs and what a leaked key cannot hide inside (anti-drift item 52).",
+  "type": "object",
+  "required": [
+    "kind",
+    "schemaVersion",
+    "at",
+    "id",
+    "taskClass",
+    "outcome",
+    "exitCode",
+    "register",
+    "route",
+    "envelope",
+    "provider",
+    "availability",
+    "retry",
+    "usage",
+    "durationMs",
+    "input",
+    "output"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "respawnpack-offload-receipt"
+    },
+    "schemaVersion": {
+      "const": "1.0.0",
+      "description": "The receipt's OWN version, owned by adapters/providers/offload.js OFFLOAD_RECEIPT_SCHEMA_VERSION rather than by the kernel's docs/derived/* number, for the reason task-attempt.schema.json gives: every offload writes its own immutable file, so older shapes stay on disk and a reader needs a version to discriminate them."
+    },
+    "at": {
+      "type": "string",
+      "description": "ISO timestamp of the moment the verdict was settled: after the turn returned and the answer was written, not when the command was invoked."
+    },
+    "id": {
+      "type": "string",
+      "description": "The id in this file's own name, derived from the input digest and the task class. Deriving rather than generating it is what makes 'never overwritten' mean something: a random id would make every run a new path and the exclusive create a formality."
+    },
+    "taskClass": {
+      "enum": [
+        "coding",
+        "review",
+        "security-testing",
+        "long-context",
+        "planning",
+        "writing",
+        "research",
+        "extraction"
+      ],
+      "description": "The class this work was routed as. The same eight-value vocabulary core/policy/routing.js's TASK_CLASSES and schemas/capability-register.schema.json's $defs.taskClass carry, fenced against both in kernel/schema.test.mjs."
+    },
+    "outcome": {
+      "enum": [
+        "PASS",
+        "CANNOT_DETERMINE"
+      ],
+      "description": "⛔ TWO VALUES, AND THE MISSING ONE IS THE POINT. PASS means the routed provider produced text. Everything else is CANNOT_DETERMINE: no route, an unreachable provider, a refused credential, an elapsed deadline, an empty answer. FAIL is absent from this enum because a provider that would not answer is not a finding about the work (anti-drift item 2), and a writer that wanted to record one would have to change this schema to do it."
+    },
+    "exitCode": {
+      "type": "integer",
+      "enum": [
+        0,
+        2
+      ],
+      "description": "The process exit this outcome maps to, duplicated from `outcome` for the reason savepoint-attempt.json and task-attempt.json duplicate it: the reader's question is 'did it produce an answer', and making that a one-field check keeps a consumer from re-deriving the mapping and getting it wrong. 1 is absent for the same reason FAIL is."
+    },
+    "register": {
+      "type": "object",
+      "description": "WHICH capability register decided this route. A target with the standards installed has its own copy, which may be older or newer than this pack's; a target with none falls back to the pack's. Those are different documents with different dates, and a receipt that did not say which one decided would be unauditable later.",
+      "required": [
+        "source",
+        "path",
+        "asOf"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "enum": [
+            "target",
+            "pack"
+          ],
+          "description": "`target` is the project's own docs/reference/models/capability-register.json; `pack` is this pack's spine/reference/models/capability-register.json, read only when the target has none."
+        },
+        "path": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The register's own asOf date, carried so a reader can tell a route decided on current evidence from one decided on a register nobody has revisited."
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "description": "The choice core/policy/routing.js returned, recorded verbatim. Every field here came out of that pure function; nothing in the writer reinterprets it.",
+      "required": [
+        "family",
+        "model",
+        "rating",
+        "why",
+        "asOf",
+        "practice",
+        "alternatives",
+        "skipped"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "type": "string"
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "NULL when no available model carried evidence for the class. That is a real state with a real receipt: the offload ran, chose nothing, spent nothing, and said why."
+        },
+        "rating": {
+          "enum": [
+            "preferred",
+            "capable",
+            "unproven"
+          ]
+        },
+        "why": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "practice": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The family's prompting standard, read out of the register's own families[] by the routing policy and never hard-coded."
+        },
+        "alternatives": {
+          "type": "array",
+          "description": "The ranked candidates this route beat, in order. An empty list is meaningful: it says there was nothing else available to choose.",
+          "items": {
+            "type": "object",
+            "required": [
+              "family",
+              "model",
+              "rating",
+              "why"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "family": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "rating": {
+                "enum": [
+                  "preferred",
+                  "capable",
+                  "unproven"
+                ]
+              },
+              "why": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "skipped": {
+          "type": "array",
+          "description": "⛔ EVERY FAMILY THE REGISTER DECLARES THAT THIS ROUTE COULD NOT USE, WITH THE PROBE'S OWN WORDS. A family dropped silently is the failure this list exists to prevent: an operator reading a route to a second-choice model needs to see that the first choice was unreachable rather than unrated.",
+          "items": {
+            "type": "object",
+            "required": [
+              "family",
+              "why"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "family": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "description": "Which per-family prompt envelope composed the request, from adapters/providers/envelopes.js. The composed prompt itself is deliberately NOT here: the input digest identifies the work, and a receipt carrying prompt text would be a second copy of material the operator already has, in a file the pack writes.",
+      "required": [
+        "name",
+        "fallback",
+        "practice",
+        "why"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The envelope applied: a profiled family's own id, or `general`."
+        },
+        "fallback": {
+          "type": "boolean",
+          "description": "TRUE when the general envelope was used because no envelope is written for the routed family. The general envelope says so in its own text as well, so a reader of the prompt and a reader of this receipt learn the same thing."
+        },
+        "practice": {
+          "type": "string"
+        },
+        "why": {
+          "type": "string"
+        }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "description": "Which adapter carried the turn, and what it reported. `kind` is the provider's OWN failure vocabulary, passed through rather than bucketed, because a NO_KEY, an AUTH, a TIMEOUT and an EMPTY get four different repairs.",
+      "required": [
+        "name",
+        "family",
+        "model",
+        "kind",
+        "detail"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "NULL when no turn was attempted at all, which is the shape of a receipt whose route settled on no model."
+        },
+        "family": {
+          "type": "string"
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "NULL on a turn that produced text. Otherwise the provider's own kind, verbatim: NO_CLI, SPAWN, TIMEOUT, AUTH, EMPTY and EXIT_<code> from the Claude CLI; NO_BINARY, CONNECT, POLICY, THREAD_START, TURN_START, TIMEOUT, TURN_FAILED and EMPTY from the Codex app-server; NO_KEY, AUTH, QUOTA, HTTP_<status>, TIMEOUT, NETWORK, MALFORMED and EMPTY from the OpenAI-compatible client; or NO_ROUTE, NO_PROVIDER and OUTPUT_WRITE from the offload itself. Not an enum, because pinning one here would make this schema a second, staler copy of three adapters' vocabularies."
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The provider's own sentence, truncated by the writer. Not length-constrained here: this validator refuses keywords it cannot enforce, and a bound it silently ignored would be a check of nothing."
+        }
+      }
+    },
+    "availability": {
+      "type": "array",
+      "description": "One row per family the register declares, as the three cheap probes answered BEFORE anything was spent. This is the evidence the route was made from, so it is recorded beside the route rather than left to be re-derived from a machine that has since changed.",
+      "items": {
+        "type": "object",
+        "required": [
+          "family",
+          "ok",
+          "why"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "family": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "why": {
+            "type": "string",
+            "description": "The probe's own words. For the key-holding family this names the environment VARIABLE and never its value: presence is the only fact about a credential this pack ever records (anti-drift item 52)."
+          }
+        }
+      }
+    },
+    "retry": {
+      "type": "object",
+      "description": "⛔ THE SECOND ATTEMPT THAT DID NOT HAPPEN, RECORDED IN WORDS. The rule is that a failed turn is never silently retried on another provider, and a rule kept by writing nothing is indistinguishable from a rule nobody implemented. `attempted` is a boolean rather than a pinned false so that a deliberate, disclosed fallback stays spellable; `from`, `to` and `why` are what such a fallback would have to fill in, which makes adding one a visible change to this record.",
+      "required": [
+        "attempted",
+        "from",
+        "to",
+        "why"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "attempted": {
+          "type": "boolean"
+        },
+        "from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The family whose turn failed. Null when no second attempt was made."
+        },
+        "to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The family the work moved to. Null when no second attempt was made."
+        },
+        "why": {
+          "type": "string"
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "description": "What the provider itself reported for this turn. NULL is the honest answer for a host that published nothing, and it is never 0: a missing measurement and a measured zero are different facts, and collapsing them is how an unmeasured run reads as a free one.",
+      "required": [
+        "input",
+        "output"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "input": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "output": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "durationMs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Wall time for the whole offload, including reading the register and running the probes. ⛔ AN OBSERVATION OF A CLOCK AND NEVER A COMPLETION SIGNAL (anti-drift item 38): nothing reads this field to decide whether the turn succeeded, which is what `outcome` is for."
+    },
+    "input": {
+      "type": "object",
+      "description": "The unit of work, identified rather than copied.",
+      "required": [
+        "path",
+        "bytes",
+        "digest"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256 of the input text, from core/_io.js's own digest, so the receipt and every other artifact in this pack hash the same way."
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "description": "The answer, identified rather than copied. All three fields are null on a turn that produced nothing. `path` alone is null in two cases that are distinguishable by `outcome`: the answer went to stdout because no --out was given (PASS), or the answer was produced and could not be written to the --out file (CANNOT_DETERMINE, kind OUTPUT_WRITE), where the digest and the byte count still describe what the model actually said.",
+      "required": [
+        "path",
+        "bytes",
+        "digest"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "digest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

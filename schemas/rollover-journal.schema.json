@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/rollover-journal.schema.json",
+  "title": ".respawnpack/runtime/rollover/<host>-<conversationId>/journal.jsonl (one row) and state.json (the snapshot)",
+  "description": "core/lifecycle/journal.js is the append-only authority for the rollover machine (core/lifecycle/machine.js): one JSON object per line, ordering guaranteed, a crash mid-append detectable and confined to the LAST line. state.json is a fast-path snapshot of the fold, written after every transition and NEVER read as the authority — on open(), a snapshot that disagrees with the journal's fold is reported STALE and rewritten from the fold, never trusted over it. ONE FAMILY COVERS BOTH SHAPES (a journal row and the snapshot) because they are the two faces of one mechanism and this registry names artifacts, not files. Deliberately LOOSE beyond the fields every row/snapshot is guaranteed to carry (`additionalProperties: true`): the per-kind fields of a TRANSITION row (evidence, result, cycleAdvance, ...) are constructed in core/lifecycle/machine.js, not journal.js, and enumerating them here would either duplicate machine.js's own field list beside a validator that cannot see it change, or force this schema to name a writer it does not describe. GITIGNORED, machine-local. No schemaVersion: journal rows and the snapshot carry their own numeric `v` (JOURNAL_VERSION), a format marker for the journal codec itself, not a wire-format version this registry's schemaVersion convention names.",
+  "oneOf": [
+    { "$ref": "#/$defs/row" },
+    { "$ref": "#/$defs/snapshot" }
+  ],
+  "$defs": {
+    "row": {
+      "description": "One line of journal.jsonl, as JSON.parse'd. Every row kind shares v/seq/at/cycleId/kind; everything else is kind-specific and left open.",
+      "type": "object",
+      "required": ["v", "seq", "at", "cycleId", "kind"],
+      "additionalProperties": true,
+      "properties": {
+        "v": { "const": 1 },
+        "seq": {
+          "description": "Monotone within the journal; the fold's own running counter, not a per-kind sequence.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "at": { "type": "string" },
+        "cycleId": { "type": "string" },
+        "kind": { "enum": ["cycle-open", "transition", "noop", "refusal", "halt", "consumption", "journal-repair"] }
+      }
+    },
+    "snapshot": {
+      "description": "state.json — the fast-path cross-check, written by core/lifecycle/machine.js's writeSnapshot() after every transition, halt and no-op.",
+      "type": "object",
+      "required": ["v", "at", "derivedFrom", "state", "cycleId", "seq"],
+      "additionalProperties": true,
+      "properties": {
+        "v": { "const": 1 },
+        "at": { "type": "string" },
+        "derivedFrom": {
+          "description": "Always names journal.jsonl as the authority this snapshot was folded from — a label, not a path a reader should open.",
+          "type": "string"
+        },
+        "state": { "enum": ["ACTIVE", "CHECKPOINT", "CLOSEOUT", "ROLLOVER_PENDING", "HANDOFF_VERIFIED", "COMPACTING", "REHYDRATING", "HALTED"] },
+        "cycleId": { "type": "string" },
+        "cycle": { "type": ["object", "null"] },
+        "halted": { "type": ["object", "null"] },
+        "verifiedHandoff": { "type": ["object", "null"] },
+        "counts": { "type": "object" },
+        "seq": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

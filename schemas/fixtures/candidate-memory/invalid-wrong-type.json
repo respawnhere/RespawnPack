@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "2.0.0",
+  "kind": "candidate-memory",
+  "id": 42,
+  "claim": "state-writeback: STATE.json was written but reads back different content than what was written",
+  "klass": "finding",
+  "provenance": {
+    "by": "savepoint",
+    "at": "2026-08-06T12:00:00.000Z",
+    "cycleId": "663ec2eaabbccddeeff00112233445566778899",
+    "conversationId": null,
+    "host": null,
+    "sourceKind": "savepoint",
+    "evidencePaths": [
+      "docs/derived/STATE.json"
+    ]
+  },
+  "verificationState": "candidate",
+  "verification": null,
+  "rejection": null,
+  "supersededBy": null
+}

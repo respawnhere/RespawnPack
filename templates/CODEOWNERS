@@ -1,0 +1,22 @@
+# RespawnPack — CODEOWNERS  (installed to .github/CODEOWNERS)
+#
+# WHY: sensitive paths get a mandatory review gate. With "Require review from Code
+# Owners" enabled in branch protection, GitHub blocks a merge to these paths until a
+# listed owner approves. This is the persistent complement to the in-session `lockdown`
+# hook — lockdown scopes edits while you work; CODEOWNERS gates them at merge time, for
+# every contributor, even outside Claude.
+#
+# Fill in real owners (@user or @org/team) before relying on it. Until you do, these
+# lines reference a placeholder team and will not enforce. Adjust the paths to your repo.
+
+# Default owner for everything (replace with your team):
+*                    @your-team
+
+# Sensitive paths — require explicit owner review (the same surfaces /ship gates on):
+/auth/               @your-team
+/payments/           @your-team
+/billing/            @your-team
+**/migrations/       @your-team
+/infra/              @your-team
+/.github/            @your-team
+/.claude/            @your-team

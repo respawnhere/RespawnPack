@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-04T00:00:00.000Z",
+  "generatedBy": "respawnpack state — GENERATED, never hand-edit",
+  "sourceRevision": "0000000000000000000000000000000000000000",
+  "sourceManifest": {
+    "algorithm": "sha256",
+    "inputs": {
+      "docs/derived/state/requirements.json": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "docs/derived/state/evidence/": "ABSENT"
+    }
+  },
+  "tracksRequirements": true,
+  "denominatorVersion": "schema-1",
+  "ongoingGoalId": "G-1",
+  "goal": "ship it",
+  "forbidden": [
+    "git push"
+  ],
+  "authority": [
+    "edit code"
+  ],
+  "milestone": null,
+  "milestoneComplete": false,
+  "goalComplete": false,
+  "goalCompletion": {
+    "status": "UNMET",
+    "criteria": [
+      {
+        "text": "all-mandatory-conformant",
+        "kind": "all-mandatory-conformant",
+        "status": "UNMET",
+        "detail": "0/2 mandatory conformant"
+      }
+    ],
+    "why": "a stated criterion is unmet"
+  },
+  "counts": {
+    "total": 2,
+    "mandatory": 2,
+    "conformant": 0,
+    "candidate": 0,
+    "unevidenced": 2,
+    "waived": 0,
+    "blocked": 0,
+    "staleEvidence": 0
+  },
+  "requirements": [
+    {
+      "id": "R-1",
+      "title": "one",
+      "mandatory": true,
+      "risk": "normal",
+      "priority": null,
+      "gate": "G1",
+      "status": "unevidenced",
+      "why": "no accepted evidence",
+      "evidence": [],
+      "blockedBy": [],
+      "claimTypes": [
+        "untriaged"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "G1",
+      "title": "gate one",
+      "denominator": 1,
+      "conformant": 0,
+      "complete": false,
+      "missingRows": [],
+      "status": "INCOMPLETE",
+      "note": null
+    }
+  ],
+  "openP0P1": [],
+  "blockers": [],
+  "transitivelyBlocked": [],
+  "projectBlocked": false,
+  "currentAtomicTask": null,
+  "nextUnblockedWork": [
+    {
+      "id": "R-1",
+      "title": "one",
+      "status": "unevidenced"
+    }
+  ],
+  "lastQualified": null,
+  "evidence": {
+    "accepted": 0,
+    "rejected": [
+      {
+        "file": "e1.json",
+        "reason": "no verdict"
+      }
+    ]
+  },
+  "constraints": [
+    "no pushes"
+  ],
+  "killedFeatures": [
+    {
+      "id": "K-1",
+      "feature": "magic gauntlet",
+      "status": "clear",
+      "risk": "normal"
+    }
+  ],
+  "removals": {
+    "status": "PASS",
+    "why": [
+      "1 row clear"
+    ],
+    "scannedFiles": 3,
+    "scannedDirs": [
+      "docs"
+    ],
+    "extensions": [
+      ".md"
+    ],
+    "notScanned": [],
+    "unreadable": [],
+    "scannedAtRevision": "0000000000000000000000000000000000000000",
+    "corpusManifest": {
+      "algorithm": "sha256",
+      "inputs": {
+        "docs/derived/state/requirements.json": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "docs/derived/state/evidence/": "ABSENT"
+      }
+    }
+  },
+  "lineage": {
+    "status": "FAIL",
+    "counts": {
+      "sources": 2,
+      "derivations": 1,
+      "pass": 0,
+      "fail": 1,
+      "undetermined": 0
+    },
+    "failing": [
+      "guac-config"
+    ],
+    "failingTruncated": false
+  },
+  "reconciliation": {
+    "status": "DRIFT",
+    "why": "TASK_WITHOUT_PROJECT_RECORD: T-9 · PROJECT_RECORD_WITHOUT_TASK: G-4",
+    "counts": {
+      "tasks": 3,
+      "project": 3,
+      "drift": 2
+    },
+    "driftIds": [
+      "TASK_WITHOUT_PROJECT_RECORD:T-9",
+      "PROJECT_RECORD_WITHOUT_TASK:G-4"
+    ],
+    "driftTruncated": false
+  },
+  "cannotDetermine": [],
+  "mode": "goal"
+}

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "1.0.0",
+  "reason": "RespawnPack's own killed-feature contract \u2014 the pack dogfooding kernel/lib/removals.js against itself. Every row below is a decision this repository has ALREADY made and recorded, with the citation in `evidence`; none is invented to give the scanner something to do. \u26d4 THIS SET IS A FLOOR, NOT AN INVENTORY: a removal is only guarded once it has a row here naming the phrases that would reintroduce it, so anything retired from here on needs a row at the time it is retired, not at the next audit. `respawnpack removals` prints which rows are guarded and which are `unverified` \u2014 read it rather than assuming the absolute holds.",
+  "removals": [
+    {
+      "id": "R-001",
+      "feature": "the assumed 200,000-token context window",
+      "risk": "high",
+      "reason": "Retired 2026-08-07 (CHANGELOG, 'the assumed context window is 1M, not 200k'). The context-pressure signal measured every session against an assumed 200,000-token window while every current Opus and Sonnet has 1M \u2014 a denominator wrong by 5x on essentially every real session, which crossed mandatory handoff at ~170k tokens with 830k still free. A warning that is always wrong is one that gets turned off. `RESPAWNPACK_CONTEXT_BUDGET_TOKENS` now defaults to 1000000 in hooks/context-monitor.js, hooks/precompact-ledger-nudge.js and adapters/claude-code/sdk-supervisor/measure.js.",
+      "evidence": "CHANGELOG.md \u00a7 Changed \u2014 the assumed context window is 1M, not 200k (2026-08-07)",
+      "forbidden": [
+        "200,000-token window",
+        "assumed 200k window",
+        "budget defaults to 200000",
+        "200k token budget",
+        "default budget of 200k"
+      ]
+    },
+    {
+      "id": "R-002",
+      "feature": "the v0.2 per-session threshold latch",
+      "risk": "high",
+      "reason": "Replaced by the per-context-cycle latch with re-arm on observed compaction. The old latch was keyed by session id, and a compacted conversation KEEPS its session id \u2014 so each threshold fired once in the life of a conversation and went silent for every cycle after it, leaving the third session, the one that most needed a checkpoint, with nothing. \u26d4 This row is the one in this registry with a proven drift history: hooks/README.md was still describing the per-session latch as current behaviour after the re-arm replaced it, and that is the only reason the defect was found. A prose-level resurrection here is not hypothetical.",
+      "evidence": "CHANGELOG.md \u00a7 Fixed (2026-08-07), '`hooks/README.md` still described the v0.2 per-session latch, which the per-cycle re-arm replaced'; hooks/README.md \u26d4 note under context-monitor.js",
+      "forbidden": [
+        "per-session latch",
+        "latched per session",
+        "latched once per session"
+      ]
+    },
+    {
+      "id": "R-003",
+      "feature": "separate packages, a second repository, or a plugin architecture for the core/optional boundary",
+      "risk": "normal",
+      "reason": "Decided against in ADR-002 (accepted 2026-08-05). The finding was that `core vs optional packs` had no artifact anywhere in the repository, and that leaving it open invited someone to INVENT one \u2014 to build a plugin loader, split the repository, or publish separate packages so the boundary had something to point at. The decision is that the mechanisms already exist: RespawnPack ships as one pack with four axes of optionality already in the installer. A plugin loader is a new trust boundary and a new failure mode bought for nothing.",
+      "evidence": "docs/hardening/ADR-002-core-and-optional-boundary.md \u00a7 Decision and \u00a7 Consequences",
+      "forbidden": [
+        "respawnpack-core package",
+        "separate npm packages",
+        "plugin architecture",
+        "plugin loader",
+        "split the repository",
+        "second repository"
+      ]
+    },
+    {
+      "id": "R-004",
+      "feature": "file-backed memory described as a degraded fallback",
+      "risk": "normal",
+      "reason": "A killed FRAMING rather than a killed module, and it belongs here for the same reason a killed feature does: the claim is false and the repository has committed to not making it. ADR-002 states it as a guarantee \u2014 file-backed memory is CORE, not a degraded fallback. kernel/lib/memory.js returns `mode: 'file'` with the detail 'the zero-setup default', and doctor reports `memory:distribution ACTIVE` on a default install. ADR-002's own words: the word 'degraded' appears nowhere on that path, because it would be false. The memory engine (`--with-memory`) is an optional enhancement, and prose that inverts this tells a founder they have half a product when they have all of it.",
+      "evidence": "docs/hardening/ADR-002-core-and-optional-boundary.md \u00a7 Core \u2014 the default installation",
+      "forbidden": [
+        "degraded fallback",
+        "degraded memory mode",
+        "memory degrades to files"
+      ]
+    },
+    {
+      "id": "R-005",
+      "feature": "the skip-branch quality gate, and NOT_APPLICABLE inferred from an empty search",
+      "risk": "high",
+      "reason": "Retired with kernel/lib/gate.js. `templates/ci/quality-gate.yml` ran four steps \u2014 lint, typecheck, test, build \u2014 each guarded by its own skip branch, so on a repo with no Node lockfile every one printed 'skipping' and the job reported GREEN: a workflow named 'quality gate' reporting success having run zero checks, on exactly the projects the installer already knew were Python, mixed, or monorepos. \u26d4 AND BETTER SKIP MESSAGES WOULD NOT HAVE FIXED IT \u2014 the failure was never the wording, it was that nothing computed an OUTCOME, and a skipped step exits 0. The gate is now a program returning a verdict. This is the pack's flagship defect class, which is why it is high risk: NOT_APPLICABLE is only ever DECLARED, never inferred, and 'I looked and found nothing' is NOT_CONFIGURED \u2014 the honest answer, and not green.",
+      "evidence": "kernel/lib/gate.js header, \u26d4 THE DEFECT THIS REPLACES and the \u2b50 NOT_APPLICABLE rule",
+      "forbidden": [
+        "infers not applicable",
+        "inferred not applicable",
+        "skipping counts as passing",
+        "a skipped step passes",
+        "skips when no lockfile"
+      ]
+    },
+    {
+      "id": "R-006",
+      "feature": "the HEAD~1..HEAD secret-scan range",
+      "risk": "high",
+      "reason": "Retired with the three-tier push range in hooks/secret-scan.js. The old fallback chain ended at `HEAD~1..HEAD`, so on a NEW BRANCH WITH NO UPSTREAM \u2014 the single most common shape for 'about to push for the first time' \u2014 the scan saw only the newest commit, a secret introduced three commits back shipped clean, and the hook reported success. High risk because this row guards a SECURITY BACKSTOP's stated coverage: prose that understates the range is a reader trusting a narrower scan than they have, and prose that restates the retired range is a reader trusting a scan that already failed once.",
+      "evidence": "hooks/secret-scan.js \u26d4 THE RANGE DEFECT THIS REPLACES; hooks/README.md secret-scan diff-range note",
+      "forbidden": [
+        "HEAD~1..HEAD",
+        "scans only the newest commit",
+        "scans only the last commit"
+      ]
+    },
+    {
+      "id": "R-007",
+      "feature": "the derived-doc migration described as irreversible",
+      "risk": "normal",
+      "reason": "A killed LIMITATION, and it belongs here for the same reason a killed feature does: the claim is now false and repeating it reproduces the original defect. `savepoint --verify --write` archives CONTINUITY.md/GAPS.md and rewrites them, and because that was a door with no way back, it was not something an owner would meet for the first time at closeout \u2014 so exit 2 was permanent and THE MIGRATION NEVER RAN. v0.3 added `restore-derived` (render.js planRestore): preview by default, `--write` performs it, the archive is never deleted, and migrate -> restore -> migrate all resolve to the same original. \u26d4 'one-way door' is deliberately NOT a forbidden phrase here: it is standard architecture vocabulary and agents/system-architect.md uses it correctly about datastore decisions. A phrase that collides with innocent prose produces a real FAIL and teaches operators to scroll past this check.",
+      "evidence": "CHANGELOG.md \u00a7 Fixed \u2014 the 2026-08-07 field run punch list (2026-08-07), the derived-doc migration item",
+      "forbidden": [
+        "migration cannot be undone",
+        "cannot be restored",
+        "the archive is deleted"
+      ]
+    },
+    {
+      "id": "R-008",
+      "feature": "the installer seeding a placeholder string as a config value",
+      "risk": "high",
+      "reason": "Retired 2026-08-12 (commit 5204353, CHANGELOG 'an unfinished onboarding says so'). install.js seeded routeSource='<set ROUTE_SOURCE>' and codeTruth='<set CODE_TRUTH: token/copy/schema source paths>' as literal VALUES, and /savepoint's routes step enumerates that value against FEATURES-PAGES.md - handed a template it globs zero routes, finds zero orphans in both directions, and reports no drift. A check that matches nothing agrees with everything. An undetected value now writes NO KEY, and an absent key is UNDECIDED. \u26d4 THIS ROW EXISTS BECAUSE IT WAS OWED AND MISSING: the commit that retired the behaviour added no row, which is the one obligation this registry's own reason field says must be met at retirement time rather than at the next audit. It is the recorded instance of P-022 in docs/derived/state/pairs.json.",
+      "evidence": "CHANGELOG.md \u00a7 Added \u2014 an unfinished onboarding says so, instead of wearing a broken project's clothes (2026-08-12); install/install.js routeSource initialisation; kernel/lib/applicability.js INSTALLER_TEMPLATE",
+      "forbidden": [
+        "Set CODE_TRUTH in respawnpack.config.json",
+        "Set codeTruth in respawnpack.config.json",
+        "a codeTruth slot to fill"
+      ],
+      "rejectedPhrases": [
+        {
+          "phrase": "placeholder value",
+          "why": "\u26d4 REJECTED: it flags the PROHIBITION. spine/reference/testing-standards.md rule 15 reads 'Installers write no key rather than a placeholder value' \u2014 correct prose stating the very rule, which this phrase would report as a live reintroduction. Same class as the two candidate rows this registry already rejected: when the prohibition's vocabulary IS the anti-pattern's name, a row on that vocabulary teaches operators to scroll past the check, which costs more than the row is worth. Verified empirically before removal, not reasoned about: the candidate FAILED against testing-standards.md:53."
+        },
+        {
+          "phrase": "<set CODE_TRUTH",
+          "why": "\u26d4 REJECTED for the same reason, at four sites: skills/savepoint/SKILL.md, skills/onboard/SKILL.md and its .base.md twin, all of which quote the literal in order to say it is INVALID and never read as a value. A row cannot guard a template by matching the template, because the documentation that retires it has to name it."
+        }
+      ]
+    }
+  ]
+}

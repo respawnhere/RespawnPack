@@ -1,0 +1,5 @@
+{
+  "not-a-sha16": {
+    "src/a.ts": "M|100644|abc|src/a.ts|"
+  }
+}

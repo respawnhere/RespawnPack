@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0.0",
+  "skill": "debug",
+  "enabledAt": "2026-08-04T00:00:00.000Z",
+  "lastReset": null,
+  "overlayBudgetLines": 12,
+  "source": "memory entities with `applies-to|skill:debug`"
+}

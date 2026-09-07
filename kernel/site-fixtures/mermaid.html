@@ -1,0 +1,33 @@
+<h1 id="diagrams">Diagrams</h1>
+<p>A Mermaid fence renders twice: once as the block a browser turns into a picture, and once as the
+source a reader with no browser can still read.</p>
+<div class="diagram"><pre class="mermaid">flowchart TD
+    A[Start] --&gt; B{Fresh?}
+    B -- yes --&gt; C[Render the counts]
+    B -- no --&gt; D[Withhold the counts]</pre><details><summary>diagram source</summary><pre><code>flowchart TD
+    A[Start] --&gt; B{Fresh?}
+    B -- yes --&gt; C[Render the counts]
+    B -- no --&gt; D[Withhold the counts]</code></pre></details></div>
+<h2 id="a-diagram-whose-source-looks-like-html">A diagram whose source looks like HTML</h2>
+<p>Everything inside the fence is escaped in both copies, so a label that looks like a tag reaches the
+page as text.</p>
+<div class="diagram"><pre class="mermaid">graph LR
+    A[&quot;&lt;script&gt;alert(1)&lt;/script&gt;&quot;] --&gt; B[&quot;a &amp; b&quot;]
+    B --&gt; C[&quot;quoted \&quot;label\&quot;&quot;]</pre><details><summary>diagram source</summary><pre><code>graph LR
+    A[&quot;&lt;script&gt;alert(1)&lt;/script&gt;&quot;] --&gt; B[&quot;a &amp; b&quot;]
+    B --&gt; C[&quot;quoted \&quot;label\&quot;&quot;]</code></pre></details></div>
+<h2 id="a-sequence-diagram-indented-under-a-list-item">A sequence diagram, indented under a list item</h2>
+<ul>
+<li>The handoff:
+<div class="diagram"><pre class="mermaid">sequenceDiagram
+    Session-&gt;&gt;Kernel: savepoint --verify
+    Kernel--&gt;&gt;Session: PASS</pre><details><summary>diagram source</summary><pre><code>sequenceDiagram
+    Session-&gt;&gt;Kernel: savepoint --verify
+    Kernel--&gt;&gt;Session: PASS</code></pre></details></div>
+</li>
+</ul>
+<h2 id="a-fence-that-is-not-a-diagram">A fence that is not a diagram</h2>
+<pre><code class="language-mermaidish">this info string is not the word mermaid, so it is ordinary code
+</code></pre>
+<h2 id="an-empty-diagram-fence">An empty diagram fence</h2>
+<div class="diagram"><pre class="mermaid"></pre><details><summary>diagram source</summary><pre><code></code></pre></details></div>

@@ -1,0 +1,88 @@
+#!/bin/sh
+# RespawnPack · git pre-push hook wrapper.
+# Install:  cp hooks/pre-push <repo>/.git/hooks/pre-push && chmod +x <repo>/.git/hooks/pre-push
+# (or point core.hooksPath at a tracked dir containing this file).
+#
+# The hook has three independent refusal layers:
+#   1. secret-scan over the exact pre-push stdin;
+#   2. whitespace and omitted durable-artifact checks over commits/worktree state;
+#   3. the configured killed-feature contract, when the kernel is installed.
+# A check that cannot run is not silently converted to a pass.
+set -u
+ROOT="$(git rev-parse --show-toplevel)" || exit 1
+TMP_INPUT="${TMPDIR:-/tmp}/respawnpack-pre-push-input-$$"
+trap 'rm -f "$TMP_INPUT"' EXIT HUP INT TERM
+cat > "$TMP_INPUT" || exit 1
+
+# Forward git's remote name/location arguments as well as preserving stdin. New-branch range selection
+# needs the target remote; excluding commits present on an unrelated fork is the wrong authority.
+node "$ROOT/.claude/hooks/secret-scan.js" "$@" < "$TMP_INPUT" || exit $?
+
+# Git's stdin is the authority for WHICH refs are being pushed. HEAD can be unrelated (`git push
+# origin side:side`), and `--remotes` without a target excludes commits merely because a fork has them.
+# Existing refs have an exact remote tip. New refs exclude only refs known on the target remote.
+REMOTE_NAME=${1-}
+while IFS=' ' read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA REST; do
+  [ -n "$LOCAL_SHA" ] || continue
+  case "$LOCAL_SHA" in *[!0]*) ;; *) continue ;; esac # deletion: no commits are added
+
+  if [ -n "$REMOTE_SHA" ]; then
+    case "$REMOTE_SHA" in
+      *[!0]*)
+        if ! COMMITS="$(git -C "$ROOT" rev-list "$LOCAL_SHA" "^$REMOTE_SHA")"; then
+          echo "RespawnPack pre-push: could not determine commits for $LOCAL_REF against $REMOTE_REF; refusing to treat an unknown range as clean." >&2
+          exit 1
+        fi
+        ;;
+      *)
+        if [ -n "$REMOTE_NAME" ]; then
+          if ! COMMITS="$(git -C "$ROOT" rev-list "$LOCAL_SHA" --not --remotes="$REMOTE_NAME")"; then
+            echo "RespawnPack pre-push: could not determine new commits for $LOCAL_REF on remote $REMOTE_NAME; refusing to pass." >&2
+            exit 1
+          fi
+        elif ! COMMITS="$(git -C "$ROOT" rev-list "$LOCAL_SHA" --not --remotes)"; then
+          echo "RespawnPack pre-push: could not determine new commits for $LOCAL_REF; refusing to pass." >&2
+          exit 1
+        fi
+        ;;
+    esac
+  else
+    echo "RespawnPack pre-push: malformed ref protocol for $LOCAL_REF (missing remote SHA); refusing to pass." >&2
+    exit 1
+  fi
+
+  for COMMIT in $COMMITS; do
+    # -m checks a merge against every parent; without it diff-tree emits no patch for the merge and
+    # conflict-resolution whitespace disappears. --no-commit-id keeps successful output silent.
+    git -C "$ROOT" diff-tree --check --root -r -m --no-commit-id "$COMMIT" || {
+      echo "RespawnPack pre-push: whitespace errors in pushed commit $COMMIT ($LOCAL_REF)" >&2
+      exit 1
+    }
+  done
+done < "$TMP_INPUT"
+
+git -C "$ROOT" diff --check || exit 1
+git -C "$ROOT" diff --cached --check || exit 1
+
+# These families are declared TRACKED. A push while one is untracked or dirty omits project truth from
+# the clone even though the local tools can see it. Absence is allowed; accidental omission is not.
+if ! DURABLE_STATUS="$(git -C "$ROOT" status --porcelain --untracked-files=all --ignored=matching -- docs/derived/STATE.json memory/candidates schemas/fixtures)"; then
+  echo "RespawnPack pre-push: could not inspect durable/generated artifact state; refusing to treat unknown state as clean." >&2
+  exit 1
+fi
+if [ -n "$DURABLE_STATUS" ]; then
+  echo "RespawnPack pre-push: durable/generated artifacts are untracked or dirty:" >&2
+  echo "$DURABLE_STATUS" >&2
+  echo "Commit the intentional records, regenerate tracked fixtures, or remove artifacts that should not exist; refusing to omit them from the push." >&2
+  exit 1
+fi
+
+if [ -f "$ROOT/respawnpack.config.json" ] && [ -f "$ROOT/.claude/respawnpack/respawnpack.js" ]; then
+  node "$ROOT/.claude/respawnpack/respawnpack.js" removals --dir "$ROOT" || {
+    CODE=$?
+    echo "RespawnPack pre-push: the killed-feature contract did not pass (exit $CODE). CANNOT_DETERMINE is not a pass." >&2
+    exit "$CODE"
+  }
+fi
+
+exit 0

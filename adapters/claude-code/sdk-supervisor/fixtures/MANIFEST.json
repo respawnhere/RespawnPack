@@ -1,0 +1,123 @@
+{
+  "kind": "respawnpack-fixture-manifest",
+  "profile": "claude-code/sdk-supervisor",
+  "why": "CAPTURED and SYNTHETIC are different claims and must never be told apart by guessing at a filename. A captured fixture is what a host actually said and can be cited as evidence; a synthetic one is what this adapter believes a host would say, and can only prove that the READER is correct if it does. This manifest states which is which, where each came from, and the digest of the bytes as recorded — so a synthetic fixture cannot be quietly promoted, and a captured one cannot be quietly edited into agreement with the code that reads it.",
+  "recordedAt": "2026-08-06",
+  "digestAlgorithm": "sha256",
+  "fixtures": [
+    {
+      "file": "captured/01-baseline.jsonl",
+      "origin": "captured-live",
+      "bytes": 4103,
+      "sha256": "66b85be13fdfcc85c74ea4e65bc7c4eba49b4aa2cfb44bac69b884785d979202",
+      "capturedFrom": "the SDK probe's log 01-baseline.jsonl (W2-probe, 2026-08-06, Windows 11, @anthropic-ai/claude-agent-sdk 0.3.223 driving its BUNDLED claude 2.1.223)",
+      "verifiedIdentical": "byte-for-byte with the probe's own log at the time this fixture was written ⛔ AMENDED 2026-08-16 FOR PUBLICATION: the machine account name in captured absolute paths was replaced with the placeholder \"user\". That is the ONLY change — every protocol payload, ordering, id and token count is exactly as the probe logged it. The digest below is of the amended bytes, so this manifest still states the truth about the file it describes; the original recording is retained in the development repository.",
+      "shows": [
+        "the init message arrives BEFORE credentials are used: session_id, model, claude_code_version, capabilities and the full slash_commands set (including \"compact\") are all readable on an unauthenticated run",
+        "apiKeySource:\"none\" sits beside an authentication failure — which is why it is never read as an auth verdict",
+        "a result carrying subtype:\"success\" AND is_error:true, on a turn that produced nothing",
+        "a foreign line (__probe_error__, written by the probe harness, not the host) that any reader of this stream must tolerate without interpreting"
+      ]
+    },
+    {
+      "file": "captured/04-compact-attempt1.jsonl",
+      "origin": "captured-live",
+      "bytes": 3872,
+      "sha256": "1c6826bb7cadfe37267b0f7c2f25bd9ee69edcc3995d8df80882f58165ef5807",
+      "capturedFrom": "the SDK probe's log 04-compact-attempt1.jsonl (W2-probe, 2026-08-06) — a real /compact dispatched into a real session",
+      "verifiedIdentical": "byte-for-byte with the probe's own log at the time this fixture was written ⛔ AMENDED 2026-08-16 FOR PUBLICATION: the machine account name in captured absolute paths was replaced with the placeholder \"user\". That is the ONLY change — every protocol payload, ordering, id and token count is exactly as the probe logged it. The digest below is of the amended bytes, so this manifest still states the truth about the file it describes; the original recording is retained in the development repository.",
+      "shows": [
+        "THE EVIDENCE CONTRACT: a FAILED compaction returns is_error:false, subtype:\"success\", num_turns:0",
+        "the truth is in the status pair — {status:\"compacting\"} then {status:null, compact_result:\"failed\", compact_error:\"...\"}",
+        "no compact_boundary message is emitted when the compaction does not happen",
+        "the session_id is unchanged across the failed attempt (it is on every message of the stream)",
+        "a fresh init message is emitted mid-turn, AFTER the status pair"
+      ]
+    },
+    {
+      "file": "captured/07-pathcli-test.jsonl",
+      "origin": "captured-live",
+      "bytes": 3709,
+      "sha256": "3e16242a1c3ff9bb7f63caa7869c4f26379b28f0050015675551f65137c8c0ea",
+      "capturedFrom": "the SDK probe's log 07-pathcli-test.jsonl (W2-probe, 2026-08-06) — the same SDK pointed at the PATH-installed claude 2.1.205 via pathToClaudeCodeExecutable",
+      "verifiedIdentical": "byte-for-byte with the probe's own log at the time this fixture was written ⛔ AMENDED 2026-08-16 FOR PUBLICATION: the machine account name in captured absolute paths was replaced with the placeholder \"user\". That is the ONLY change — every protocol payload, ordering, id and token count is exactly as the probe logged it. The digest below is of the amended bytes, so this manifest still states the truth about the file it describes; the original recording is retained in the development repository.",
+      "shows": [
+        "the executable override works and is observable: claude_code_version flips 2.1.223 → 2.1.205",
+        "slash_commands and capabilities DIFFER between the two builds — they are open, version-dependent sets and must be read, not assumed",
+        "a second spelling of the auth failure (\"Not logged in · Please run /login\"), which is why the phrase set is a list"
+      ]
+    },
+    {
+      "file": "synthetic/compact-success.jsonl",
+      "origin": "synthetic",
+      "bytes": 2349,
+      "sha256": "e85f0168570f36c46bd28e6e930597ba9fe09a3d02490b79f63d17a19241b006",
+      "builtFrom": "sdk.d.ts SDKCompactBoundaryMessage.compact_metadata{trigger,pre_tokens,post_tokens,duration_ms,preserved_messages} + SDKStatusMessage, ordered as the captured failure ordered its own messages",
+      "whyNotCaptured": "a successful compaction has never been observed in this environment — the live canary is auth-blocked. This fixture proves the READER, and nothing about the host.",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-noop.jsonl",
+      "origin": "synthetic",
+      "bytes": 1529,
+      "sha256": "064c3b3fa61e285237a3346557a085a3e7f1ea411fd682f59934c4e98003fb48",
+      "builtFrom": "the documented no-op behaviour: a success result carrying \"Not enough messages to compact.\" with no boundary message",
+      "whyNotCaptured": "the no-op branch was never reached live here",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-duplicate-boundary.jsonl",
+      "origin": "synthetic",
+      "bytes": 1771,
+      "sha256": "6b34022a288ae8a25fa68f98b34cf0edd8654701b7ceb3da72755c6ed88664f5",
+      "builtFrom": "compact-success.jsonl with the boundary line repeated verbatim (same uuid)",
+      "whyNotCaptured": "redelivery has not been observed; the machine's duplicate suppression must hold whether or not it ever is",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-contradictory.jsonl",
+      "origin": "synthetic",
+      "bytes": 1647,
+      "sha256": "0b8a0b7623d57c6d48e81c6ae72d1de4ff5a8db52cedab5b426d389c49b378d3",
+      "builtFrom": "the boundary line of compact-success.jsonl plus a compact_result:\"failed\" status",
+      "whyNotCaptured": "a constructed contradiction — the input that must not be resolved in the adapter's favour",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-identity-changed.jsonl",
+      "origin": "synthetic",
+      "bytes": 1564,
+      "sha256": "aabb125f9cd8d9bbec9e599c5f91a21cd1eff37b4ee287681c4212448dcdda5d",
+      "builtFrom": "compact-success.jsonl with the session_id changed from the boundary onward",
+      "whyNotCaptured": "same-id-across-compaction is strongly evidenced and verbatim-stated nowhere, so the check is empirical per rollover — and this is the input it exists to catch",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/compact-unobserved.jsonl",
+      "origin": "synthetic",
+      "bytes": 1625,
+      "sha256": "ae7ac102624eeeee567f435855798d71dfd87735dc8227b372650b9ad3afe59f",
+      "builtFrom": "an ordinary successful turn with every compaction signal absent",
+      "whyNotCaptured": "the shape of a protocol change or a dropped stream; the envelope alone would read as success",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/turn-heavy.jsonl",
+      "origin": "synthetic",
+      "bytes": 2019,
+      "sha256": "03a8f116e26ae661a358dad820344b771662a1d3f7fe491a522716558563acce",
+      "builtFrom": "documented usage fields + ModelUsage.contextWindow",
+      "whyNotCaptured": "no authenticated turn could be run here, so no real usage block exists to copy. Known answer: (140000 + 34312) / 200000 = 87.156%",
+      "provesReaderNotHost": true
+    },
+    {
+      "file": "synthetic/turn-light.jsonl",
+      "origin": "synthetic",
+      "bytes": 1752,
+      "sha256": "68593b8fb4fb654c3f5d4a9e7de6ad30c7faf35fbbd50097cb4f6aca6587a5a2",
+      "builtFrom": "documented usage fields with modelUsage EMPTY, exactly as the captured live results left it",
+      "whyNotCaptured": "same reason. Known answer: (9000 + 3000) / 200000 = 6% against an ASSUMED denominator",
+      "provesReaderNotHost": true
+    }
+  ]
+}

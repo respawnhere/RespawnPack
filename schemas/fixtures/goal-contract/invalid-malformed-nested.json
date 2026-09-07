@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "goals": {
+    "G-1": {
+      "id": "G-1",
+      "goal": "ship it",
+      "completion": [
+        "all-mandatory-conformant",
+        {
+          "kind": "gate-complete",
+          "gate": "G1"
+        }
+      ],
+      "constraints": "no pushes",
+      "authority": [],
+      "forbidden": [
+        "git push"
+      ],
+      "externalBlockers": [],
+      "createdAt": "2026-08-04T00:00:00.000Z",
+      "contextStages": {
+        "checkpoint": 60,
+        "closeout": 75,
+        "handoff": 85
+      },
+      "hostNote": "No hook can create a session."
+    }
+  },
+  "ongoingGoalId": "G-1",
+  "completedGoalIds": []
+}

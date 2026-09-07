@@ -1,0 +1,61 @@
+{
+  "id": "duplicate-session-start-compact",
+  "class": "known-good",
+  "title": "SessionStart(source=compact) is delivered twice, and the handoff is offered to two injectors",
+  "why": "The duplicate the per-cycle key structurally cannot catch: the first delivery ADVANCES the cycle, so the redelivery arrives with the keyspace already moved. It must still be a no-op returning the original result, and the cycle must advance exactly once. The second half is the exactly-once consumption — the loser gets ALREADY_CONSUMED and a pointer to who consumed it first, not a boolean.",
+  "host": "claude-code",
+  "conversationId": "sess_ss_d",
+  "steps": [
+    {
+      "do": "apply", "transition": "checkpoint", "eventId": "measure-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "context-measurement", "source": "documented-event", "usedPercent": 87, "raw": { "method": "thread/tokenUsage/updated", "params": { "note": "field names are UNDOCUMENTED — kept verbatim for exactly this reason" } }, "observedAt": "2026-08-06T13:00:00.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "closeout", "eventId": "stop-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "safe-boundary", "mechanism": "unblocked-stop-hook", "raw": { "hook_event_name": "Stop", "stop_hook_active": false }, "observedAt": "2026-08-06T13:00:04.000Z" }]
+    },
+    {
+      "do": "write-handoff", "as": "h1",
+      "handoff": {
+        "identity": { "host": "claude-code", "conversationId": "sess_ss_d", "conversationIdField": "session_id" },
+        "contextCycleId": "$cycleId", "atomicActionId": "W1-exactly-once", "exactNextAction": "resume the exactly-once consumption work",
+        "git": { "head": "466ed95", "uncommittedFiles": [], "sessionDelta": { "status": "UNCHANGED", "files": [], "headMoved": false } },
+        "userConstraints": [], "unresolvedQuestions": [], "candidateMemories": []
+      }
+    },
+    { "do": "apply", "transition": "stage-handoff", "eventId": "write-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.written" }] },
+    { "do": "apply", "transition": "verify-handoff", "eventId": "readback-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.readback" }] },
+    {
+      "do": "apply", "transition": "request-compact", "eventId": "compact-req-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "compact-requested", "mechanism": "operator-manual", "raw": { "presented": "/compact", "profile": "claude interactive" }, "observedAt": "2026-08-06T13:00:10.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "observe-completion", "eventId": "ss-compact-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "compact-completed", "signal": "session_start_compact", "raw": { "hook_event_name": "SessionStart", "source": "compact", "session_id": "sess_ss_d" }, "observedAt": "2026-08-06T13:00:44.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "verify-identity", "eventId": "ss-compact-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "identity-verification", "expectedId": "sess_ss_d", "observedId": "sess_ss_d", "equal": true, "raw": { "hook_event_name": "SessionStart", "source": "compact", "session_id": "sess_ss_d" }, "observedAt": "2026-08-06T13:00:44.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "verify-identity", "eventId": "ss-compact-1", "expectStatus": "NOOP",
+      "evidence": [{ "kind": "identity-verification", "expectedId": "sess_ss_d", "observedId": "sess_ss_d", "equal": true, "raw": { "hook_event_name": "SessionStart", "source": "compact", "session_id": "sess_ss_d" }, "observedAt": "2026-08-06T13:00:44.000Z" }]
+    },
+    { "do": "consume-handoff", "ref": "h1", "consumerId": "session-start-injector", "expectStatus": "CONSUMED" },
+    { "do": "consume-handoff", "ref": "h1", "consumerId": "second-injector", "expectStatus": "ALREADY_CONSUMED" }
+  ],
+  "expect": {
+    "finalState": "ACTIVE",
+    "outcome": "PASS",
+    "haltCode": null,
+    "rolloverOutcome": "ROLLED_OVER",
+    "cycleAdvances": 1,
+    "cycleIndex": 1,
+    "neverEntered": ["HALTED"],
+    "counts": { "noops": 1, "refusals": 0, "halts": 0, "consumptions": 2 },
+    "consumptions": [
+      { "status": "CONSUMED" },
+      { "status": "ALREADY_CONSUMED", "pointsToFirst": true, "firstConsumerId": "session-start-injector" }
+    ]
+  }
+}

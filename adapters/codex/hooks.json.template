@@ -1,0 +1,82 @@
+{
+  "_comment_READ_ME_FIRST": [
+    "This is a BEST-EFFORT template, not a verified schema dump. R4 confirmed the Codex HOOK EVENT MODEL",
+    "(event names, PreCompact/PostCompact's manual|auto matcher, SessionStart's source values, the",
+    "continue:false PreCompact veto) against documentation and a live app-server probe — see",
+    "adapters/codex/README.md, 'What is verified vs. what is templated'. The exact JSON KEYS a",
+    "hooks.json registration entry uses (this file's 'hooks'/'matcher'/'command' names) were NOT",
+    "independently confirmed against a live, trusted Codex hooks install in this task. Treat every key",
+    "name here as a documented-shape best guess modelled on the same command-array convention Claude",
+    "Code's own hooks.json uses (the two hosts share the same event-name vocabulary throughout the R4",
+    "verification, which is the basis for the guess) — verify against your installed Codex CLI's own",
+    "current schema (its own docs, or a `codex hooks` subcommand if one exists in your version) before",
+    "trusting this file to be syntactically exact.",
+    "",
+    "WHAT ACTUALLY PROVES THIS WORKED: not this file parsing without error. The activation canary",
+    "(respawnpack-canary.js) writes .respawnpack/runtime/rollover/_codex-hooks-canary.json only when a",
+    "registered, TRUSTED hook actually fires. Installed-but-untrusted, or installed-but-wrong-schema,",
+    "both read as CANNOT_DETERMINE in adapters/codex/profile.js until that marker exists and is fresh.",
+    "",
+    "TRUST STEP (loud, on purpose): registering these hooks is NOT enough. Codex gates hooks on BOTH",
+    "`features.hooks` (a feature flag) AND a PER-HOOK interactive trust decision made with `/hooks` inside",
+    "a live Codex session. Until you run `/hooks` and approve each entry below, Codex will not run them —",
+    "and there is no scriptable way to list which hooks are currently trusted, so the canary marker is the",
+    "only after-the-fact proof. An installed-but-never-approved hook is CANNOT_DETERMINE, never 'active'.",
+    "",
+    "PLACEHOLDER: replace every {{RESPAWNPACK_CODEX_HOOKS_DIR}} below with the ABSOLUTE path to this",
+    "adapter's hooks/ directory (typically <install-root>/adapters/codex/hooks). Installer/uninstaller",
+    "wiring is DEFERRED past this task — see adapters/codex/README.md, 'What the installer wave must add'.",
+    "",
+    "This file is JSON, so these notes live in throwaway '_comment_*' keys rather than real comments.",
+    "STRIP every '_comment_*' key before this is merged into a real ~/.codex/hooks.json or <repo>/.codex/",
+    "hooks.json — they document the template, they are not hook registrations, and a strict parser may",
+    "not tolerate them sitting inside the 'hooks' object as-is."
+  ],
+
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          { "type": "command", "command": "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-precompact.js\"" }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          { "type": "command", "command": "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-postcompact.js\"" },
+          { "type": "command", "command": "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\"" }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          { "type": "command", "command": "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-sessionstart.js\"" },
+          { "type": "command", "command": "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\"" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-stop.js\"" },
+          { "type": "command", "command": "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\"" }
+        ]
+      }
+    ],
+
+    "_comment_canary_breadth": [
+      "The canary (respawnpack-canary.js) is safe to register against ANY event, including",
+      "permission-sensitive ones, because it NEVER emits a decision — see its own file header. Registering",
+      "it more broadly than the four events above (e.g. also under PreToolUse, PermissionRequest,",
+      "PostToolUse, UserPromptSubmit, SubagentStart, SubagentStop, SessionEnd) makes the activation-proof",
+      "marker refresh as soon as ANY one of your trusted hooks fires, which is the more robust posture",
+      "given Codex's per-hook (not per-project) trust model. Left out of the default template only to keep",
+      "the first-install trust prompt from `/hooks` short; add rows for the events you actually trust."
+    ]
+  }
+}

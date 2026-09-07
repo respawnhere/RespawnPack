@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/runtime-contract.schema.json",
+  "title": ".respawnpack/runtime/contract.json — the machine-local interaction contract",
+  "description": "Written by kernel/lib/closeout.js writeRuntime(). GITIGNORED and machine-local by design: autonomy must never travel in a clone. ⛔ IT CARRIES NO schemaVersion. That is a real gap, declared here rather than papered over: readContract() falls back to {mode:'collaborate'} for anything it cannot interpret, so an unrecognised future shape degrades to the safe mode instead of being mis-read — which is why the absence has not bitten, and is not the same as it being right.",
+  "type": "object",
+  "required": ["mode", "setAt"],
+  "additionalProperties": false,
+  "properties": {
+    "mode": {
+      "description": "The closed vocabulary hooks/_runtime.js VALID_MODES enforces. Anything else is treated as absent, not as an error.",
+      "enum": ["collaborate", "delegate", "goal"]
+    },
+    "activeGoalId": { "type": ["string", "null"] },
+    "goalId": {
+      "description": "⛔ LEGACY, READ-ONLY. The pre-2d spelling, still accepted by hooks/_runtime.js readContract() and closeout.js activeOf(), never written. Declared so the tolerance is auditable.",
+      "type": ["string", "null"]
+    },
+    "suspendedGoalId": {
+      "description": "`contract collaborate` SUSPENDS a goal, it does not delete one — the transition has to be cheap and reversible or nobody uses it.",
+      "type": ["string", "null"]
+    },
+    "setAt": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T" },
+    "task": { "type": "string" },
+    "acceptance": {
+      "description": "Delegate mode only, and never empty: a bounded task with no definition of done is an unbounded one with a shorter description.",
+      "type": "array", "minItems": 1, "items": { "type": "string" }
+    },
+    "authority": { "type": "array", "items": { "type": "string" } },
+    "forbidden": { "type": "array", "items": { "type": "string" } }
+  }
+}

@@ -1,0 +1,154 @@
+# RespawnPack — quality gate CI  (installed to .github/workflows/respawnpack-quality.yml)
+#
+# WHY THIS EXISTS: /build and /review enforce lint, types, tests, and the build inside a Claude Code
+# session. This workflow re-runs the same gates on every push and PR, so the baseline holds even when no
+# agent was in the loop: a teammate pushes straight from their editor, or a branch merges after sitting
+# unreviewed for a week. In-session skills catch it while you work; this catches the rest.
+#
+# ⛔ WHAT THIS FILE USED TO BE, AND WHY IT CHANGED. It ran four steps — lint, typecheck, test, build —
+# each wrapped in its own "if the script exists, else echo skipping" branch. On a repo with no Node
+# lockfile every one printed "skipping" and the job reported GREEN. A workflow named "quality gate"
+# announced success having run zero checks, on precisely the Python, mixed and monorepo projects the
+# installer already knew about.
+#
+# The fix is not better skip messages. It is that nothing here computed an OUTCOME: a job's status is
+# its last shell exit code, and a skipped step exits 0. Prose in a log has no exit code. So the decision
+# moved into a program — `.claude/respawnpack/respawnpack.js gate` — and this workflow is its caller.
+#
+# FOUR OUTCOMES, with exit codes. The `outcome` field is the pack's one vocabulary — the same four
+# words every RespawnPack verb reports — and the exit code comes only from it:
+#   PASS              0   at least one applicable, configured check ran and passed
+#   NOT_APPLICABLE    0   the project DECLARED it has no quality gate (see below) — never inferred
+#   FAIL              1   a configured check ran and failed
+#   CANNOT_DETERMINE  2   the gate could not establish anything
+#
+# Beside it, every verdict and every check row also carries a `label`: the gate's own richer word for
+# the same result, which is what the log leads with because it is what tells you WHAT TO DO.
+#   NOT_CONFIGURED  (CANNOT_DETERMINE)  a stack was detected but no meaningful check could run
+#                                       → declare a check, or declare the opt-out below
+#   COULD_NOT_RUN   (CANNOT_DETERMINE)  a row only: a configured check's tool would not start
+#                                       → install the tool, or fix the dependency install step
+#
+# ⭐ NOT_CONFIGURED is not green, and that is the entire point. "I looked and found nothing" is an
+# honest answer, not a passing one. If this project genuinely has no quality gate, say so explicitly in
+# respawnpack.config.json and own the claim:
+#
+#   { "qualityGate": { "notApplicable": true, "reason": "documentation-only repository" } }
+#
+# To point the gate at a build this pack does not detect (make, bazel, a shell script), declare it:
+#
+#   { "qualityGate": { "checks": [ { "name": "test", "command": "make", "args": ["test"] } ] } }
+#
+# Detection covers Node (package.json scripts, per package manager, or an ESLint/Prettier config with a
+# local node_modules/.bin/ tool when there is no lint script), Python (ruff/flake8/pylint, mypy, pytest),
+# Go and Rust (toolchain-provided), each at the repo root and one level down for monorepos — the same
+# roots install.js probes, so the installer and the gate cannot disagree about the project. Presets found
+# by detection also cover Terraform (fmt/validate, plus tflint when .tflint.hcl exists), Ansible
+# (ansible-lint), shell (shellcheck), Docker (hadolint), Kubernetes (kubeconform or kubectl kustomize)
+# and documentation (markdownlint) — every one found from a file already in the tree, never asserted.
+name: respawnpack-quality-gate
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+# Least privilege: this workflow only ever reads the repo and runs checks. No write scopes, so a
+# compromised action step can't push code or mutate releases.
+permissions:
+  contents: read
+
+jobs:
+  quality-gate:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node is required to RUN the gate, whatever stack the project itself is written in.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      # Toolchains the gate may need to invoke. Each is conditional on the project actually declaring
+      # that stack — installing a toolchain nobody uses only slows the run down. Add your own here if
+      # your checks need one (a database service, a browser, a compiler).
+      - name: Set up Python (if this project declares one)
+        if: hashFiles('pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', 'tox.ini', '**/pyproject.toml') != ''
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Set up Go (if this project declares one)
+        if: hashFiles('go.mod', '**/go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Set up Terraform (if this project has *.tf files)
+        if: hashFiles('*.tf', '**/*.tf') != ''
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Install Ansible (if this project declares an inventory)
+        if: hashFiles('ansible.cfg', '**/ansible.cfg', '**/inventory/**') != ''
+        run: python3 -m pip install --user ansible ansible-lint
+
+      # Most GitHub-hosted runners already carry shellcheck; installed explicitly anyway so the check
+      # behaves the same on a self-hosted runner and is not silently at the mercy of the image.
+      - name: Install shellcheck (if this project has shell scripts)
+        if: hashFiles('**/*.sh') != ''
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Install hadolint (if this project has a Dockerfile)
+        if: hashFiles('**/Dockerfile*') != ''
+        run: |
+          sudo curl -sSL -o /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          sudo chmod +x /usr/local/bin/hadolint
+
+      # kubeconform is the preferred validator; when it is not installed the gate itself falls back to
+      # `kubectl kustomize`, which ships on GitHub-hosted runners already, so this step only improves on
+      # the fallback rather than being required for the check to run at all.
+      - name: Install kubeconform (if this project has a Kustomize overlay)
+        if: hashFiles('**/kustomization.yaml') != ''
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar -xz -C /tmp
+          sudo mv /tmp/kubeconform /usr/local/bin/kubeconform
+
+      # Dependency install. The gate reports NOT_CONFIGURED (exit 2, not green) when a configured
+      # check's tool is missing, so a failed or skipped install surfaces as an unanswered gate rather
+      # than a silent pass. FILL THIS IN for your stack if the defaults do not cover it.
+      - name: Install dependencies
+        continue-on-error: true
+        run: |
+          if [ -f pnpm-lock.yaml ]; then corepack enable && pnpm install --frozen-lockfile
+          elif [ -f yarn.lock ]; then corepack enable && yarn install --frozen-lockfile
+          elif [ -f package-lock.json ]; then npm ci
+          fi
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt
+          elif [ -f pyproject.toml ]; then python -m pip install -e ".[dev]" || python -m pip install -e . || true
+          fi
+
+      # The gate itself, invoked EXACTLY ONCE. Its exit code IS the job's verdict — no `if` wrapper, no
+      # `|| true`, no continue-on-error, nothing that could turn a 2 into a 0.
+      #
+      # ⛔ AND ONLY ONCE. An earlier version of this file ran the gate a second time to produce the
+      # artifact (`gate --json > file || true`). That second run could not reverse the first failure,
+      # but it re-ran the project's whole test and build suite, could return a DIFFERENT verdict on a
+      # flaky suite, published an artifact that was not the run which decided CI — and put a gate
+      # invocation behind the exact `|| true` this file forbids three paragraphs above. `--verdict-file`
+      # makes the one authoritative run emit its own artifact, so there is no reason to ask twice.
+      # `counts-fence.test.mjs` asserts across this whole document that exactly one invocation exists.
+      - name: Run the quality gate
+        run: node .claude/respawnpack/respawnpack.js gate --verdict-file gate-verdict.json
+
+      # Upload the verdict the run above produced. `always()` because the outcome of a FAILED gate is
+      # precisely what a reader wants; this step publishes, it never re-decides.
+      - name: Upload the gate verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: respawnpack-gate-verdict
+          path: gate-verdict.json
+          if-no-files-found: ignore

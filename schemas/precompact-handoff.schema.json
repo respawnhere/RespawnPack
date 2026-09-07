@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/precompact-handoff.schema.json",
+  "title": ".respawnpack/runtime/precompact-<sessionId>.json — the compaction handoff",
+  "description": "Written by hooks/precompact-ledger-nudge.js, consumed ONCE by hooks/session-routing-nudge.js. GITIGNORED. ⛔ THIS FILE EXISTS BECAUSE THE HOOK STOPPED SPEAKING ON A DEAD CHANNEL: PreCompact does not support hookSpecificOutput.additionalContext (verified against the published hook docs), so the handoff is PERSISTED and read at the next SessionStart instead of being emitted into a field that event has no channel for. `readBackVerified` is not decoration — the writer reads the file back and confirms it before claiming success, and an unverified handoff is still injected but WITH the warning.",
+  "type": "object",
+  "required": [
+    "schemaVersion", "kind", "sessionId", "trigger", "writtenAt", "head",
+    "uncommittedFiles", "uncommittedTruncated", "sessionDelta",
+    "ledgerPresent", "ledgerLastCommit", "ledgerBehindHead", "atomicTask", "contract", "readBackVerified"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "kind": { "const": "precompact-handoff" },
+    "sessionId": { "type": "string" },
+    "trigger": { "type": ["string", "null"] },
+    "writtenAt": { "type": "string" },
+    "head": { "type": ["string", "null"] },
+    "uncommittedFiles": { "type": "array", "maxItems": 60, "items": { "type": "string" } },
+    "uncommittedTruncated": {
+      "description": "Truncation is REPORTED, never silent — a capped list that does not say it was capped reads as complete.",
+      "type": "boolean"
+    },
+    "sessionDelta": {
+      "type": "object",
+      "required": ["status", "files", "headMoved"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["CHANGED", "UNCHANGED", "CANNOT_DETERMINE"] },
+        "files": { "type": "array", "maxItems": 60, "items": { "type": "string" } },
+        "headMoved": { "type": "boolean" }
+      }
+    },
+    "ledgerPresent": { "type": "boolean" },
+    "ledgerLastCommit": { "type": ["string", "null"] },
+    "ledgerBehindHead": { "type": "boolean" },
+    "atomicTask": {
+      "description": "Embedded VERBATIM and opaquely — see atomic-task.schema.json for why no field of it is constrained.",
+      "type": ["object", "string", "null"]
+    },
+    "contract": { "enum": ["collaborate", "delegate", "goal"] },
+    "readBackVerified": { "type": "boolean" },
+    "consumedAt": {
+      "description": "Stamped by markPrecompactConsumed(). Its presence is what stops the handoff being injected a second time.",
+      "type": "string"
+    }
+  }
+}

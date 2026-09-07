@@ -1,0 +1,53 @@
+<h1 id="range-teardown-runbook">Range teardown runbook</h1>
+<blockquote>
+<p>Read the whole runbook before running anything. Every command below is fixture text; nothing in this
+repository executes it.</p>
+</blockquote>
+<h2 id="inventory">Inventory</h2>
+<table>
+<thead>
+<tr><th>host</th><th>role</th><th style="text-align:right">address</th><th style="text-align:center">state</th></tr>
+</thead>
+<tbody>
+<tr><td>range-host-1</td><td>controller</td><td style="text-align:right">10.0.0.11</td><td style="text-align:center">up</td></tr>
+<tr><td>range-host-2</td><td>target</td><td style="text-align:right">10.0.0.12</td><td style="text-align:center">up</td></tr>
+<tr><td>template-host</td><td>image source</td><td style="text-align:right">0.0.0.0</td><td style="text-align:center">held</td></tr>
+</tbody>
+</table>
+<h2 id="preconditions">Preconditions</h2>
+<ul>
+<li class="task-list-item"><input type="checkbox" disabled checked /> The remote Terraform backend is reachable</li>
+<li class="task-list-item"><input type="checkbox" disabled checked /> Somebody who can approve a teardown is awake</li>
+<li class="task-list-item"><input type="checkbox" disabled /> The range has been snapshotted</li>
+</ul>
+<h2 id="steps">Steps</h2>
+<ol>
+<li>Confirm what the plan would change.
+<pre><code class="language-bash">terraform plan -no-color -out=plan.bin
+terraform show -json plan.bin | jq '.resource_changes[].change.actions'
+</code></pre>
+</li>
+<li>Drain the hosts.
+<pre><code class="language-bash">ansible -i inventory/range.yml all -m shell -a 'systemctl stop range-agent'
+</code></pre>
+</li>
+<li>Destroy, and read the prompt rather than typing yes from memory.
+<pre><code class="language-bash">terraform destroy
+</code></pre>
+</li>
+</ol>
+<h2 id="rollback">Rollback</h2>
+<p>If step 2 fails partway, bring the agents back before touching Terraform:</p>
+<pre><code class="language-bash">ansible -i inventory/range.yml all -m shell -a 'systemctl start range-agent'
+</code></pre>
+<h2 id="network">Network</h2>
+<div class="diagram"><pre class="mermaid">flowchart LR
+    OP[Operator] --&gt; C[Controller]
+    C --&gt; H1[range-host-1]
+    C --&gt; H2[range-host-2]</pre><details><summary>diagram source</summary><pre><code>flowchart LR
+    OP[Operator] --&gt; C[Controller]
+    C --&gt; H1[range-host-1]
+    C --&gt; H2[range-host-2]</code></pre></details></div>
+<h2 id="notes">Notes</h2>
+<p>The teardown script lives at <code>scripts/teardown.sh</code>; read it once before you trust it, and see
+<a href="setup.html">the setup guide</a> for how the range is stood back up.</p>

@@ -1,0 +1,83 @@
+# RespawnPack .gitignore
+#
+# Philosophy: this repo ships the product. Anything that is build-scaffolding,
+# a runtime artifact, or machine-local stays out of git so the tree a user clones
+# is exactly what the pack is meant to distribute. If you fork RespawnPack for
+# your own use, adjust these rules freely; they encode this project's own workflow.
+
+# --- Dependencies ---
+# Restored by `npm install` from package.json + the lockfile. Committing it would
+# bloat every diff with vendored code that isn't RespawnPack's own.
+node_modules/
+
+# --- RespawnPack runtime / installer-generated files ---
+# These are created by install.js inside a TARGET repo. They belong to the
+# project that installed RespawnPack, never to this repo.
+#
+.respawnpack/
+respawnpack.config.json
+# Exception: the reference example under examples/ ships its filled-in config on
+# purpose, to show a configured config next to the placeholder the installer writes.
+!examples/**/respawnpack.config.json
+# Exception: the PACK'S OWN root config, which is tracked because RespawnPack now
+# dogfoods its own killed-feature contract. The rule above assumed a config only
+# ever appears inside a target; that stopped being true the day this repo declared
+# state.removals against itself. ⛔ IGNORING THIS FILE IS NOT A NEUTRAL DEFAULT —
+# docs/derived/state/removals.json is tracked, so a clone without the config has
+# seven removal rows and nothing scanning them, which kernel/lib/removals.js reports
+# as FAIL, not CANNOT_DETERMINE. The two files are a pair and must travel together.
+!/respawnpack.config.json
+
+# --- Build-scaffolding for working ON the pack ---
+# Not part of the shipped product: the maintainer's own local status/continuation notes and
+# design scratchpad while developing RespawnPack itself. A user who installs the pack has no
+# use for either, so neither ever ships.
+RESPAWN.md
+brainstorming.md
+
+# --- Memory engine runtime index ---
+# The memory engine's markdown files in git are the source of truth; `.index/`
+# (in any of these locations) is a derived, rebuildable retrieval index. It is
+# also machine-local (embeddings + a local PGLite database), so committing it
+# would both bloat the repo and go stale the moment another machine rebuilds it.
+.index/
+memory/.index/
+memory/**/.index/
+
+# --- OS files ---
+# Filesystem metadata the OS writes into every folder it touches; never
+# meaningful to the project.
+.DS_Store
+Thumbs.db
+
+# --- Editor / IDE ---
+# Per-developer editor state and swap files. Everyone's local setup differs;
+# none of it belongs in a shared repo.
+.idea/
+.vscode/
+*.swp
+*~
+
+# --- Logs & temp ---
+# Ephemeral output from running the pack's own tools locally.
+*.log
+*.tmp
+
+# --- Research working notes (top-level research/ ONLY — docs/research/ is tracked and ships) ---
+# research/ holds the maintainer's working notes derived from external sources, and cloned
+# third-party repos under research/prior-art/. That material informs the pack's ORIGINAL
+# standards and skills (which do ship, with credits), but never ships itself, so the published
+# tree carries only the pack's own expression.
+#
+# Anchored with a leading slash: an unanchored "research/" also swallowed docs/research/,
+# silently blocking new research docs from being committed.
+/research/
+
+# --- Graphify (evaluated + wrapped, never absorbed; see ops/mcp/graphify/SKILL.base.md) ---
+# graphify-8/ is a vendored upstream copy kept for reference during the bind-layer work; it is
+# never part of the shipped pack, so it stays untracked rather than committed alongside our code.
+graphify-8/
+# graphify-out/ is Graphify's own build artifact (graph.json + caches) from running `extract`/
+# `cluster-only` against a target repo. It is a disposable, rebuildable index, never source of
+# truth (see the skill's invariants), so it never belongs in git.
+graphify-out/

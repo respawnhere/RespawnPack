@@ -1,0 +1,5 @@
+this is not JSON at all
+[1,2,3]
+{"method":"somethingTheHostGrewLater/updated","params":{"x":1}}
+{"id":9999,"result":{"orphan":true}}
+{"method":"thread/goal/cleared","params":{"threadId":"019fd7a6-5e6b-72e2-908a-4f7d7201685d"}}

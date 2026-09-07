@@ -1,0 +1,10 @@
+{
+  "gaps": [
+    {
+      "id": "G-1",
+      "status": "open",
+      "requirement": "R-1",
+      "gate": "G1"
+    }
+  ]
+}

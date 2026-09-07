@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-04T00:00:00.000Z",
+  "sourceRevision": "0000000000000000000000000000000000000000",
+  "sourceManifest": {
+    "algorithm": "sha256",
+    "inputs": {
+      "docs/derived/state/requirements.json": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "docs/derived/state/evidence/": "ABSENT"
+    }
+  },
+  "tracksRequirements": false,
+  "cannotDetermine": [
+    "no approved requirement source"
+  ],
+  "ongoingGoalId": null,
+  "goal": null,
+  "goalComplete": false,
+  "goalCompletion": {
+    "status": "CANNOT_DETERMINE",
+    "criteria": [],
+    "why": "no goal contract"
+  },
+  "milestone": null,
+  "currentAtomicTask": null,
+  "constraints": [],
+  "forbidden": [],
+  "killedFeatures": [],
+  "removals": {
+    "status": "CANNOT_DETERMINE",
+    "why": "no registry"
+  },
+  "lineage": {
+    "status": "NOT_APPLICABLE",
+    "counts": {
+      "sources": 0,
+      "derivations": 0,
+      "pass": 0,
+      "fail": 0,
+      "undetermined": 0
+    },
+    "failing": [],
+    "failingTruncated": false
+  },
+  "reconciliation": {
+    "status": "NOT_CONFIGURED",
+    "why": "no state.reconcile in respawnpack.config.json",
+    "counts": {
+      "tasks": 0,
+      "project": 0,
+      "drift": 0
+    },
+    "driftIds": [],
+    "driftTruncated": false
+  }
+}

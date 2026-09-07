@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0.0",
+  "sources": [
+    {
+      "id": "range-inventory",
+      "kind": "inventory",
+      "path": "inventory/range.yml",
+      "authority": "source-of-truth",
+      "note": "the per-range host list; every range-specific file is generated from this one"
+    },
+    {
+      "id": "template-inventory",
+      "kind": "template",
+      "path": "inventory/template.yml",
+      "authority": "source-of-truth"
+    },
+    {
+      "id": "upstream-openapi",
+      "kind": "schema",
+      "url": "https://example.invalid/openapi.yaml",
+      "authority": "source-of-truth"
+    }
+  ],
+  "derivations": [
+    {
+      "id": "guac-config",
+      "target": "config/guac/range.conf",
+      "how": "generate",
+      "neverFrom": [
+        "template-inventory"
+      ],
+      "required": true
+    },
+    {
+      "id": "generated-client",
+      "target": "src/generated/**/*.ts",
+      "from": [
+        "upstream-openapi"
+      ],
+      "how": "generate"
+    }
+  ]
+}

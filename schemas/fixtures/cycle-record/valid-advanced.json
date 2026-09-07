@@ -1,0 +1,9 @@
+{
+  "host": "claude-code",
+  "conversationId": "sess-compact-1",
+  "index": 1,
+  "nonce": "112233445566",
+  "startedAt": "2026-08-06T12:10:00.000Z",
+  "provenance": "advanced",
+  "cycleId": "claude-code:sess-compact-1:1:112233445566"
+}

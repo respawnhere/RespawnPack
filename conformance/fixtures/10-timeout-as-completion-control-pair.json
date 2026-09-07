@@ -1,0 +1,60 @@
+{
+  "id": "timeout-as-completion-control-pair",
+  "class": "control-pair",
+  "title": "The same transition, refused for a clock and for an undeclared name, then accepted for a documented signal",
+  "why": "A check that refuses everything discriminates as poorly as one that accepts everything. This trace runs observe-completion three times against one machine: a timeout dressed as a completion (PROOF_SUBSTITUTION_ATTEMPT), a signal name nothing declares (COMPLETION_EVIDENCE_UNTYPED), and the documented compact_boundary — which is APPLIED. Same transition, same state, three different answers, so the refusals are attributable to the evidence rather than to the machine being closed.",
+  "host": "claude-code",
+  "conversationId": "sess_control_j",
+  "steps": [
+    {
+      "do": "apply", "transition": "checkpoint", "eventId": "measure-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "context-measurement", "source": "documented-api", "usedPercent": 85, "raw": { "used_percent": 85 }, "observedAt": "2026-08-06T19:00:00.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "closeout", "eventId": "stop-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "safe-boundary", "mechanism": "unblocked-stop-hook", "raw": { "hook_event_name": "Stop", "stop_hook_active": false }, "observedAt": "2026-08-06T19:00:01.000Z" }]
+    },
+    {
+      "do": "write-handoff", "as": "h1",
+      "handoff": {
+        "identity": { "host": "claude-code", "conversationId": "sess_control_j", "conversationIdField": "session_id" },
+        "contextCycleId": "$cycleId", "atomicActionId": "W1-controls", "exactNextAction": "keep the control pair in the suite",
+        "git": { "head": "466ed95", "uncommittedFiles": [], "sessionDelta": { "status": "UNCHANGED", "files": [], "headMoved": false } },
+        "userConstraints": [], "unresolvedQuestions": [], "candidateMemories": []
+      }
+    },
+    { "do": "apply", "transition": "stage-handoff", "eventId": "write-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.written" }] },
+    { "do": "apply", "transition": "verify-handoff", "eventId": "readback-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.readback" }] },
+    {
+      "do": "apply", "transition": "request-compact", "eventId": "compact-req-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "compact-requested", "mechanism": "sdk-slash-command", "raw": { "command": "/compact" }, "observedAt": "2026-08-06T19:00:05.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "observe-completion", "eventId": "clock-1", "expectStatus": "REFUSED", "expectFailure": "PROOF_SUBSTITUTION_ATTEMPT",
+      "evidence": [{ "kind": "compact-completed", "signal": "timeout_elapsed_120s", "raw": { "waited": 120000, "note": "the supervisor decided enough time had passed" }, "observedAt": "2026-08-06T19:02:05.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "observe-completion", "eventId": "unknown-1", "expectStatus": "REFUSED", "expectFailure": "COMPLETION_EVIDENCE_UNTYPED",
+      "evidence": [{ "kind": "compact-completed", "signal": "some_event_nobody_declared", "raw": { "type": "system", "subtype": "some_event_nobody_declared" }, "observedAt": "2026-08-06T19:02:06.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "observe-completion", "eventId": "boundary-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "compact-completed", "signal": "compact_boundary", "raw": { "type": "system", "subtype": "compact_boundary", "compact_metadata": { "trigger": "manual", "pre_tokens": 149322 } }, "observedAt": "2026-08-06T19:02:07.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "verify-identity", "eventId": "sessionstart-compact-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "identity-verification", "expectedId": "sess_control_j", "observedId": "sess_control_j", "equal": true, "raw": { "hook_event_name": "SessionStart", "source": "compact", "session_id": "sess_control_j" }, "observedAt": "2026-08-06T19:02:08.000Z" }]
+    }
+  ],
+  "expect": {
+    "finalState": "ACTIVE",
+    "outcome": "PASS",
+    "haltCode": null,
+    "rolloverOutcome": "ROLLED_OVER",
+    "cycleAdvances": 1,
+    "cycleIndex": 1,
+    "neverEntered": ["HALTED"],
+    "transitionsApplied": ["checkpoint", "closeout", "stage-handoff", "verify-handoff", "request-compact", "observe-completion", "verify-identity"],
+    "counts": { "refusals": 2, "noops": 0, "halts": 0 }
+  }
+}

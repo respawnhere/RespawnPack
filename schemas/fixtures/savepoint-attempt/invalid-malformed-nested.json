@@ -1,0 +1,41 @@
+{
+  "at": "2026-08-04T00:00:00.000Z",
+  "sessionId": "s-1",
+  "outcome": "CANNOT_DETERMINE",
+  "exitCode": 2,
+  "blockerDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "blockers": [
+    {
+      "check": "x",
+      "outcome": "PASS",
+      "detail": "a passing check is not a blocker"
+    }
+  ],
+  "stages": {
+    "requested": [
+      "compile",
+      "writeback",
+      "render",
+      "verify",
+      "removals",
+      "reconcile",
+      "coverage",
+      "adapters",
+      "memory"
+    ],
+    "ran": [
+      "compile",
+      "writeback",
+      "render",
+      "verify",
+      "removals",
+      "reconcile",
+      "coverage",
+      "adapters",
+      "memory"
+    ],
+    "skipped": []
+  },
+  "sourceRevision": "0000000000000000000000000000000000000000",
+  "head": "0000000000000000000000000000000000000000"
+}
