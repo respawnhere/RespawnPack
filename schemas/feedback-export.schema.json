@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/feedback-export.schema.json",
+  "title": ".respawnpack/runtime/feedback-export-<date>.json — a project's pack-directed feedback, packaged without its operational detail",
+  "description": "Written by kernel/respawnpack.js `feedback --export` and read back by the same file's `memory candidates import <file>` in a dev checkout. G16, decision 50. It carries only PACK-DIRECTED records (candidates, graph entities and decisions that name a pack identifier), each reduced to this allow-listed shape, after a mechanical redaction fence and an owner preview. ⛔ IT CARRIES NO OPERATIONAL DETAIL: every free-text field passed the redaction fence (no non-pack path, IP, hostname, email, URL, high-entropy token, or secret shape), and the fence catches SHAPES, not meaning, which is why the preview is the owner's last sight of what leaves. The `provenance.projectId` is sixteen random bytes minted machine-locally, so a receiver correlates exports from one install without learning anything about the project; `packVersion` is the receipt's self-report, which a hand edit can forge, so the receiver verifies it against its own known releases and reads CANNOT_DETERMINE when it cannot. The wire format is frozen at schemaVersion 1.0.0, pinned by kernel/schema.test.mjs; additionalProperties is false everywhere so a hand-added field is a rejection, not a stowaway.",
+  "type": "object",
+  "required": ["schemaVersion", "kind", "provenance", "counts", "records"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0",
+      "description": "The wire format version, frozen. The receiver refuses a package whose version it does not implement rather than guessing at an unknown shape."
+    },
+    "kind": {
+      "const": "feedback-export",
+      "description": "Distinguishes this package from every other JSON a reader might be handed."
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["packVersion", "receiptSchemaVersion", "projectType", "posture", "projectId", "exportedAt"],
+      "additionalProperties": false,
+      "description": "Who the export is from, verified by the receiver against its own known releases. Nothing here identifies the project beyond the machine-local random projectId.",
+      "properties": {
+        "packVersion": {
+          "type": ["string", "null"],
+          "description": "The release the exporting install recorded in its receipt (install:pack-version), or null when the receipt predates the field — in which case the receiver reads the whole import as CANNOT_DETERMINE. Self-reported and forgeable, so the receiver matches it to its own VERSION or a CHANGELOG ## [x.y.z] heading and never trusts it blind."
+        },
+        "receiptSchemaVersion": {
+          "type": ["number", "null"],
+          "description": "The install receipt's schemaVersion at export time, or null when there was no receipt."
+        },
+        "projectType": {
+          "type": ["string", "null"],
+          "description": "The exporting project's declared projectType, or null when it declared none."
+        },
+        "posture": {
+          "type": ["string", "null"],
+          "description": "The resolved posture profile of the exporting project, or null when none resolved."
+        },
+        "projectId": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{32}$",
+          "description": "Sixteen random bytes as hex, minted once at the first export into .respawnpack/feedback-id (gitignored, machine-local). Every export from one install carries the same id; a clone mints its own. Null only in a preview before any --out export has minted one."
+        },
+        "exportedAt": {
+          "type": "string",
+          "description": "ISO timestamp the export was written. The receiver requires it to parse."
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "required": ["considered", "included", "excluded", "fieldsDropped"],
+      "additionalProperties": false,
+      "description": "The reduction, in numbers nothing hides behind: every record is named in the preview, so these are a summary, not a substitute.",
+      "properties": {
+        "considered": { "type": "integer", "description": "Every source record examined." },
+        "included": { "type": "integer", "description": "Pack-directed records that passed the fence and are in this package." },
+        "excluded": { "type": "integer", "description": "considered minus included: not-pack-directed, dropped by the owner, or fence-blocked." },
+        "fieldsDropped": { "type": "integer", "description": "Non-mechanical evidence paths dropped from the included records during reduction." }
+      }
+    },
+    "records": {
+      "type": "array",
+      "description": "The included records, each reduced to the allow-listed fields and nothing else.",
+      "items": {
+        "type": "object",
+        "required": ["kind", "sourceId", "identifiers", "evidence", "capturedBy"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": { "enum": ["candidate", "entity", "decision"], "description": "Which classified source this came from." },
+          "sourceId": { "type": "string", "description": "The record's id in the exporting store (a candidate id, an entity id, a decision id), carried so the owner can name a record to --drop." },
+          "klass": { "type": ["string", "null"], "description": "A candidate's klass; null for an entity or decision." },
+          "verificationState": { "type": ["string", "null"], "description": "A candidate's verificationState (candidate | verified | rejected); null for an entity or decision." },
+          "identifiers": { "type": "array", "items": { "type": "string" }, "description": "The manifest identifiers this record named — why it is pack-directed." },
+          "claim": { "type": ["string", "null"], "description": "The first sentence of a candidate's or decision's claim; null for an entity. Passed the redaction fence." },
+          "rejectionReason": { "type": ["string", "null"], "description": "The first sentence of a rejected candidate's rejection reason; null otherwise. Passed the redaction fence." },
+          "observation": { "type": ["string", "null"], "description": "The first sentence of an entity's first observation; null for a candidate or decision. Passed the redaction fence." },
+          "retracted": { "type": ["boolean", "null"], "description": "True when an entity is under memory/graph/_retracted/; null for a candidate or decision." },
+          "evidence": { "type": "array", "items": { "type": "string" }, "description": "ONLY mechanical tokens: a pack file:line, a verb, a hook or doctor-row id, an exit code, a posture or config key. Everything else was dropped and counted in counts.fieldsDropped." },
+          "capturedBy": { "type": "string", "description": "The machine author CLASS only (savepoint | operator | closeout | adapter | import | other), never a person's name." },
+          "at": { "type": ["string", "null"], "description": "The date the record was captured or promoted (YYYY-MM-DD), or null." }
+        }
+      }
+    }
+  }
+}

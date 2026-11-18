@@ -1,0 +1,37 @@
+{
+  "requirements": {
+    "unknown-schema-version": "kernel/lib/state.js never reads this file's schemaVersion — it is present by convention only, and additionalProperties is TRUE because the founder owns the file. Declaring a const here would make the schema stricter than the code it documents."
+  },
+  "goal-contract": {
+    "missing-required": "This document has no required top-level property, and that is deliberate: an empty goal.json is a project with no goal, which is a legitimate and common state rather than a malformed file."
+  },
+  "reconciliation-source": {
+    "missing-required": "The document itself declares no required top-level property, because the record ARRAY lives at whatever `pointer` the project declares — a project may nest its rows anywhere, and requiring a fixed key here would reject every source that does. The record shape ($defs/record) is where `id` and `status` are required, and the reconciler enforces exactly that: a record with no stable identifier is rejected and REPORTED, never skipped."
+  },
+  "project-config": {
+    "missing-required": "The founder owns this file and every key in it is optional — the installer seeds a few and the project may delete any of them. A required field here would fail a legitimate configuration.",
+    "unknown-schema-version": "This file carries no schemaVersion (it is configuration, not a versioned wire format) and additionalProperties is TRUE, so an invented one is legitimately carried rather than rejected."
+  },
+  "atomic-task": {
+    "missing-required": "This schema is deliberately open and declares no required property, because no reader in the tree names a field of this file — a fence verifies that claim. Requiring a field would invent a contract out of someone else's file.",
+    "unknown-schema-version": "Nothing anywhere reads a version from this file, so rejecting an unrecognised one would be a constraint with no consumer — and would break the hand-authored and /savepoint-authored notes this file exists to carry.",
+    "malformed-nested": "No nested structure is declared, because declaring one would require knowing what the note contains, and the whole point of this family is that the pack does NOT know and does not need to. If a reader ever names a field, the reader-coverage fence fails and this schema must grow."
+  },
+  "index-ownership": {
+    "unknown-schema-version": "The root object is a map keyed by index-identity digest, so a `schemaVersion` key would have to be a 16-hex string to be accepted and is rejected as a malformed KEY rather than as a version — which is what the malformed-nested-key fixture covers."
+  },
+  "handoff-verification-receipt": {
+    "unknown-schema-version": "This is a receipt with a single-purpose lifetime bound to one handoffId, created once by writeVerified() and never migrated or rewritten — it carries no schemaVersion field for a future reader to check, so there is no version claim a fixture could break.",
+    "malformed-nested": "Every field is a flat scalar (four strings and one const boolean) with no nested object or array anywhere in the shape, so there is no nested structure for a fixture to malform."
+  },
+  "consumption-receipt": {
+    "unknown-schema-version": "This is core/lifecycle/consumable.js's generic exactly-once claim receipt, created once with O_EXCL and never rewritten — it carries no schemaVersion field for a future reader to check, so there is no version claim a fixture could break."
+  },
+  "threshold-latches": {
+    "unknown-schema-version": "This file is REPLACED WHOLESALE the instant its own cycleId stops matching the machine's current one (core/policy/thresholds.js forCycle()) rather than migrated, so there is no schemaVersion field for a fixture to break — a stale format is discarded, not read."
+  },
+  "cycle-record": {
+    "unknown-schema-version": "This is the machine's own per-conversation identity record, re-minted with a fresh nonce on every advance and re-derived from the journal's fold on every restart (core/lifecycle/cycle.js) — it carries no schemaVersion field for a future reader to check.",
+    "malformed-nested": "Every field is a flat scalar (five strings, one non-negative integer, one enum) with no nested object or array anywhere in the shape, so there is no nested structure for a fixture to malform."
+  }
+}

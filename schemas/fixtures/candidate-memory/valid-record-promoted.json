@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2.0.0",
+  "kind": "candidate-memory",
+  "id": "cm_b2c3d4e5f6a7b8c9",
+  "claim": "index-guard deadlocks when three writers race one lease file without a bounded retry",
+  "klass": "root-cause-fix",
+  "provenance": {
+    "by": "operator",
+    "at": "2026-08-06T12:05:00.000Z",
+    "cycleId": "663ec2eaabbccddeeff00112233445566778899",
+    "conversationId": null,
+    "host": null,
+    "sourceKind": "operator",
+    "evidencePaths": []
+  },
+  "verificationState": "verified",
+  "verification": {
+    "by": "founder",
+    "at": "2026-08-06T12:10:00.000Z",
+    "evidencePaths": [
+      "ran the fix locally against the contention fixture, 20/20 clean"
+    ],
+    "note": "ran the fix locally against the contention fixture, 20/20 clean"
+  },
+  "rejection": null,
+  "supersededBy": null
+}

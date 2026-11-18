@@ -1,0 +1,36 @@
+{
+  "outcome": "PASS",
+  "label": "PASS",
+  "why": "2 check(s) passed",
+  "profiles": [
+    {
+      "id": "node",
+      "root": ".",
+      "evidence": "package.json"
+    }
+  ],
+  "checks": [
+    {
+      "outcome": "PASS",
+      "check": "gate:.:lint",
+      "detail": "exit 0",
+      "checked": 1,
+      "domain": "gate",
+      "subject": "npm run lint",
+      "label": "PASS",
+      "name": "lint",
+      "profile": "node",
+      "root": ".",
+      "configured": true,
+      "bin": "npm",
+      "args": [
+        "run",
+        "lint"
+      ],
+      "exitCode": 0,
+      "output": ""
+    }
+  ],
+  "ran": "1",
+  "exitCode": 0
+}

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0.0",
+  "head": null,
+  "treeDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "judgedAt": "2026-08-04T00:00:00.000Z",
+  "verdict": "findings",
+  "lenses": [],
+  "note": "two findings on the migration path, to be fixed and re-reviewed"
+}

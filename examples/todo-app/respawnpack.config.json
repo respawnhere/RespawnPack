@@ -1,0 +1,32 @@
+{
+  "respawnpack": "0.1.0",
+  "installedAt": "2026-04-02",
+  "routeSource": "app/**/page.{tsx,jsx,ts,js}",
+  "opsTargets": {
+    "db": "supabase"
+  },
+  "codeTruth": [
+    "lib/tokens.ts",
+    "lib/strings/en.ts",
+    "supabase/migrations/"
+  ],
+  "extras": [
+    "playwright-mcp",
+    "supabase"
+  ],
+  "qualityGate": {
+    "notApplicable": true,
+    "reason": "This is a static reference fixture, not a runnable app (see README.md). package.json declares dev/build/start only, no lint or test script exists to name, and nothing here runs in CI."
+  },
+  "state": {
+    "removals": {
+      "notApplicable": true,
+      "reason": "docs/DECISIONS.md#D-003 records a real removal (the AI task-suggestion panel) so the example shows what a retirement decision looks like, but this fixture ships no docs/derived/state/removals.json registry and no live app/ or lib/ tree, so there is nothing for an automated reintroduction scan to read."
+    },
+    "reconcile": {
+      "notApplicable": true,
+      "reason": "TodoApp tracks no task system, and this fixture carries no requirements.json denominator (see README.md). Its only record of work is docs/DECISIONS.md, which is prose outside what the reconciler may read."
+    }
+  },
+  "note": "ROUTE_SOURCE and CODE_TRUTH feed /savepoint's drift-checks with real values, and OPS_TARGETS plus EXTRAS record the adoption interview: the CONFIGURED half of this example. qualityGate and state opt out with reasons instead, because this is a read-only reference fixture (see README.md), not an installed target with a toolchain, task tracker or removal registry behind it: the NOT_APPLICABLE half, shown so both current object forms appear side by side."
+}

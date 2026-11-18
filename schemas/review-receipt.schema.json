@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/review-receipt.schema.json",
+  "title": ".respawnpack/runtime/review-receipt.json — the tree a review judged, so the next step cannot trust a stale verdict",
+  "description": "Written by kernel/respawnpack.js writeReviewReceipt() when `/review` records that it judged a tree; read back by the same file's `review-receipt --check`, which `/ship`'s pre-ship gate runs. GITIGNORED and machine-local: a judgement about a tree is a fact about THAT tree on THIS clone, and a receipt from another machine does not exist by construction. ⛔ IT PROVES A REVIEW RAN AGAINST THIS TREE, NOT THAT THE REVIEW WAS GOOD. `head`, `treeDigest` and `contentTree` pin the identity the review judged; `/ship` recomputes them and refuses when any has moved, naming the stale review. An absent receipt is 'never reviewed on this machine', which is CANNOT_DETERMINE, never a pass, and is distinct from a receipt that no longer matches, which is a FAIL.",
+  "type": "object",
+  "required": ["schemaVersion", "head", "treeDigest", "judgedAt", "verdict"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0",
+      "description": "Pinned to the kernel's own format number (kernel/lib/state.js SCHEMA_VERSION). This record is rewritten wholesale by the next review and never migrated, so additionalProperties:false makes an unexpected version a rejection rather than a field quietly along for the ride."
+    },
+    "head": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "HEAD when the review judged the tree, or null when the repository had no commits yet (legal; hooks/_runtime.js treeState records the same). /ship FAILs when the current HEAD differs from this, naming 'HEAD', because committing the reviewed work moves HEAD and the review no longer covers what would ship."
+    },
+    "treeDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 over the CONTENT IDENTITY hooks/_runtime.js's diffStates compares, not the raw bucket keys: per path, its C: content digest when there is one, else its sorted W:/S:/U: bucket digests (a deletion has only the latter). Digesting content rather than buckets is what keeps a zero-byte `git add` (U:/W: to S:, no byte changed) from reading as the tree changing, so the receipt agrees with the Stop hook about the same tree. It is exactly as precise as treeState, blind spots included: untracked content counts as a C: digest, but A3 bounds the untracked walk at 500 paths (name and size beyond, a too-large untracked directory carried as one entry with its count), so a same-size change past the cap is not seen here any more than the Stop hook sees it. /ship FAILs when the current digest differs, naming 'the working tree'. The writer and the checker both compute it from the one treeState, so they cannot disagree about what 'the tree' is."
+    },
+    "contentTree": {
+      "type": "string",
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+      "description": "The git tree object of the WHOLE reviewed content, built in a temporary copy of the index brought to the working tree with `git add -A` (every byte hashed by git, .gitignore honoured, untracked content and deletions included, .respawnpack/ left out). It binds the receipt to the exact content a commit would carry: `review-receipt --check` FAILs when the current content tree differs, and `--check --staged`, which /ship runs right before `git commit`, FAILs naming each staged path whose index entry is not this tree's entry. Optional for the schema so an older receipt still validates, but a receipt without it is CANNOT_DETERMINE on every check until a re-review records a fresh one."
+    },
+    "judgedAt": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T",
+      "description": "ISO timestamp of the review that wrote this receipt. Named back to the operator when /ship refuses, so the stale review is identifiable rather than merely reported as stale."
+    },
+    "verdict": {
+      "enum": ["clean", "findings"],
+      "description": "What the review concluded about the tree it judged. `clean` means no surviving findings; `findings` means a review that reported findings (a re-review after fixes writes a fresh `clean` receipt against the new tree). This is the review's own claim, recorded, not a thing this schema can evaluate."
+    },
+    "lenses": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional. The review lenses this pass ran (e.g. correctness, security, spine-consistency), recorded for the operator reading the receipt. Advisory: the freshness check branches only on head, treeDigest and contentTree."
+    },
+    "note": {
+      "type": ["string", "null"],
+      "description": "Optional free-text note from the review (what it covered, or what a `findings` verdict was about). Null when the review recorded none."
+    }
+  }
+}

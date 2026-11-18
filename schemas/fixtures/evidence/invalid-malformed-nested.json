@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "requirements": [
+    "R-1"
+  ],
+  "sourceRevision": "0000000000000000000000000000000000000000",
+  "verdict": "pass",
+  "positiveControl": {
+    "passed": "yes"
+  },
+  "negativeControl": {
+    "detected": true
+  },
+  "claimType": "real-engine qualified",
+  "qualifiedBy": "independent",
+  "timestamp": "2026-08-04T00:00:00.000Z",
+  "tool": "fixture",
+  "toolVersion": "1.0.0"
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ClientRequest",
+  "_respawnpack_note": "SYNTHETIC. Shaped exactly like the ClientRequest.json that `codex app-server generate-json-schema --experimental` writes (a oneOf of request variants, each naming its params by $ref into definitions), reduced to the five methods this adapter sends plus one it deliberately does not. It proves the LOADER and the OUTBOUND VALIDATOR. It proves nothing about the host: the live inventory is regenerated per run by probe(), which is where a real drift finding comes from.",
+  "oneOf": [
+    { "type": "object", "required": ["id", "method", "params"], "properties": { "method": { "type": "string", "enum": ["initialize"] }, "params": { "$ref": "#/definitions/InitializeParams" } } },
+    { "type": "object", "required": ["id", "method", "params"], "properties": { "method": { "type": "string", "enum": ["thread/start"] }, "params": { "$ref": "#/definitions/ThreadStartParams" } } },
+    { "type": "object", "required": ["id", "method", "params"], "properties": { "method": { "type": "string", "enum": ["thread/resume"] }, "params": { "$ref": "#/definitions/ThreadResumeParams" } } },
+    { "type": "object", "required": ["id", "method", "params"], "properties": { "method": { "type": "string", "enum": ["thread/compact/start"] }, "params": { "$ref": "#/definitions/ThreadCompactStartParams" } } },
+    { "type": "object", "required": ["id", "method", "params"], "properties": { "method": { "type": "string", "enum": ["turn/start"] }, "params": { "$ref": "#/definitions/TurnStartParams" } } },
+    { "type": "object", "required": ["id", "method", "params"], "properties": { "method": { "type": "string", "enum": ["turn/interrupt"] }, "params": { "$ref": "#/definitions/TurnInterruptParams" } } }
+  ],
+  "definitions": {
+    "InitializeParams": { "type": "object", "required": ["clientInfo"], "properties": { "clientInfo": {}, "capabilities": {} } },
+    "ThreadStartParams": { "type": "object", "properties": { "cwd": {}, "sandbox": {}, "approvalPolicy": {}, "model": {} } },
+    "ThreadResumeParams": { "type": "object", "required": ["threadId"], "properties": { "threadId": {}, "cwd": {}, "sandbox": {}, "approvalPolicy": {}, "model": {} } },
+    "ThreadCompactStartParams": { "type": "object", "required": ["threadId"], "properties": { "threadId": {} } },
+    "TurnStartParams": { "type": "object", "required": ["input", "threadId"], "properties": { "threadId": {}, "input": {}, "approvalPolicy": {}, "cwd": {}, "model": {} } },
+    "TurnInterruptParams": { "type": "object", "required": ["threadId", "turnId"], "properties": { "threadId": {}, "turnId": {} } }
+  }
+}

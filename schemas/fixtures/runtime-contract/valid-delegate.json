@@ -1,0 +1,13 @@
+{
+  "mode": "delegate",
+  "activeGoalId": null,
+  "suspendedGoalId": "G-1",
+  "priorMode": "goal",
+  "setAt": "2026-08-04T00:00:00.000Z",
+  "task": "write the CSV writer",
+  "acceptance": [
+    "tests pass"
+  ],
+  "authority": [],
+  "forbidden": []
+}

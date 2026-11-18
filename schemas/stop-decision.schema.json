@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/stop-decision.schema.json",
+  "title": ".respawnpack/runtime/stop-<sessionId>.json — the record that ends the Stop loop",
+  "description": "Written by hooks/_runtime.js recordStop() from hooks/stop-savepoint.js. GITIGNORED. ⛔ THE FINGERPRINT IS THE MECHANISM (Scenario J): keying on (session, HEAD, delta digest) is what lets a SECOND unchanged stop be accepted instead of blocking forever, which is the R-8 loop. `fingerprint` is the only field alreadyStoppedOn() reads; the rest exist so a human can tell what was blocked and why.",
+  "type": "object",
+  "required": ["sessionId", "fingerprint", "head", "files", "branch", "at"],
+  "additionalProperties": false,
+  "properties": {
+    "sessionId": { "type": "string" },
+    "fingerprint": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+    "head": { "type": ["string", "null"] },
+    "files": { "type": "array", "items": { "type": "string" } },
+    "branch": { "type": "string" },
+    "at": { "type": "string" }
+  }
+}

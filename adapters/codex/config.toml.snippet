@@ -1,0 +1,41 @@
+# RespawnPack · adapters/codex/config.toml.snippet
+#
+# BEST-EFFORT TEMPLATE, same status as hooks.json.template beside it — see that file's `_comment_READ_ME_
+# FIRST` block and adapters/codex/README.md's "What is verified vs. what is templated" section. The event
+# names, the PreCompact/PostCompact manual|auto matcher, and SessionStart's source values are R4-verified
+# against documentation; the exact TOML key shape for a [hooks] registration entry is a best-effort guess,
+# not independently confirmed against a live install. The activation canary marker
+# (.respawnpack/runtime/rollover/_codex-hooks-canary.json), not this file parsing cleanly, is what proves
+# a registration actually took effect.
+#
+# Append this block to ~/.codex/config.toml (user-wide) or <repo>/.codex/config.toml (project-scoped).
+# Replace every {{RESPAWNPACK_CODEX_HOOKS_DIR}} with the ABSOLUTE path to adapters/codex/hooks — TOML has
+# no include mechanism here, so the path must be written out in full, quoted, with backslashes escaped on
+# Windows (TOML basic strings use the SAME backslash-escaping as JSON: \\ for a literal backslash).
+#
+# ⛔ TRUST STEP, STATED AGAIN BECAUSE IT IS THE PART MOST LIKELY TO BE SKIPPED: registering hooks here does
+# NOT make Codex run them. Hooks are additionally gated on the `features.hooks` flag AND a per-hook
+# interactive trust decision made with `/hooks` inside a live Codex session. There is no scriptable way to
+# list which hooks are currently trusted — the canary marker firing is the only after-the-fact proof.
+
+[features]
+hooks = true
+
+[hooks]
+# Each event key takes an array of shell commands. RespawnPack registers its behavioural hook first and
+# the canary second on every event it cares about, so activation evidence accrues even if only ONE of the
+# two is approved via `/hooks` — see respawnpack-canary.js's header for why it is safe on any event.
+PreCompact  = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-precompact.js\""]
+PostCompact = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-postcompact.js\"", "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]
+SessionStart = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-sessionstart.js\"", "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]
+Stop = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-stop.js\"", "node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]
+
+# Optional, broader canary coverage — uncomment any of these to widen activation-proof coverage. Safe on
+# every event per respawnpack-canary.js's own contract (it never emits a decision of any kind).
+# PreToolUse       = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]
+# PermissionRequest = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]
+# PostToolUse      = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]
+# UserPromptSubmit = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]
+# SubagentStart    = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]
+# SubagentStop     = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]
+# SessionEnd       = ["node \"{{RESPAWNPACK_CODEX_HOOKS_DIR}}/respawnpack-canary.js\""]

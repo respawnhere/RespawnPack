@@ -1,0 +1,203 @@
+{
+  "schemaVersion": "1.0.0",
+  "asOf": "2026-01-02",
+  "reVerifyAfter": "2026-02-02",
+  "evidenceBase": "capability-evidence.md",
+  "why": [
+    "A fixture register: the shape only, so the schema can be shown to accept a good document and refuse each bad one."
+  ],
+  "taskClasses": [
+    "coding",
+    "review",
+    "security-testing",
+    "long-context",
+    "planning",
+    "writing",
+    "research",
+    "extraction"
+  ],
+  "families": [
+    {
+      "id": "anthropic",
+      "name": "Example host-session family",
+      "access": {
+        "how": "a signed-in host CLI this fixture never runs",
+        "credential": "host-session",
+        "note": "no credential value appears in this fixture, and the schema declares no property one could be written into"
+      },
+      "promptingPractice": "docs/reference/models/prompting-anthropic.md",
+      "notes": []
+    },
+    {
+      "id": "minimax",
+      "name": "Example environment-variable family",
+      "access": {
+        "how": "an OpenAI-compatible endpoint reached over HTTP",
+        "credential": "environment-variable",
+        "envVar": "EXAMPLE_PROVIDER_ENV_NAME",
+        "note": "the variable NAME only; the negative fixture below proves the pattern refuses anything shaped like a pasted value"
+      },
+      "promptingPractice": "docs/reference/models/prompting-minimax.md",
+      "notes": []
+    }
+  ],
+  "models": [
+    {
+      "id": "example-model-1",
+      "family": "anthropic",
+      "name": "Example Model 1",
+      "status": "current",
+      "contextWindow": 200000,
+      "maxOutput": 64000,
+      "vendorPositioning": {
+        "text": "A fixture model, not a real one.",
+        "form": "quote",
+        "evidence": [
+          {
+            "url": "https://example.invalid/docs/example-model-1",
+            "kind": "vendor",
+            "accessedAt": "2026-01-02",
+            "publishedAt": null,
+            "claim": "the fixture maker's own page describes this fixture model"
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "preferred",
+          "evidence": [
+            {
+              "url": "https://example.invalid/docs/example-model-1",
+              "kind": "vendor",
+              "accessedAt": "2026-01-02",
+              "publishedAt": "2026-01",
+              "claim": "the fixture maker names coding for this model"
+            }
+          ],
+          "why": "a rated class, with the caveat its sources carry"
+        },
+        "review": {
+          "rating": "capable",
+          "evidence": [
+            {
+              "url": "https://example.invalid/evals/review",
+              "kind": "third-party",
+              "accessedAt": "2026-01-02",
+              "publishedAt": "2026-01-02",
+              "claim": "a named fixture evaluation places this model in the class"
+            }
+          ]
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "no source of any kind names this fixture model for security work"
+        },
+        "long-context": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "the window is documented and no quality measurement of it exists"
+        },
+        "planning": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "no orchestration source names this fixture model"
+        },
+        "writing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "no writing source names this fixture model"
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "no research source names this fixture model"
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "no extraction source names this fixture model"
+        }
+      },
+      "notes": [
+        "a note carries a caveat that is not a rating"
+      ],
+      "asOf": "2026-01-02",
+      "probes": [],
+      "vendor": "anthropic"
+    },
+    {
+      "id": "example-model-2",
+      "family": "minimax",
+      "name": "Example Model 2",
+      "status": "restricted",
+      "contextWindow": null,
+      "maxOutput": null,
+      "vendorPositioning": {
+        "text": "A gated fixture model whose specification the fixture maker does not publish.",
+        "form": "paraphrase",
+        "evidence": [
+          {
+            "url": "https://example.invalid/docs/example-model-2",
+            "kind": "vendor",
+            "accessedAt": "2026-01-02",
+            "publishedAt": null,
+            "claim": "the page describes access terms and carries no context-window figure"
+          }
+        ]
+      },
+      "ratings": {
+        "coding": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "restricted access, so there is no rating a general owner could act on"
+        },
+        "review": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "restricted access, as above"
+        },
+        "security-testing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "restricted access, as above"
+        },
+        "long-context": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "restricted access, and no window is published"
+        },
+        "planning": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "restricted access, as above"
+        },
+        "writing": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "restricted access, as above"
+        },
+        "research": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "restricted access, as above"
+        },
+        "extraction": {
+          "rating": "unproven",
+          "evidence": [],
+          "why": "restricted access, as above"
+        }
+      },
+      "notes": [],
+      "asOf": "2026-01-02",
+      "probes": [
+        {
+          "at": "2026-01-02",
+          "taskClass": "coding",
+          "outcome": "CANNOT_DETERMINE",
+          "note": "the fixture runs no probe; this row exists so the probe shape is validated by the valid fixture rather than only declared"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# Every text file is stored AND checked out with LF, on every platform. The hooks, the kernel and
+# their installed-layout tests do byte-level content surgery on real installed copies; a checkout
+# that materializes CRLF (autocrlf's default on Windows) makes those mutations silently no-op, and
+# the suites' own vacuity guards fail the run — correctly. One line ending everywhere is the fix,
+# not looser mutations.
+* text=auto eol=lf
+
+# Vendored official reference texts — always binary, never line-ending-converted.
+# (without this, a PDF whose early bytes lack NULs could be misclassified as text
+#  and corrupted on checkout.)
+*.pdf binary

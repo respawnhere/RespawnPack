@@ -1,0 +1,57 @@
+{
+  "id": "noop-compact",
+  "class": "known-good",
+  "title": "The host declined to compact — \"Not enough messages to compact.\" — and emitted no boundary",
+  "why": "A typed NON-FAILURE, and distinct from success-with-rollover in every observable way: no cycle advances, so every threshold latch stays latched and the checkpoint does not immediately re-fire against a context that never got smaller. The verified handoff is cleared, so a second attempt has to write and verify a fresh one rather than compacting on a savepoint that has since gone stale — which is why request-compact is refused straight after.",
+  "host": "claude-code",
+  "conversationId": "sess_noop_g",
+  "steps": [
+    {
+      "do": "apply", "transition": "checkpoint", "eventId": "measure-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "context-measurement", "source": "documented-api", "usedPercent": 86, "raw": { "used_percent": 86 }, "observedAt": "2026-08-06T16:00:00.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "closeout", "eventId": "stop-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "safe-boundary", "mechanism": "unblocked-stop-hook", "raw": { "hook_event_name": "Stop", "stop_hook_active": false }, "observedAt": "2026-08-06T16:00:02.000Z" }]
+    },
+    {
+      "do": "write-handoff", "as": "h1",
+      "handoff": {
+        "identity": { "host": "claude-code", "conversationId": "sess_noop_g", "conversationIdField": "session_id" },
+        "contextCycleId": "$cycleId", "atomicActionId": "W1-noop", "exactNextAction": "keep working; the host declined to compact",
+        "git": { "head": "466ed95", "uncommittedFiles": [], "sessionDelta": { "status": "UNCHANGED", "files": [], "headMoved": false } },
+        "userConstraints": [], "unresolvedQuestions": [], "candidateMemories": []
+      }
+    },
+    { "do": "apply", "transition": "stage-handoff", "eventId": "write-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.written" }] },
+    { "do": "apply", "transition": "verify-handoff", "eventId": "readback-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.readback" }] },
+    { "do": "latch", "threshold": "final", "atPercent": 86 },
+    {
+      "do": "apply", "transition": "request-compact", "eventId": "compact-req-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "compact-requested", "mechanism": "sdk-slash-command", "raw": { "command": "/compact" }, "observedAt": "2026-08-06T16:00:09.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "noop-return", "eventId": "noop-1", "expectStatus": "APPLIED",
+      "evidence": [
+        { "kind": "compact-noop", "hostResult": "Not enough messages to compact.", "raw": { "type": "result", "subtype": "success", "is_error": false, "result": "Not enough messages to compact.", "session_id": "sess_noop_g" }, "observedAt": "2026-08-06T16:00:10.000Z" },
+        { "kind": "identity-verification", "expectedId": "sess_noop_g", "observedId": "sess_noop_g", "equal": true, "raw": { "session_id": "sess_noop_g" }, "observedAt": "2026-08-06T16:00:10.000Z" }
+      ]
+    },
+    {
+      "do": "apply", "transition": "request-compact", "eventId": "compact-req-2", "expectStatus": "REFUSED", "expectFailure": "ILLEGAL_TRANSITION",
+      "evidence": [{ "kind": "compact-requested", "mechanism": "sdk-slash-command", "raw": { "command": "/compact" }, "observedAt": "2026-08-06T16:00:11.000Z" }]
+    }
+  ],
+  "expect": {
+    "finalState": "ACTIVE",
+    "outcome": "PASS",
+    "haltCode": null,
+    "rolloverOutcome": "NO_OP_NO_COMPACTION",
+    "cycleAdvances": 0,
+    "cycleIndex": 0,
+    "neverEntered": ["REHYDRATING", "HALTED"],
+    "transitionsApplied": ["checkpoint", "closeout", "stage-handoff", "verify-handoff", "request-compact", "noop-return"],
+    "counts": { "noops": 0, "refusals": 1, "halts": 0 },
+    "latchesAfter": { "rearmed": false, "latched": ["final"] }
+  }
+}

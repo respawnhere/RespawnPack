@@ -1,0 +1,37 @@
+<h1 id="the-packs-own-markers">The pack's own markers</h1>
+<p>A derived document draws a line between the half a human writes and the half the state compiler
+rewrites. The renderer keeps that line visible instead of dropping it with the other comments.</p>
+<section class="note" data-marker="RESPAWNPACK:NOTE">
+<p>The human note. It survives regeneration, so a reader should be able to tell at a glance that this
+paragraph is the one they may edit.</p>
+<ul>
+<li>and a note may hold a list</li>
+</ul>
+</section>
+<section class="generated" data-marker="RESPAWNPACK:GENERATED">
+<p><strong>Source revision:</strong> <code>0000000000000000000000000000000000000000</code></p>
+<h2 id="status">Status</h2>
+<table>
+<thead>
+<tr><th>id</th><th>status</th></tr>
+</thead>
+<tbody>
+<tr><td><code>REQ-1</code></td><td>conformant</td></tr>
+</tbody>
+</table>
+<ul>
+<li>2 mandatory requirements, of which 1 conformant</li>
+</ul>
+</section>
+<h2 id="a-marker-inside-a-fenced-block-stays-literal">A marker inside a fenced block stays literal</h2>
+<pre><code class="language-markdown">&lt;!-- RESPAWNPACK:GENERATED — do not hand-edit below this line --&gt;
+this is documentation about the marker, not a generated block
+&lt;!-- /RESPAWNPACK:GENERATED --&gt;
+</code></pre>
+<h2 id="a-closing-marker-with-nothing-open">A closing marker with nothing open</h2>
+<p>The line above is an ordinary comment with no section to close, so it is dropped like any other.</p>
+<h2 id="an-opening-marker-with-nothing-closing-it">An opening marker with nothing closing it</h2>
+<section class="note" data-marker="RESPAWNPACK:NOTE">
+<p>The document meant to open a section here and never closed it. The section runs to the end of the
+file rather than the block being thrown away.</p>
+</section>

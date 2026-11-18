@@ -1,0 +1,9 @@
+{
+  "kind": "handoff-verification",
+  "handoffId": "ho_a1b2c3d4e5f60718",
+  "handoffPath": ".respawnpack/runtime/rollover/claude-code-sess-compact-1/ho_a1b2c3d4e5f60718.json",
+  "writtenDigest": "90458769396f3f39838918b13b888f1496d8d75307c11321e75b4e1cbc1d5565",
+  "readBackDigest": "90458769396f3f39838918b13b888f1496d8d75307c11321e75b4e1cbc1d5565",
+  "equal": true,
+  "verifiedAt": "2026-08-06T12:00:00.100Z"
+}

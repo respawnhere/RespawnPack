@@ -1,0 +1,103 @@
+{
+  "//": "RespawnPack hooks — merge this into <repo>/.claude/settings.json. Requires node + git on PATH. Full per-hook behavior, the Stop block's SessionStart pairing, and the permissions.allow merge rule now live in hooks/README.md — see \"Install\" and the hook table. Ceiling, stated not defended: a worktree is collision isolation, not an OS sandbox, so a subagent in its own worktree runs ARBITRARY BASH and the control plane is NOT protected from it; only editor-tool writes and the visible redirection spelling are refused, which is defence in depth and not a guarantee.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/lockdown.js", "timeout": 30 },
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/worktree-guard.js", "timeout": 30 },
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js", "timeout": 30 }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "if": "Bash(git push *)", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/secret-scan.js", "timeout": 30 },
+          { "type": "command", "if": "Bash(git commit *)", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/secret-scan.js", "timeout": 30 }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/push-guard.js", "timeout": 30 },
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js", "timeout": 30 },
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/shell-guard.js", "timeout": 30 },
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/docker-session-tag.js", "timeout": 30 }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/spawn-guard.js", "timeout": 30 }
+        ]
+      },
+      {
+        "matcher": "WebSearch",
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/websearch-freshness.js", "timeout": 30 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js", "timeout": 30 }
+        ]
+      },
+      {
+        "matcher": "Read|WebFetch|WebSearch|Agent|Task",
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/injection-scan.js", "timeout": 30 }
+        ]
+      },
+      {
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/context-monitor.js", "timeout": 30 }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/spawn-guard.js", "timeout": 30 },
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js", "timeout": 30 }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/precompact-ledger-nudge.js", "timeout": 30 }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/session-routing-nudge.js", "timeout": 30 },
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/mcp-reaper.js", "timeout": 30 }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/mcp-reaper.js", "timeout": 30 },
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js", "timeout": 30 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/stop-savepoint.js", "timeout": 60 }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": ["Bash(git status)", "Bash(git diff:*)", "Bash(git log:*)"]
+  }
+}

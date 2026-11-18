@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "9.9.9",
+  "kind": "feedback-export",
+  "provenance": {
+    "packVersion": "0.3.1",
+    "receiptSchemaVersion": 4,
+    "projectType": "knowledge",
+    "posture": "standard",
+    "projectId": "0123456789abcdef0123456789abcdef",
+    "exportedAt": "2026-10-22T03:00:00.000Z"
+  },
+  "counts": {
+    "considered": 3,
+    "included": 1,
+    "excluded": 2,
+    "fieldsDropped": 1
+  },
+  "records": [
+    {
+      "kind": "candidate",
+      "sourceId": "cm_0123456789abcdef",
+      "klass": "finding",
+      "verificationState": "candidate",
+      "identifiers": [
+        "contract",
+        "kernel/"
+      ],
+      "claim": "contract --completion drops criteria after the first semicolon",
+      "rejectionReason": null,
+      "observation": null,
+      "retracted": null,
+      "evidence": [
+        "kernel/respawnpack.js:4633-4650",
+        "contract"
+      ],
+      "capturedBy": "operator",
+      "at": "2026-10-15"
+    }
+  ]
+}

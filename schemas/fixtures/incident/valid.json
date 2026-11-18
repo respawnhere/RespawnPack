@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "incident",
+  "id": "inc_81557c662d18ecb8",
+  "signature": "503s after deploy, pool exhausted",
+  "cause": "pool 10 under new fan-out",
+  "fix": "raise the connection pool to 50 and add backpressure on the queue",
+  "status": "open",
+  "provenance": {
+    "by": "sre",
+    "at": "2026-10-22T03:00:00.000Z",
+    "cycleId": "663ec2eaabbccddeeff00112233445566778899"
+  },
+  "logRefs": [
+    "a1b2c3d4e5f6a7b8a1b2c3d4e5f6a7b8a1b2c3d4e5f6a7b8a1b2c3d4e5f6a7b8"
+  ],
+  "candidateId": "cm_0648f28c473ebff7"
+}

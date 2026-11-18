@@ -1,0 +1,5 @@
+{"id":101,"method":"execCommandApproval","params":{"threadId":"019fd7a6-5e6b-72e2-908a-4f7d7201685d","callId":"call-1","command":["rm","-rf","/"],"cwd":"C:/tmp"}}
+{"id":102,"method":"item/fileChange/requestApproval","params":{"threadId":"019fd7a6-5e6b-72e2-908a-4f7d7201685d","itemId":"x"}}
+{"id":103,"method":"mcpServer/elicitation/request","params":{"threadId":"019fd7a6-5e6b-72e2-908a-4f7d7201685d","message":"who are you?"}}
+{"id":104,"method":"currentTime/read","params":{}}
+{"id":105,"method":"somethingEntirelyNew/requestApproval","params":{"threadId":"019fd7a6-5e6b-72e2-908a-4f7d7201685d"}}

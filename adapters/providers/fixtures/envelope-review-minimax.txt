@@ -1,0 +1,22 @@
+You are answering one bounded request handed to you by RespawnPack. This is a single turn. You have no tools and there will be no follow-up question.
+
+**Material:**
+# The unit of work
+
+Two paragraphs of material, fixed forever, so the four golden envelopes below differ only in the
+envelope and never in what was wrapped.
+
+The second paragraph exists so the material is not one line, because an envelope that put a one-line
+input first and one that put it last would look identical.
+
+
+**Task:** review.
+Review the material and report what is wrong with it, most serious first.
+
+**Constraints:**
+- Answer only from the material supplied with this request.
+- Say plainly when the material does not settle the question, rather than filling the gap.
+- Stop when the request is answered. Do not add a summary of what you just wrote.
+- You may refuse. A refusal that names what is missing is a better answer than a plausible invention.
+
+**Output:** the answer itself, with the part of the material each claim rests on named beside it.

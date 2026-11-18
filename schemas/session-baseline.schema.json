@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/session-baseline.schema.json",
+  "title": ".respawnpack/runtime/session-<sessionId>.json — the boot baseline a Stop decision subtracts",
+  "description": "Written ONCE per session by hooks/_runtime.js captureBaseline(), from hooks/session-routing-nudge.js. GITIGNORED. ⛔ THE PER-FILE DIGESTS ARE THE WHOLE POINT, and a name list cannot give them: the run-A case is a file already dirty at boot and edited AGAIN during the session — its name is in both lists, and only its content digest moves. Carries no schemaVersion; the record is rewritten on the next boot and never migrated, so a version field would have nothing to gate.",
+  "type": "object",
+  "required": ["sessionId", "head", "files", "capturedAt", "workingDigest", "stagedDigest", "indexPath"],
+  "additionalProperties": false,
+  "properties": {
+    "sessionId": { "type": "string" },
+    "head": { "type": ["string", "null"] },
+    "files": {
+      "description": "Keys are PREFIXED: W: worktree diff chunk · S: staged diff chunk · U: untracked file content. The prefix is what keeps a staged and an unstaged edit to one path distinguishable.",
+      "type": "object",
+      "propertyNames": { "type": "string", "pattern": "^[WSU]:" },
+      "additionalProperties": { "type": "string", "pattern": "^[0-9a-f]{32}$" }
+    },
+    "capturedAt": { "type": "string" },
+    "workingDigest": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+    "stagedDigest": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+    "indexPath": { "type": ["string", "null"] }
+  }
+}

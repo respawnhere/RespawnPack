@@ -1,0 +1,476 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/task-attempt.schema.json",
+  "title": ".respawnpack/runtime/task-attempt-<taskId>-<attempt>.json — what one task attempt actually achieved",
+  "description": "Written by adapters/claude-code/task-runner/runner.js after a fresh task session ends, with open(path,'wx') — created exactly once and NEVER replaced (anti-drift item 40), which is the difference from savepoint-attempt.json, whose one fixed name is rewritten wholesale by the next run. The attempt number is therefore in the FILENAME, the way stop-<sessionId>.json and precompact-<sessionId>.json already carry their subject, and it is the SAME number as the turn record it describes: task-attempt-T-1-003.json pairs with .respawnpack/runtime/tasks/T-1/turn-003.json. GITIGNORED, machine-local. ⛔ WHAT THIS DOCUMENT DOES AND DOES NOT CLAIM. `gates` is what the runner ran IN ITS OWN PROCESS after the session ended — never anything the session reported about itself. `acceptance` carries two INDEPENDENT facts per criterion: whether the kernel archived a `contract complete --met` attestation for it, and the machine EVALUATION of it, which is always CANNOT_DETERMINE because a prose criterion is not something a program may rule on in its own favour. An attestation is a claim made under the kernel's refusal of a partial close; it is not a proof, and a reader that treats `attested: true` as verification has made exactly the substitution this schema exists to prevent. Nothing the session said about its own success — including any FORBIDDEN_PROOF_TOKEN (core/lifecycle/evidence.js), timeout, elapsed time or exit code — is recorded here as a reason for anything.",
+  "type": "object",
+  "required": [
+    "kind",
+    "schemaVersion",
+    "at",
+    "taskId",
+    "title",
+    "attempt",
+    "sessionId",
+    "outcome",
+    "exitCode",
+    "gates",
+    "acceptance",
+    "handoff",
+    "turn"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "respawnpack-task-attempt"
+    },
+    "schemaVersion": {
+      "const": "1.0.0",
+      "description": "The receipt's OWN version, owned by adapters/claude-code/task-runner/runner.js TASK_ATTEMPT_SCHEMA_VERSION rather than by the kernel's docs/derived/* number. Every attempt writes its own immutable file, so older shapes stay on disk and a reader needs a version to discriminate them."
+    },
+    "at": {
+      "type": "string",
+      "description": "ISO timestamp of the moment the verdict was settled — after the gates ran and the attestation was read, not when the session started."
+    },
+    "taskId": {
+      "type": "string",
+      "description": "The id of the docs/derived/state/tasks.json row this attempt was for. That document is authored by the planner and is never written by this pack, so a refused or failed attempt leaves the row exactly as it was."
+    },
+    "title": {
+      "type": "string"
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The turn sequence this attempt used, which is also the number in this file's name."
+    },
+    "sessionId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The fresh session's own id, read structurally out of the stream. Null when the host reported none — in which case no handoff could be written either, because a handoff that cannot name its conversation may not exist."
+    },
+    "outcome": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "CANNOT_DETERMINE",
+        "NOT_APPLICABLE"
+      ],
+      "description": "The rollup of the gates, the attestation and whether the handoff survived. ⛔ PASS means every gate that ran passed AND the kernel holds an attestation for every recorded criterion. It does not mean a criterion was verified."
+    },
+    "exitCode": {
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "description": "The process exit this outcome maps to. Duplicated from `outcome` for the same reason savepoint-attempt.json duplicates it: the reader's question is 'did it finish', and making that a one-field check keeps a consumer from re-deriving the mapping and getting it wrong."
+    },
+    "tools": {
+      "type": "object",
+      "description": "OPTIONAL, ADDITIVE (P5-N-6b): what the session was PERMITTED, and which declared source said so. ⛔ WHY A RECEIPT CARRIES THIS AT ALL. The field run of 2026-09-03: the first live run produced a session that read its target correctly, was refused Edit and Write, and left the deliverable absent — 'could not write the file' and 'was not allowed to write the file' are different findings, and a receipt that records only the second half of that sentence sends the reader to the code instead of to the permission layer. Optional rather than required because receipts are written once and never replaced: a receipt written before this field existed is still a valid record of the attempt it describes, and retroactively requiring a field would make the archive invalid rather than the writer.",
+      "required": [
+        "source",
+        "allowed",
+        "trustRefused",
+        "derivedFrom"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "enum": [
+            "default",
+            "task-row",
+            "option"
+          ],
+          "description": "Which declared source composed the list: the list this project's posture and projectType derive, the queue row's `tools` field (a NARROWING of that derived list, P3-I-2), or `--allowed-tools` on the command line (the owner's override, which may widen past it). Never a guess and never the settings file, which an untrusted workspace discards entirely."
+        },
+        "allowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The entries composed onto the session's `--allowedTools`, verbatim and in order."
+        },
+        "trustRefused": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The host's own sentence, verbatim, when it reported that this workspace has never accepted the trust dialog and its `permissions.allow` entries were therefore ignored. Null means the host said nothing about trust, which is NOT the same as a workspace known to be trusted."
+        },
+        "derivedFrom": {
+          "type": "object",
+          "description": "P3-I-2 · what this project's posture and projectType derived, from adapters/claude-code/task-runner/runner.js `deriveAllowedTools`/`resolveToolDerivation` — present regardless of `source`, because the derivation is worth knowing even when a row narrowed it or the owner's `--allowed-tools` overrode it. An undeclared posture resolves the way `hooks/_posture.js` resolves it (DEFAULTED is `strict`) and an undeclared or unrecognised projectType is `null`; both add nothing, so the undeclared case derives the floor (`allowed` above) byte for byte.",
+          "required": [
+            "posture",
+            "projectType"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "posture": {
+              "enum": [
+                "light",
+                "standard",
+                "strict"
+              ],
+              "description": "The resolved profile this project's tool list was derived from — always one of the three, since `hooks/_posture.js` `resolve()` never returns anything else, whatever DECLARED, DEFAULTED, UNREADABLE or INVALID resolved it."
+            },
+            "projectType": {
+              "enum": [
+                null,
+                "docs-only",
+                "ops-infra",
+                "greenfield-app",
+                "mature-product"
+              ],
+              "description": "The declared `projectType` this project's tool list was derived from, or null when none was declared or the declared value is not one this pack recognises — both read identically here because both derive the same addition: none."
+            }
+          }
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "description": "OPTIONAL, ADDITIVE (P4-M-5): which model this task session ran on, and why. A task session is always a hook-bearing Claude Code session (anti-drift item 54) — core/policy/routing.js's route() is called with requiresHooks:true on every task session, so `family` can only ever be \"anthropic\" here, whatever the capability register rates `preferred` for the row's taskClass. `model` is what route() chose for the row's taskClass within the hooked family, from whichever register answered (see `register` below) — null when no register was available or none of the hooked family's models carry evidence for the class, in which case the host's own default model applies. `effectiveModel` is what the session actually ran on: `model`, unless the owner's `--model` on the command line overrode it. Optional for the same reason `tools` above is: a receipt written before this field existed is still a valid record of the attempt it describes, and requiring it retroactively would make the archive invalid rather than the writer.",
+      "required": [
+        "taskClass",
+        "family",
+        "model",
+        "effectiveModel",
+        "rating",
+        "why",
+        "overridden",
+        "overriddenBy",
+        "register"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "taskClass": {
+          "description": "The row's own declared taskClass, or \"coding\" when the row declared none (adapters/claude-code/task-runner/runner.js `resolveTaskRoute`'s default).",
+          "enum": ["coding", "review", "security-testing", "long-context", "planning", "writing", "research", "extraction"]
+        },
+        "family": {
+          "const": "anthropic",
+          "description": "Always \"anthropic\" — core/policy/routing.js's HOOKED_FAMILY, the family whose sessions carry the pack's hooks. requiresHooks:true restricts every task-session route to it before ranking is even considered (anti-drift item 54), so this can never name another family."
+        },
+        "model": {
+          "type": ["string", "null"],
+          "description": "The model route() chose for `taskClass` within the hooked family. Null when no register answered or no model in the hooked family carries evidence for this class — `rating` reads \"unproven\" in that case too."
+        },
+        "effectiveModel": {
+          "type": ["string", "null"],
+          "description": "What the session's `--model` actually was: `model` above, unless `overridden` is true. Null only when both `model` and the owner's override are null, which is the host's own default model."
+        },
+        "rating": {
+          "enum": ["preferred", "capable", "unproven"],
+          "description": "core/policy/routing.js's RATINGS — the evidence strength behind `model`."
+        },
+        "why": {
+          "type": "string",
+          "description": "route()'s own explanation, truncated to 600 chars by the writer the way other free-text detail fields in this document are."
+        },
+        "overridden": {
+          "type": "boolean",
+          "description": "True when the owner's `--model` on the command line was used for this session instead of the routed `model`."
+        },
+        "overriddenBy": {
+          "type": ["string", "null"],
+          "description": "What overrode the routed model, in words, when `overridden` is true. Null when it is false."
+        },
+        "register": {
+          "type": "object",
+          "description": "Which capability register answered this route, or why none did.",
+          "required": ["source", "path", "why"],
+          "additionalProperties": false,
+          "properties": {
+            "source": {
+              "enum": ["installed", "pack", "none"],
+              "description": "\"installed\": the target project's own docs/reference/models/capability-register.json. \"pack\": this pack's own spine/reference/models/capability-register.json, resolved from the runner's own file location, read when the target has not installed the standards. \"none\": neither was present or readable — route() still answers, with its general fallback."
+            },
+            "path": {
+              "type": ["string", "null"],
+              "description": "The absolute path the register was read from, or null when `source` is \"none\"."
+            },
+            "why": {
+              "type": ["string", "null"],
+              "description": "In words, why `source` is \"none\": absent from both places, or present but unreadable/unparseable. Null when a register was read successfully."
+            }
+          }
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "required": [
+        "outcome",
+        "scopeRequested",
+        "scopeApplied",
+        "checks"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "CANNOT_DETERMINE",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "scopeRequested": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "The task row's `gates.only`, recorded verbatim."
+        },
+        "scopeApplied": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "⛔ NULL WHILE THE RUNNER APPLIES NO GATE SCOPING, and null is the honest answer: it records the request and runs the FULL gate, because a guessed narrowing could skip the check that would have caught the defect. Running more than was asked cannot hide anything; running less silently can. P4-K-08 landed `savepoint --only`/`--skip` and left this seam unwired on purpose — `gates.only` names PROJECT gate ids and `--only` names SAVEPOINT STAGES, and mapping one vocabulary onto the other is a decision rather than plumbing. When it is wired, a scoped savepoint reports its own applied set (a NOT_APPLICABLE `stage:<name>` row per skipped stage, plus `stages` in savepoint-attempt.json), so this field can be read back off the run rather than asserted."
+        },
+        "checks": {
+          "type": "array",
+          "description": "One row per gate the runner ran IN ITS OWN PROCESS, in the order it ran them.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "kind",
+              "outcome",
+              "exitCode",
+              "command",
+              "args",
+              "detail"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "kernel",
+                  "project"
+                ],
+                "description": "`kernel` is one of this pack's own verbs, whose exit code IS the 0/1/2 outcome vocabulary. `project` is a check the founder declared in respawnpack.config.json, which does not speak that vocabulary: exit 0 is PASS and any other exit is FAIL, exactly as kernel/lib/gate.js maps it."
+              },
+              "outcome": {
+                "enum": [
+                  "PASS",
+                  "FAIL",
+                  "CANNOT_DETERMINE",
+                  "NOT_APPLICABLE"
+                ]
+              },
+              "exitCode": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "description": "⛔ NULL WHEN THE CHECK NEVER RAN — a missing tool, a killed child, a deadline that passed. That row is CANNOT_DETERMINE, never FAIL: 'could not run' and 'ran and failed' get different repairs, and answering the second with the first is how a missing binary becomes a re-planned task (anti-drift item 2)."
+              },
+              "command": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "args": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "detail": {
+                "type": "string",
+                "description": "Truncated to 300 chars by the writer. Not constrained here: this validator refuses keywords it cannot enforce, and a length bound it silently ignored would be a check of nothing."
+              }
+            }
+          }
+        }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "required": [
+        "outcome",
+        "contractStatus",
+        "recorded",
+        "attested",
+        "unattested",
+        "attestedAt",
+        "evaluation",
+        "detail"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "CANNOT_DETERMINE",
+            "NOT_APPLICABLE"
+          ],
+          "description": "PASS only when every recorded criterion carries an attestation. An open or unreadable contract is CANNOT_DETERMINE — never silently done, and never FAIL, because a session that stopped halfway and one that finished without attesting are the same observation from here."
+        },
+        "contractStatus": {
+          "enum": [
+            "ATTESTED",
+            "OPEN",
+            "CLOSED",
+            "ABSENT",
+            "UNREADABLE",
+            "MALFORMED"
+          ],
+          "description": "How .respawnpack/runtime/contract.json read back. CLOSED means the delegation ended with no matching attestation in .respawnpack/runtime/delegations.json — something closed the contract without attesting to what the runner recorded."
+        },
+        "recorded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The criteria the kernel actually recorded when the delegation was opened — not the queue's copy of them."
+        },
+        "attested": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unattested": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attestedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evaluation": {
+          "type": "array",
+          "description": "One row per recorded criterion, carrying the two facts apart: whether it was attested, and what a machine could establish about it.",
+          "items": {
+            "type": "object",
+            "required": [
+              "criterion",
+              "attested",
+              "evaluation",
+              "why"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "criterion": {
+                "type": "string"
+              },
+              "attested": {
+                "type": "boolean"
+              },
+              "evaluation": {
+                "const": "CANNOT_DETERMINE",
+                "description": "⛔ ALWAYS CANNOT_DETERMINE, AND PINNED AS A CONSTANT SO IT CANNOT QUIETLY BECOME PASS. An acceptance criterion is prose the planner wrote; nothing in this runner evaluates it, and recording anything else here would be the manufactured evidence the whole pack exists to refuse. kernel/lib/closeout.js says the same thing about the closure it archives: it is an attestation, not a proof."
+              },
+              "why": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "required": [
+        "status",
+        "handoffId",
+        "path",
+        "cycleId",
+        "verified",
+        "detail"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "WRITTEN",
+            "CANNOT_DETERMINE"
+          ],
+          "description": "The rollover-handoff family document core/state/handoff.js wrote for the next reader — the same one hooks/precompact-ledger-nudge.js writes at PreCompact, so an incomplete task is read back in ONE format rather than a second one invented here."
+        },
+        "handoffId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cycleId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Whether the bytes were read back and compared. False means no verification receipt exists, and an unverified handoff is not one a later reader may inject."
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    },
+    "turn": {
+      "type": "object",
+      "required": [
+        "seq",
+        "file",
+        "lines",
+        "digest"
+      ],
+      "additionalProperties": false,
+      "description": "Where the verbatim transcript of the session this receipt is about lives. It is evidence of what happened and is never evidence that the task is done.",
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "file": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

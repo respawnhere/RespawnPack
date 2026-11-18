@@ -1,0 +1,198 @@
+{
+  "//": "RespawnPack P3-N-2 freeze test — the settings.json a fresh install produces for a target with NO posture key, pinned from the 0.3.0 tree (posture-design.md hard constraint 1: strict is defined as exactly what 0.3.0 does, and this file is that definition made mechanical). install/install.test.mjs strips this key before comparing, exactly like install.js does for hooks/settings.snippet.json (delete snippet['//']) — do not let it affect the comparison. DO NOT hand-edit the rest of this file. To re-pin deliberately after an intentional installer change, run: RESPAWNPACK_REPIN_STRICT_SETTINGS=1 node --test install/install.test.mjs — then read the diff before committing it, because every unintentional diff here is exactly the regression this test exists to catch.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/lockdown.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/worktree-guard.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git push *)",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/secret-scan.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/secret-scan.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/push-guard.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/shell-guard.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/docker-session-tag.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/spawn-guard.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/websearch-freshness.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Read|WebFetch|WebSearch|Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/injection-scan.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/context-monitor.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/spawn-guard.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/precompact-ledger-nudge.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/session-routing-nudge.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/mcp-reaper.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/mcp-reaper.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/stop-savepoint.js",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ]
+  },
+  "skillListingBudgetFraction": 0.02
+}

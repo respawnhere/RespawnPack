@@ -1,0 +1,63 @@
+<h1 id="tables">Tables</h1>
+<h2 id="every-alignment">Every alignment</h2>
+<table>
+<thead>
+<tr><th style="text-align:left">left</th><th style="text-align:center">centre</th><th style="text-align:right">right</th><th>unset</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align:left">a</td><td style="text-align:center">b</td><td style="text-align:right">c</td><td>d</td></tr>
+<tr><td style="text-align:left">longer cell</td><td style="text-align:center">x</td><td style="text-align:right">42</td><td></td></tr>
+</tbody>
+</table>
+<h2 id="a-cell-holding-an-escaped-pipe">A cell holding an escaped pipe</h2>
+<table>
+<thead>
+<tr><th>pattern</th><th>meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>a | b</code></td><td>either a or b</td></tr>
+<tr><td>plain | pipe</td><td>the pipe is text</td></tr>
+</tbody>
+</table>
+<h2 id="cells-holding-inline-constructs">Cells holding inline constructs</h2>
+<table>
+<thead>
+<tr><th>what</th><th>where</th></tr>
+</thead>
+<tbody>
+<tr><td><code>renderMarkdown</code></td><td><a href="../lib/site.js">site.js</a></td></tr>
+<tr><td><strong>strong</strong> and <em>emphasis</em></td><td>&lt;script&gt;escaped&lt;/script&gt;</td></tr>
+</tbody>
+</table>
+<h2 id="ragged-rows-padded-and-truncated-to-the-header">Ragged rows, padded and truncated to the header</h2>
+<table>
+<thead>
+<tr><th>one</th><th>two</th><th>three</th></tr>
+</thead>
+<tbody>
+<tr><td>short</td><td></td><td></td></tr>
+<tr><td>a</td><td>b</td><td>c</td></tr>
+</tbody>
+</table>
+<h2 id="without-leading-and-trailing-pipes">Without leading and trailing pipes</h2>
+<table>
+<thead>
+<tr><th>id</th><th>title</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>first</td></tr>
+<tr><td>2</td><td>second</td></tr>
+</tbody>
+</table>
+<h2 id="a-line-with-pipes-that-is-not-a-table">A line with pipes that is not a table</h2>
+<p>This paragraph | has a pipe | but no delimiter row, so it stays a paragraph.</p>
+<h2 id="a-table-that-ends-at-a-heading">A table that ends at a heading</h2>
+<table>
+<thead>
+<tr><th>k</th><th>v</th></tr>
+</thead>
+<tbody>
+<tr><td>a</td><td>1</td></tr>
+</tbody>
+</table>
+<h2 id="after-the-table">After the table</h2>

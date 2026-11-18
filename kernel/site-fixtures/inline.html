@@ -1,0 +1,24 @@
+<h1 id="inline-constructs">Inline constructs</h1>
+<p>Emphasis with <em>stars</em> and <em>underscores</em>, strong with <strong>double stars</strong> and <strong>double underscores</strong>,
+and the nested case <em>outer text with <strong>inner strong</strong> inside it</em>. An identifier such as
+snake_case_name keeps both of its underscores, because <code>_</code> never opens inside a word.</p>
+<p>Inline code holds <code>a &lt; b &amp;&amp; c &gt; d</code> verbatim, a double run <code>a ` b</code> holds a backtick of its own,
+and a padded span <code>`</code> is a single backtick.</p>
+<p>A relative link to <a href="guide.html">the guide</a>, one with a title <a href="index.html" title="The index page">the index</a>,
+an absolute link to <a href="https://example.test/a.md">example</a>, a fragment <a href="#inline-constructs">to this section</a>,
+a root-relative <a href="/docs/setup.html?view=raw#top">docs entry</a>, and a destination carrying balanced
+parentheses <a href="https://en.wikipedia.org/wiki/Foo_(bar)">the article</a>.</p>
+<p>An autolink <a href="https://example.test/path?q=1">https://example.test/path?q=1</a> and an email autolink <a href="mailto:someone@example.test">someone@example.test</a>.</p>
+<p>An image <img src="img/flow.png" alt="a flow diagram" title="Flow" /> and an image inside a link
+<a href="https://example.test/status"><img src="img/badge.svg" alt="build badge" /></a>.</p>
+<p>Raw HTML is text and never markup: &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;, &lt;b&gt;not bold&lt;/b&gt;, and a bare &lt; with
+a bare &gt; beside it.</p>
+<p>A link whose scheme is outside the allow list is left as text: [click](javascript:alert(1)). So is
+an autolink with the same scheme: &lt;javascript:alert(1)&gt;.</p>
+<p>An inline comment  leaves the sentence joined around it.</p>
+<p>Escapes: *not emphasis*, _not emphasis_, `not code`, [not a link], and # not a heading.</p>
+<p>A hard break made with a trailing backslash<br />
+puts this sentence on its own line. The two-space form is proved in the suite instead, because a
+committed fixture may not carry trailing whitespace.</p>
+<p>A reference link [like this][ref] is not modelled, so both halves stay text, and so does a
+footnote marker[^1].</p>

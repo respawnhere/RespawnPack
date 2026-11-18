@@ -1,0 +1,14 @@
+{
+  "kind": "consumption-receipt",
+  "cycleId": "claude-code:sess-goal-1:0:aabbccddeeff",
+  "latched": {
+    "60": {
+      "at": "2026-08-06T12:01:00.000Z",
+      "atPercent": 60
+    },
+    "75": {
+      "at": "2026-08-06T12:02:00.000Z",
+      "atPercent": 75
+    }
+  }
+}

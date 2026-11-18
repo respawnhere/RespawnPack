@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/lineage.schema.json",
+  "title": "docs/derived/state/lineage.json — the declared provenance of everything this project derives",
+  "description": "AUTHORED by the founder or the planner (writer null), the same class as requirements.json and removals.json. Two lists and nothing else: the SOURCES a project treats as truth, and the DERIVATIONS it makes from them. additionalProperties is FALSE at every level because this is a contract a checker reads field by field, and a key nothing reads is a declaration the author believes is in force while nothing enforces it. What the pack does with it is verify, never trust: kernel/lib/lineage.js compares each target's recorded marker against the source on disk, so a derivation that names a source is a claim with a digest behind it rather than a comment.",
+  "type": "object",
+  "required": ["schemaVersion", "sources", "derivations"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "sources": {
+      "description": "Every file or endpoint this project treats as the truth something else is copied from. A source with no derivation is not an error: declaring the inventory before anything derives from it is how a founder records the decision in advance.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/source" }
+    },
+    "derivations": {
+      "description": "Every file or glob this project produced FROM one of those sources. An empty list with the file present is CANNOT_DETERMINE, never a pass: a lineage document that declares no derivation is a contract with nothing to check.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/derivation" }
+    }
+  },
+  "$defs": {
+    "sourceId": {
+      "description": "A stable identifier a derivation and a marker both name. Kept to the characters a comment line can carry unambiguously, because the marker line `respawnpack-derived-from: <sourceId>@sha256:<hex>` is parsed out of a target file's own comment syntax.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "kind", "authority"],
+      "additionalProperties": false,
+      "description": "Exactly one of `path` or `url`. A URL source cannot be digested by this pack, so every derivation from one reports CANNOT_DETERMINE naming that — recorded as an honest blind spot rather than resolved into a verdict nobody can stand behind.",
+      "oneOf": [
+        { "title": "a file in this repository", "required": ["path"] },
+        { "title": "an endpoint outside it", "required": ["url"] }
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/sourceId" },
+        "kind": {
+          "description": "What KIND of truth this is, so a reader can tell an inventory from a template without opening it. The six are the shapes provenance actually takes across project types: an ops inventory, an infrastructure definition, a template a copy is cut from, an interface schema a client is generated from, a dataset, and a document.",
+          "enum": ["inventory", "iac", "template", "schema", "dataset", "doc"]
+        },
+        "path": {
+          "description": "Project-relative, POSIX separators, no parent traversal. A path that escapes the project is refused by the reader rather than followed.",
+          "type": "string",
+          "pattern": "^[^/\\\\][^\\\\]*$"
+        },
+        "url": { "type": "string", "pattern": "^[a-z][a-z0-9+.-]*://" },
+        "authority": {
+          "description": "The one value there is. It is a required const rather than an optional flag so that declaring a source IS declaring it authoritative: a `sources` entry that meant something weaker would leave a reader guessing which entries the derivations are checked against.",
+          "const": "source-of-truth"
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "derivation": {
+      "type": "object",
+      "required": ["id", "target", "from", "how"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "The row's own identifier. It is what the check id `lineage:<id>` is spelled with, so a verdict names the derivation rather than a path that may be a glob.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "target": {
+          "description": "The derived file, or a glob over derived files (`*` inside a segment, `**` across segments, `?` for one character). A glob checks EVERY matching file: one unmarked file in a generated tree is the whole point.",
+          "type": "string",
+          "pattern": "^[^/\\\\][^\\\\]*$"
+        },
+        "from": {
+          "description": "The source ids this target may legitimately be derived from. At least one, because a derivation with no declared source is a target nothing can be checked against.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sourceId" }
+        },
+        "how": {
+          "description": "How the copy was made. It changes no verdict; it is what a reader needs to know which repair to reach for when the source has moved.",
+          "enum": ["clone", "copy", "migrate", "generate"]
+        },
+        "neverFrom": {
+          "description": "The sources this target must NEVER be derived from — the range configuration cut from the template box rather than the per-range one. A marker naming one of these is FAIL, and the detail names both the source the marker claimed and the source this derivation declares.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/sourceId" }
+        },
+        "required": {
+          "description": "Whether the target must exist. Absent or false, a missing target is CANNOT_DETERMINE (it may simply not have been generated here); true, it is FAIL. The default is the weaker answer on purpose: inferring that an absent file is a breach would turn every partial checkout into a red build.",
+          "type": "boolean"
+        },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}

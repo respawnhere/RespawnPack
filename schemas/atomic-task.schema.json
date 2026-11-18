@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/atomic-task.schema.json",
+  "title": ".respawnpack/runtime/atomic-task-<sessionId>.json — the in-flight task note",
+  "description": "⛔ DELIBERATELY OPEN, AND THE JUSTIFICATION IS THE POINT. This pack has NO writer for this file — it is authored by /savepoint, by the goal contract, or by hand. hooks/precompact-ledger-nudge.js parses it opaquely and embeds it verbatim in the handoff; hooks/session-routing-nudge.js renders it with JSON.stringify. NO FIELD OF IT IS ACCESSED BY NAME ANYWHERE IN THE TREE (verified by the reader-coverage fence). Constraining a shape nothing reads would invent a contract out of someone else's file and manufacture failures from it. What IS declared: it must be a JSON object, because that is the only thing the consumers assume. If a reader ever starts naming a field, the reader-coverage fence fails here and this schema must grow to match — which is exactly the drift signal it exists to give.",
+  "type": "object",
+  "additionalProperties": true
+}

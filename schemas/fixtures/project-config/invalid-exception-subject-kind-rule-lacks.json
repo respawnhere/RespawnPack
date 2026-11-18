@@ -1,0 +1,80 @@
+{
+  "respawnpack": "0.2.0",
+  "installedAt": "2026-08-04T00:00:00.000Z",
+  "qualityGate": {
+    "notApplicable": true,
+    "reason": "a documentation-only repository"
+  },
+  "posture": {
+    "profile": "standard",
+    "overrides": {
+      "push-guard:tier1": {
+        "verdict": "off",
+        "reason": "solo repo, every push reviewed at the PR"
+      }
+    }
+  },
+  "exceptions": [
+    {
+      "id": "aws-doc-example-key",
+      "rule": "secret-scan",
+      "match": {
+        "fingerprint": "sha256:d0cfbb2bac62da71c92fe27639d887135e92bb9d6d93f6dd4577464e9fc8307d",
+        "path": "docs/aws-setup.md"
+      },
+      "reason": "the AWS documentation example key quoted in the setup guide — a published placeholder, not a credential",
+      "declaredBy": "owner",
+      "declaredAt": "2026-09-03",
+      "expires": "2027-03-01"
+    },
+    {
+      "id": "security-triage-payloads",
+      "rule": "injection-scan",
+      "match": {
+        "fingerprint": "sha256:d0cfbb2bac62da71c92fe27639d887135e92bb9d6d93f6dd4577464e9fc8307d"
+      },
+      "reason": "the security write-ups quote injection payloads on purpose; every file under this path is reviewed prose"
+    }
+  ],
+  "projectType": "docs-only",
+  "providers": {
+    "minimax": {
+      "protocol": "openai-compatible",
+      "baseUrl": "https://api.minimax.io/v1",
+      "apiKeyEnv": "MINIMAX_API_KEY",
+      "models": [
+        "MiniMax-M3",
+        "MiniMax-M2.7"
+      ],
+      "note": "the international platform; the owner exports the variable in the shell that runs the pack, and nothing writes it here"
+    }
+  },
+  "state": {
+    "removals": {
+      "registry": "docs/derived/state/removals.json",
+      "liveContentDirs": [
+        "docs",
+        "story"
+      ],
+      "extensions": [
+        ".md"
+      ]
+    },
+    "adapters": [
+      {
+        "name": "lint",
+        "command": "npm",
+        "args": [
+          "run",
+          "lint"
+        ],
+        "critical": true,
+        "controls": {
+          "good": "ok.js",
+          "bad": "bad.js"
+        }
+      }
+    ]
+  },
+  "founderOwnKey": "kept, because additionalProperties is true"
+}

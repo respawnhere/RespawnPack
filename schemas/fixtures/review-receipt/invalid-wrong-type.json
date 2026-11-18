@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0.0",
+  "head": "0000000000000000000000000000000000000000",
+  "treeDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "contentTree": "cccccccccccccccccccccccccccccccccccccccc",
+  "judgedAt": "2026-08-04T00:00:00.000Z",
+  "verdict": "clean",
+  "lenses": "correctness",
+  "note": null
+}

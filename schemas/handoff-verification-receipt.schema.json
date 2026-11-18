@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/handoff-verification-receipt.schema.json",
+  "title": ".respawnpack/runtime/rollover/<host>-<conversationId>/<handoffId>.verified.json — the handoff read-back receipt",
+  "description": "Written by core/state/handoff.js's writeVerified() AFTER it wrote the handoff document, read the bytes back, and compared two digests. No receipt for a handoffId means that handoff was never read back and MAY NOT be injected — core/lifecycle/consumable.js's consume() refuses (HANDOFF_UNVERIFIED) rather than trusting a write it cannot prove. `equal` is always true when this file exists at all: a failed comparison (writeVerified returning ok:false) leaves NO receipt on disk, so the receipt's mere existence already answers the question its own `equal` field restates. GITIGNORED, machine-local. No schemaVersion: this is a receipt with a single-purpose lifetime bound to one handoffId, not a document meant to outlive a format change.",
+  "type": "object",
+  "required": ["kind", "handoffId", "handoffPath", "writtenDigest", "readBackDigest", "equal", "verifiedAt"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "handoff-verification" },
+    "handoffId": { "type": "string", "pattern": "^ho_" },
+    "handoffPath": { "type": "string" },
+    "writtenDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "readBackDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "equal": {
+      "description": "Always true when this receipt exists — see the family description. Declared as a real boolean field anyway rather than a bare presence flag, because a comparison result silently assumed is exactly what the digests beside it exist to make checkable.",
+      "const": true
+    },
+    "verifiedAt": { "type": "string" }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "id": "crash-between-verified-and-compacting",
+  "class": "known-good",
+  "title": "The process dies after the handoff is verified and before compaction is requested, twice, in the two ways a crash lands",
+  "why": "The window that matters: a handoff is on disk and proven, and nothing has been asked of the host yet. Recovery must resume at HANDOFF_VERIFIED — not re-verify, not restart, and above all not skip forward. The two crash shapes are covered separately: the snapshot never written, and the snapshot written one state behind the journal. In both, the journal is the authority.",
+  "host": "claude-code",
+  "conversationId": "sess_crash_b",
+  "steps": [
+    {
+      "do": "apply", "transition": "checkpoint", "eventId": "measure-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "context-measurement", "source": "documented-api", "usedPercent": 88, "raw": { "used_percent": 88 }, "observedAt": "2026-08-06T11:00:00.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "closeout", "eventId": "stop-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "safe-boundary", "mechanism": "unblocked-stop-hook", "raw": { "hook_event_name": "Stop", "stop_hook_active": false }, "observedAt": "2026-08-06T11:00:03.000Z" }]
+    },
+    {
+      "do": "write-handoff", "as": "h1",
+      "handoff": {
+        "identity": { "host": "claude-code", "conversationId": "sess_crash_b", "conversationIdField": "session_id" },
+        "contextCycleId": "$cycleId",
+        "atomicActionId": "W1-crash-recovery",
+        "exactNextAction": "request compaction; the handoff is already verified",
+        "git": { "head": "466ed95", "uncommittedFiles": [], "sessionDelta": { "status": "UNCHANGED", "files": [], "headMoved": false } },
+        "userConstraints": [],
+        "unresolvedQuestions": [],
+        "candidateMemories": []
+      }
+    },
+    { "do": "apply", "transition": "stage-handoff", "eventId": "write-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.written" }] },
+    { "do": "apply", "transition": "verify-handoff", "eventId": "readback-1", "expectStatus": "APPLIED", "evidence": [{ "$ref": "h1.readback" }] },
+
+    { "do": "delete-snapshot" },
+    { "do": "crash" },
+    { "do": "expect-open", "restored": true, "snapshotStale": false },
+    { "do": "expect-state", "state": "HANDOFF_VERIFIED" },
+
+    { "do": "stale-snapshot", "state": "ROLLOVER_PENDING" },
+    { "do": "crash" },
+    { "do": "expect-open", "restored": true, "snapshotStale": true },
+    { "do": "expect-state", "state": "HANDOFF_VERIFIED" },
+
+    {
+      "do": "apply", "transition": "request-compact", "eventId": "compact-req-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "compact-requested", "mechanism": "sdk-slash-command", "raw": { "command": "/compact" }, "observedAt": "2026-08-06T11:05:00.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "observe-completion", "eventId": "boundary-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "compact-completed", "signal": "compact_boundary", "raw": { "type": "system", "subtype": "compact_boundary", "compact_metadata": { "trigger": "manual", "pre_tokens": 161002 } }, "observedAt": "2026-08-06T11:05:31.000Z" }]
+    },
+    {
+      "do": "apply", "transition": "verify-identity", "eventId": "sessionstart-compact-1", "expectStatus": "APPLIED",
+      "evidence": [{ "kind": "identity-verification", "expectedId": "sess_crash_b", "observedId": "sess_crash_b", "equal": true, "raw": { "hook_event_name": "SessionStart", "source": "compact", "session_id": "sess_crash_b" }, "observedAt": "2026-08-06T11:05:32.000Z" }]
+    },
+    { "do": "consume-handoff", "ref": "h1", "consumerId": "session-start-injector", "expectStatus": "CONSUMED" }
+  ],
+  "expect": {
+    "finalState": "ACTIVE",
+    "outcome": "PASS",
+    "haltCode": null,
+    "rolloverOutcome": "ROLLED_OVER",
+    "cycleAdvances": 1,
+    "cycleIndex": 1,
+    "neverEntered": ["HALTED"],
+    "transitionsApplied": ["checkpoint", "closeout", "stage-handoff", "verify-handoff", "request-compact", "observe-completion", "verify-identity"],
+    "counts": { "noops": 0, "refusals": 0, "halts": 0 },
+    "consumptions": [{ "status": "CONSUMED" }]
+  }
+}

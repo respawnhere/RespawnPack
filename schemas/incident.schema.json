@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/incident.schema.json",
+  "title": "memory/incidents/<id>.json - one authored incident claim (G17, decision 50)",
+  "description": "⛔ THE INCIDENT LIBRARY OWNS A SIGNATURE, ITS CAUSE AND ITS FIX, ONCE (the memo's single-sourcing rule). A lesson promoted from this incident's candidate cites the incident id as provenance and NEVER copies the fix body; a log row that triggered it points at the id; nobody restates signature/cause/fix. TRACKED (committed, survives a clone) unlike the machine-local ops log: an incident is project knowledge, written through core/_io.js writeAtomicJSON by the `incident` verb and read back through readJSONClassified. The three texts and the author are required and non-empty - a blank one is refused before the record is written. `incident --new` mints one root-cause-fix candidate in the same call whose claim names the incident by id (never the fix), recorded here as `candidateId`; a verb only ever edits an existing record to close it (`status`, `closedAt`, `closedBy`), never to rewrite the signature, cause or fix.",
+  "type": "object",
+  "required": ["schemaVersion", "kind", "id", "signature", "cause", "fix", "status", "provenance", "logRefs", "candidateId"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "kind": { "const": "incident" },
+    "id": { "description": "inc_ followed by 16 hex.", "type": "string", "pattern": "^inc_[0-9a-f]{16}$" },
+    "signature": { "description": "How the incident is recognised next time - one authored claim.", "type": "string" },
+    "cause": { "description": "What caused it - one authored claim.", "type": "string" },
+    "fix": { "description": "What fixed it - one authored claim. Lives here ONCE; a promoted lesson cites the id, never this body.", "type": "string" },
+    "status": { "enum": ["open", "fixed"] },
+    "provenance": {
+      "type": "object",
+      "required": ["by", "at", "cycleId"],
+      "additionalProperties": false,
+      "properties": {
+        "by": { "type": "string" },
+        "at": { "type": "string" },
+        "cycleId": { "description": "The source revision the incident was authored at, resolved the way the savepoint resolves it.", "type": "string" }
+      }
+    },
+    "logRefs": { "description": "Digests of the ops-log rows that triggered this incident - pointers only.", "type": "array", "items": { "type": "string" } },
+    "candidateId": { "description": "The root-cause-fix candidate minted for this incident (cm_...), or null if the mint could not land.", "type": ["string", "null"] },
+    "closedAt": { "description": "When the incident was closed (status fixed) - the one edit a verb makes.", "type": "string" },
+    "closedBy": { "description": "Who closed it.", "type": "string" }
+  }
+}

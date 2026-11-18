@@ -1,0 +1,8 @@
+{
+  "at": "2026-08-06T12:00:00.000Z",
+  "action": "capture",
+  "id": "cm_a1b2c3d4e5f6a7b8",
+  "klass": "finding",
+  "cycleId": "663ec2eaabbccddeeff00112233445566778899",
+  "by": "savepoint"
+}

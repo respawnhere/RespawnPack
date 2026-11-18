@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/ops-log.schema.json",
+  "title": "one line of .respawnpack/ops-log.jsonl - an append-only operations-log row (G17, decision 50)",
+  "description": "⛔ APPEND-ONLY AND MACHINE-LOCAL. The ops log is the single owner of what an operation DID and how it turned out (the memo's single-sourcing rule): a decision, a candidate claim or CONTINUITY's note may point at a row by its `digest`, none may restate its `result`. One JSON object per line, written only through core/_io.js appendLine (ordering and torn-tail detection, NOT atomicity) by the `log` verb and the savepoint, read only through readLinesClassified. The file lives under .respawnpack/, which the installer gitignores, so it NEVER travels in a clone (durability class `runtime`). Each row seals the one before it: `digest` is core/_io.js canonicalDigest of the row WITHOUT its own `digest` field, and `prevDigest` is the previous row's `digest` (null on the first row), so a rewritten or spliced earlier row breaks the chain and is refused. The disclosed limit: a rewrite of the LAST row that also recomputes its own digest is not detectable by the chain alone until the next row (the savepoint's, every write) seals it.",
+  "type": "object",
+  "required": ["schemaVersion", "at", "by", "action", "result", "refs", "cycleId", "prevDigest", "digest"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "at": { "description": "When the row was appended (ISO 8601).", "type": "string" },
+    "by": { "description": "Who did it - required and non-empty (G6's rule: an action with no author is refused before anything is written). `savepoint` for the savepoint's own row.", "type": "string" },
+    "action": { "description": "What was done, one line (refused over 1,000 characters or spanning lines).", "type": "string" },
+    "result": { "description": "The outcome, one line. The savepoint's row records the rollup the run exits with.", "type": "string" },
+    "refs": { "description": "Ids this action points at (an incident id, a prior row's digest, a write cycle) - pointers, never restated bodies.", "type": "array", "items": { "type": "string" } },
+    "cycleId": { "description": "The source revision resolved the way the savepoint resolves it (state.sourceRevision, or 'no-revision').", "type": "string" },
+    "prevDigest": { "description": "The previous row's `digest`; null on the first row.", "type": ["string", "null"] },
+    "digest": { "description": "canonicalDigest of this row with its own `digest` field removed - what the next row's prevDigest seals.", "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

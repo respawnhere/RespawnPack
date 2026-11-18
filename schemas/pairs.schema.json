@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/pairs.schema.json",
+  "title": "docs/derived/state/pairs.json — the pack's register of unmirrored obligations",
+  "description": "HAND-AUTHORED by the pack's own maintainers (or an agent under review) — not by a project this pack is installed into, and not by any writer in this codebase; see this family's writerNote in schemas/registry.json for why that is deliberate. A PAIR is an invariant of the form \"X must agree with Y\": two artifacts where changing one obliges a change in the other. Every defect that shipped in commit 5204353 was a broken pair, and every fence that caught one was two-sided — so this register exists to make the residue COUNTABLE rather than merely felt, with `unfenced` as the number that has to go down. ⛔ IT IS A FLOOR, NOT AN INVENTORY: a pair is only tracked once someone records it here, at the time it is created — not at the next audit. additionalProperties is TRUE throughout: the prose fields here (`reason`, `why`, `exposure`) are read by humans deciding what to fence next, not interpreted by code.",
+  "type": "object",
+  "required": ["schemaVersion", "shapes", "pairs"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {
+      "description": "Hard-checked: a document declaring any other version means the reader cannot trust the row shape it is about to walk, so the register must be treated as unverified rather than half-verified.",
+      "const": "1.0.0"
+    },
+    "reason": {
+      "description": "The register's own explanation of what a pair is and why the file exists, read by a human landing on it cold. Not interpreted by code — a missing or empty reason costs the next reader context, never a check, which is why it is not required.",
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "shapes": {
+      "description": "The closed vocabulary of fencing techniques a pair can be closed by, keyed by the single letter every pair's own `shape` cites. A pair whose `shape` names a letter absent here points at a technique nobody has defined, so a reviewer has no way to judge whether the right kind of fence was even chosen — that specific cross-reference is checked by counts-fence.test.mjs, not by this schema: no keyword available to this validator can compare one property's value against another property's keys.",
+      "type": "object",
+      "propertyNames": { "type": "string", "pattern": "^[A-Za-z]$" },
+      "additionalProperties": {
+        "description": "What the letter means and, critically, what kind of fence — or human process — can actually close a pair of this shape. A blank entry would let a pair cite a shape that explains nothing about how it could ever stop being unfenced.",
+        "type": "string",
+        "pattern": "\\S"
+      }
+    },
+    "pairs": {
+      "description": "The rows themselves. An empty array is not evidence that no pairs exist — it would only show that nobody has recorded one yet, which is why the count is treated as a floor to audit rather than a total to trust on its own.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/pair" }
+    }
+  },
+  "$defs": {
+    "pair": {
+      "type": "object",
+      "required": ["id", "sideA", "sideB", "invariant", "shape", "exposure", "enforcedBy"],
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "description": "The declared-opt-out doctrine state.removals and state.reconcile already enforce in schemas/project-config.schema.json, carried over here: an unfenced pair must say why, or it is indistinguishable from a pair nobody noticed.",
+          "anyOf": [
+            { "not": { "required": ["enforcedBy"], "properties": { "enforcedBy": { "type": "null" } } } },
+            {
+              "required": ["enforcedBy", "why"],
+              "properties": { "enforcedBy": { "type": "null" }, "why": { "type": "string", "pattern": "\\S" } }
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "id": {
+          "description": "This row's stable P-NNN handle. A duplicate or malformed id lets two rows collide under one citation, so a fix, a commit message, or another pair's sideA/sideB can no longer name this row unambiguously.",
+          "type": "string",
+          "pattern": "^P-\\d{3}$"
+        },
+        "sideA": {
+          "description": "One of the two artifacts this invariant binds together. Left blank, the row claims something must agree with sideB without saying what — an invariant with only one named party cannot be checked by anyone reading it cold.",
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "sideB": {
+          "description": "The other artifact this invariant binds together — the same requirement as sideA, for the same reason: a pair is a claim about two things, and a missing second thing is not a pair.",
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "invariant": {
+          "description": "The rule sideA and sideB must jointly satisfy, stated concretely enough that a fence could be written directly from this sentence. A vague invariant cannot be turned into a check, which is exactly the gap `enforcedBy` exists to report honestly rather than paper over.",
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "shape": {
+          "description": "The single-letter key into this document's own `shapes` dictionary naming the fencing technique this pair needs. It is what tells a reader whether `enforcedBy: null` is a temporary, closeable gap or an honestly-advisory limit — see each shape's own description for which.",
+          "type": "string",
+          "pattern": "^[A-Za-z]$"
+        },
+        "exposure": {
+          "description": "The concrete failure this pair produced, or would produce the moment it broke — proof this is a real risk rather than a hypothetical shape a pair could take. A row with no exposure reads as a theoretical worry, which is not what this register is for.",
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "enforcedBy": {
+          "description": "\"<file>:<exact test title>\" naming the two-sided fence that keeps this pair from silently drifting apart, or null if nothing checks it yet. counts-fence.test.mjs verifies both halves against the tree — the named file must exist and the exact title must appear in it — which is a cross-file existence claim this schema's validator has no keyword to express; it can only require the field be a non-empty string or null.",
+          "anyOf": [
+            { "type": "string", "pattern": "\\S" },
+            { "type": "null" }
+          ]
+        },
+        "why": {
+          "description": "Required, and required to be substantial, exactly when enforcedBy is null — the same declared-opt-out doctrine state.removals and state.reconcile already apply in schemas/project-config.schema.json. A gap nobody has to justify is a gap nobody reviews.",
+          "type": "string",
+          "pattern": "\\S"
+        }
+      }
+    }
+  }
+}

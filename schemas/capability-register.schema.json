@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/capability-register.schema.json",
+  "title": "spine/reference/models/capability-register.json — which model family suits which task class, with the evidence",
+  "description": "HAND-AUTHORED by this pack's maintainers (writer null in schemas/registry.json), the same class as docs/derived/state/pairs.json: an inventory of what published sources say about models, not a document any code here produces. ⛔ THE POINT OF THIS SCHEMA IS THE RATING/EVIDENCE COUPLING. `rating` is a claim about a model, and a claim rests on evidence or it does not get made: the oneOf below makes `preferred` and `capable` UNSPELLABLE without at least one evidence entry carrying a source URL, the date it was accessed and the claim that source actually supports, and makes `unproven` unspellable without an empty evidence list and a `why` naming the gap. An undated opinion has no shape here. additionalProperties is FALSE at every level, which is also how a credential is kept out: there is no property anywhere a key, token or account name could be written into, and the only credential this document names is an environment variable NAME (`access.envVar`, matched against a SHOUTING_SNAKE pattern that no secret value would satisfy). The evidence base is the dated research file spine/reference/models/capability-evidence.md, beside the register in the pack and not installed into a project, cited by path rather than linked.",
+  "type": "object",
+  "required": ["schemaVersion", "asOf", "reVerifyAfter", "evidenceBase", "why", "taskClasses", "families", "models"],
+  "additionalProperties": false,
+  "$defs": {
+    "date": {
+      "description": "A full calendar date. Not a free-text 'recently' and not a year: the whole register is a claim about a moment, and a claim about a moment needs one.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "taskClass": {
+      "description": "The ONE task-class vocabulary. core/policy/routing.js's TASK_CLASSES (task M-2) is fenced against this enum in both directions, so a class the router can ask for and this register cannot answer, or the reverse, is a test failure rather than a silent fallback.",
+      "enum": ["coding", "review", "security-testing", "long-context", "planning", "writing", "research", "extraction"]
+    },
+    "evidence": {
+      "description": "One source, and what it actually says. `claim` is the sentence the source supports — not a summary of the rating, which would make the citation decorative.",
+      "type": "object",
+      "required": ["url", "kind", "accessedAt", "publishedAt", "claim"],
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "description": "The page the claim was read on. https only: an http URL in a register that ships would be a downgrade a reader cannot see.",
+          "type": "string",
+          "pattern": "^https://[^\\s]+$"
+        },
+        "kind": {
+          "description": "`vendor` is the model maker's own page; `third-party` is a named external evaluation, leaderboard or publication. Kept apart because a vendor's own table and a neutral harness are not the same evidence, and the register's prose says which it is leaning on.",
+          "enum": ["vendor", "third-party"]
+        },
+        "accessedAt": { "$ref": "#/$defs/date" },
+        "publishedAt": {
+          "description": "The date the page itself shows, `YYYY-MM` where it shows only a month, and null where it shows none — which is the ordinary case for vendor documentation. null is an honest answer here; a guessed day would not be.",
+          "type": ["string", "null"],
+          "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?$"
+        },
+        "claim": { "type": "string" }
+      }
+    },
+    "rating": {
+      "description": "⛔ THE FENCE. Exactly one of two shapes: a rating with evidence, or `unproven` with no evidence and a stated gap. There is no third shape in which a rating is asserted and the sources are 'to follow'.",
+      "type": "object",
+      "required": ["rating", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "rating": { "enum": ["preferred", "capable", "unproven"] },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } },
+        "why": {
+          "description": "Required on `unproven`: which evidence is missing, in words a reader can go and look for. Optional beside a rating, where it carries the caveat the sources come with.",
+          "type": "string"
+        }
+      },
+      "oneOf": [
+        {
+          "$comment": "unproven: nothing to cite, and the gap is named.",
+          "required": ["why"],
+          "properties": {
+            "rating": { "const": "unproven" },
+            "evidence": { "maxItems": 0 }
+          }
+        },
+        {
+          "$comment": "preferred or capable: at least one source, or the rating is an opinion with a schema around it.",
+          "properties": {
+            "rating": { "enum": ["preferred", "capable"] },
+            "evidence": { "minItems": 1 }
+          }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "asOf": { "$ref": "#/$defs/date" },
+    "reVerifyAfter": {
+      "description": "The date after which this register is stale until someone re-reads the sources. Not a decoration: across the three families a model-lineup change occurred roughly every two to three weeks through 2026 (evidence base §7), so a register with no expiry is a register that will be wrong before anyone notices.",
+      "$ref": "#/$defs/date"
+    },
+    "evidenceBase": {
+      "description": "The repository-relative path (in the RespawnPack repository) of the dated research file every entry here was read out of. A path, never a link: the file ships with the pack beside this register's source and is not installed into a project, so a target's copy of this register cites it rather than linking to it.",
+      "type": "string"
+    },
+    "why": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "taskClasses": { "type": "array", "items": { "$ref": "#/$defs/taskClass" }, "minItems": 8 },
+    "families": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "access", "promptingPractice", "notes"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "enum": ["anthropic", "openai", "minimax"] },
+          "name": { "type": "string" },
+          "access": {
+            "description": "How THIS pack reaches the family on the owner's machine. ⛔ NO VALUE OF ANY CREDENTIAL BELONGS HERE, and none can be written: every property is declared, `additionalProperties` is false, and the only credential-shaped field is `envVar`, which holds a variable NAME.",
+            "type": "object",
+            "required": ["how", "credential", "note"],
+            "additionalProperties": false,
+            "properties": {
+              "how": { "type": "string" },
+              "credential": {
+                "description": "`host-session` = a signed-in host CLI this pack drives and never authenticates itself; `account-sign-in` = the operator's own vendor sign-in, performed by them; `environment-variable` = a value read from the environment at call time and never stored, logged or echoed (anti-drift item 52).",
+                "enum": ["host-session", "account-sign-in", "environment-variable"]
+              },
+              "envVar": {
+                "description": "The NAME of the environment variable the value is read from, and nothing else. The pattern accepts a SHOUTING_SNAKE identifier only, so a pasted key cannot occupy this field.",
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+              },
+              "note": { "type": "string" }
+            }
+          },
+          "promptingPractice": {
+            "description": "The installed path of this family's prompting standard. Constrained to the models directory so a family cannot point at a document outside the set the register ships.",
+            "type": "string",
+            "pattern": "^docs/reference/models/prompting-[a-z]+\\.md$"
+          },
+          "notes": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "models": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "family", "name", "status", "contextWindow", "maxOutput", "vendorPositioning", "ratings", "notes", "asOf", "probes"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The vendor's own id string, exactly as the vendor spells it — the string a caller would put in a request. Not a display name and not a normalised slug: a register whose ids are prettier than the API's is a register nobody can route from.",
+            "type": "string"
+          },
+          "family": { "enum": ["anthropic", "openai", "minimax"] },
+          "name": { "type": "string" },
+          "status": {
+            "description": "`current` = the vendor presents it as available now; `legacy` = the vendor marks it superseded but still callable; `restricted` = access is gated to vetted parties, so the general owner cannot route to it whatever its ratings would say.",
+            "enum": ["current", "legacy", "restricted"]
+          },
+          "contextWindow": {
+            "description": "The vendor's published window, or null where the vendor publishes none for this model. null is the honest answer for a gated model whose page carries a description and no specification; a guessed number would read exactly like a documented one.",
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "maxOutput": {
+            "description": "The vendor's published maximum output, or null on the same terms as contextWindow.",
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "vendorPositioning": {
+            "description": "What the maker says this model is FOR, in the maker's own words or a marked paraphrase, with the page it was read on.",
+            "type": "object",
+            "required": ["text", "form", "evidence"],
+            "additionalProperties": false,
+            "properties": {
+              "text": { "type": "string" },
+              "form": { "enum": ["quote", "paraphrase"] },
+              "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" }, "minItems": 1 }
+            }
+          },
+          "ratings": {
+            "description": "Every task class carries a verdict. A class left out would be indistinguishable from a class nobody looked at, so all eight are required and additionalProperties is false — which is also what refuses a class the vocabulary does not have.",
+            "type": "object",
+            "required": ["coding", "review", "security-testing", "long-context", "planning", "writing", "research", "extraction"],
+            "additionalProperties": false,
+            "properties": {
+              "coding": { "$ref": "#/$defs/rating" },
+              "review": { "$ref": "#/$defs/rating" },
+              "security-testing": { "$ref": "#/$defs/rating" },
+              "long-context": { "$ref": "#/$defs/rating" },
+              "planning": { "$ref": "#/$defs/rating" },
+              "writing": { "$ref": "#/$defs/rating" },
+              "research": { "$ref": "#/$defs/rating" },
+              "extraction": { "$ref": "#/$defs/rating" }
+            }
+          },
+          "notes": { "type": "array", "items": { "type": "string" } },
+          "asOf": { "$ref": "#/$defs/date" },
+          "probes": {
+            "description": "Bounded live probes of THIS model, which spend tokens and are the owner's action (the owner's brief for the second run, item 7). Empty in every entry today, and the emptiness is the honest statement: nothing here has been measured on this machine. The outcome vocabulary is the pack's own, so 'could not run' can never collapse into 'failed' (anti-drift item 2).",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["at", "taskClass", "outcome", "note"],
+              "additionalProperties": false,
+              "properties": {
+                "at": { "$ref": "#/$defs/date" },
+                "taskClass": { "$ref": "#/$defs/taskClass" },
+                "outcome": { "enum": ["PASS", "FAIL", "CANNOT_DETERMINE"] },
+                "note": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "todo-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference fictional product used by RespawnPack's examples/ to illustrate a filled-in docs spine. Not a runnable app.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

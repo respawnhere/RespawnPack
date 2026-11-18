@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0.0",
+  "reason": "fixture register — mirrors the real shape for schema testing only",
+  "shapes": {
+    "A": "set-diff completeness over an enumerable-now set",
+    "D": "n-way semantic agreement checked by a shared test vector"
+  },
+  "pairs": [
+    {
+      "id": "P-001",
+      "sideA": "widget.config.json ALLOWED_KEYS",
+      "sideB": "widget.js the keys its loader actually reads",
+      "invariant": "every key the loader reads must be declared, or an unrecognised key is silently ignored",
+      "shape": "A",
+      "exposure": "a typo in a config key is accepted and never applied, with no error anywhere",
+      "enforcedBy": null
+    },
+    {
+      "id": "P-002",
+      "sideA": "widget.js OUTCOME enum",
+      "sideB": "widget.schema.json outcome enum",
+      "invariant": "the runtime vocabulary and its schema must name the same outcomes",
+      "shape": "D",
+      "exposure": "a renamed outcome validates against a schema that no longer describes what the code emits",
+      "enforcedBy": "widget.test.mjs:the runtime and schema outcome vocabularies agree"
+    }
+  ]
+}

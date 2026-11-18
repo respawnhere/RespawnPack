@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "9.9.9",
+  "tasks": [
+    {
+      "id": "T-1",
+      "title": "shared work",
+      "status": "open"
+    },
+    {
+      "id": "T-2",
+      "title": "shipped",
+      "status": "done"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0.0",
+  "removals": [
+    {
+      "id": "K-1",
+      "feature": "magic gauntlet",
+      "risk": "high",
+      "controls": {
+        "good": "the gauntlet was removed in v2",
+        "bad": "the gauntlet grants three wishes"
+      },
+      "reason": "cut in the v2 scope review"
+    }
+  ]
+}

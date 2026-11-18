@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "denominatorVersion": "v1",
+  "requirements": [
+    {
+      "id": 42,
+      "title": "one",
+      "mandatory": true,
+      "gate": "G1"
+    }
+  ],
+  "gates": {
+    "G1": {
+      "title": "gate one",
+      "requires": [
+        "R-1"
+      ]
+    }
+  }
+}

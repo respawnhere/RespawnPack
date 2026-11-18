@@ -1,0 +1,124 @@
+{
+  "kind": "respawnpack-task-attempt",
+  "schemaVersion": "1.0.0",
+  "at": "2026-08-04T00:00:00.000Z",
+  "taskId": "T-1",
+  "title": "add the CSV export button",
+  "attempt": 1,
+  "sessionId": "sess-task-1",
+  "outcome": "FAIL",
+  "exitCode": 1,
+  "tools": {
+    "source": "settings",
+    "allowed": [
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(node .claude/respawnpack/respawnpack.js contract *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ],
+    "trustRefused": "Ignoring 9 permissions.allow entries from .claude/settings.json: this workspace has not been trusted.",
+    "derivedFrom": {
+      "posture": "strict",
+      "projectType": null
+    }
+  },
+  "route": {
+    "taskClass": "coding",
+    "family": "anthropic",
+    "model": "claude-fable-5-1",
+    "effectiveModel": "claude-opus-5",
+    "rating": "preferred",
+    "why": "claude-fable-5-1 is preferred (current) for coding, the best-ranked available candidate.",
+    "overridden": true,
+    "overriddenBy": "--model claude-opus-5 on the command line",
+    "register": {
+      "source": "pack",
+      "path": "D:/pack/spine/reference/models/capability-register.json",
+      "why": null
+    }
+  },
+  "gates": {
+    "outcome": "FAIL",
+    "scopeRequested": [
+      "test"
+    ],
+    "scopeApplied": null,
+    "checks": [
+      {
+        "id": "savepoint --verify",
+        "kind": "kernel",
+        "outcome": "PASS",
+        "exitCode": 0,
+        "command": "node",
+        "args": [
+          ".claude/respawnpack/respawnpack.js",
+          "savepoint",
+          "--verify",
+          "--json"
+        ],
+        "detail": "the kernel verified the projection and every rendered claim (exit 0)"
+      },
+      {
+        "id": "qualityGate:test",
+        "kind": "project",
+        "outcome": "FAIL",
+        "exitCode": 1,
+        "command": "npm",
+        "args": [
+          "test"
+        ],
+        "detail": "ran in . and exited 1"
+      },
+      {
+        "id": "qualityGate:lint",
+        "kind": "project",
+        "outcome": "CANNOT_DETERMINE",
+        "exitCode": null,
+        "command": "ruff",
+        "args": [
+          "check",
+          "."
+        ],
+        "detail": "command not found: ruff"
+      }
+    ]
+  },
+  "acceptance": {
+    "outcome": "PASS",
+    "contractStatus": "ATTESTED",
+    "recorded": [
+      "clicking Export CSV downloads a file with one row per visible record"
+    ],
+    "attested": [
+      "clicking Export CSV downloads a file with one row per visible record"
+    ],
+    "unattested": [],
+    "attestedAt": "2026-08-04T00:00:00.000Z",
+    "evaluation": [
+      {
+        "criterion": "clicking Export CSV downloads a file with one row per visible record",
+        "attested": true,
+        "evaluation": "CANNOT_DETERMINE",
+        "why": "a prose acceptance criterion is not something this runner can evaluate; the attestation beside it is a claim the closing caller made, not a proof"
+      }
+    ],
+    "detail": "the kernel archived an attestation for all 1 recorded criterion(s) — a claim under the kernel's own refusal of a partial close, and not a proof"
+  },
+  "handoff": {
+    "status": "WRITTEN",
+    "handoffId": "ho_a1b2c3d4e5f60718",
+    "path": ".respawnpack/runtime/rollover/claude-code-sess-task-1/ho_a1b2c3d4e5f60718.json",
+    "cycleId": "claude-code:sess-compact-1:0:aabbccddeeff",
+    "verified": true,
+    "detail": "written and read back identical"
+  },
+  "turn": {
+    "seq": 1,
+    "file": ".respawnpack/runtime/tasks/T-1/turn-001.json",
+    "lines": 12,
+    "digest": "90458769396f3f39838918b13b888f1496d8d75307c11321e75b4e1cbc1d5565"
+  }
+}

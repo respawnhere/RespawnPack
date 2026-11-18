@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/savepoint-attempt.schema.json",
+  "title": ".respawnpack/runtime/savepoint-attempt.json — the receipt every savepoint leaves, especially a blocked one",
+  "description": "Written by kernel/respawnpack.js recordSavepointAttempt() on EVERY savepoint run; read by hooks/stop-savepoint.js. GITIGNORED. ⛔ THE BLOCKED RUNS ARE THE POINT (the 2026-08-07 field run §4). Without this file, 'nobody ran a savepoint' and 'a savepoint ran and could not finish' are the same observation, so the Stop hook demanded a command that could not succeed once per turn for eight hours — the tree changes nearly every turn of a long session, so the delta-fingerprint loop guard in stop-decision.schema.json kept re-arming and never got to apply. ⛔ AND `blockerDigest` IS WHAT MAKES IT RE-ARM ON PROGRESS RATHER THAN ON THE CLOCK: it is keyed on WHICH checks blocked the run, not on how many or when, so resolving one changes the digest and the Stop hook asks for a savepoint again, while another turn of unrelated file churn does not. This is a receipt, never a pass: nothing that reads it may report a blocked savepoint as a completed one.",
+  "type": "object",
+  "required": [
+    "at",
+    "outcome",
+    "exitCode",
+    "blockerDigest",
+    "blockers"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "stageList": {
+      "type": "array",
+      "description": "A list of savepoint stage names. The enum is closed on purpose: a stage name this kernel does not have would describe a run nobody can reconstruct, and the CLI refuses one at the flag, so a receipt carrying one is a writer bug rather than a forward-compatible extension.",
+      "items": {
+        "enum": [
+          "compile",
+          "writeback",
+          "render",
+          "verify",
+          "removals",
+          "lineage",
+          "reconcile",
+          "coverage",
+          "adapters",
+          "memory"
+        ]
+      }
+    }
+  },
+  "properties": {
+    "at": {
+      "type": "string",
+      "description": "ISO timestamp of the run."
+    },
+    "sessionId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Best-effort, from CLAUDE_SESSION_ID. Null when the kernel was invoked outside a hosted session — the receipt is still valid, since a blocked savepoint is a fact about the PROJECT, not about who ran it."
+    },
+    "outcome": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "CANNOT_DETERMINE",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "exitCode": {
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "description": "The process exit this outcome maps to. Duplicated from `outcome` deliberately: the reader's question is 'did it finish', and making that a one-field check keeps a consumer from re-deriving the mapping and getting it wrong."
+    },
+    "blockerDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$",
+      "description": "sha256/32 over the sorted `check|outcome` pairs of every FAIL and CANNOT_DETERMINE. Details are excluded on purpose — a detail string that carries a count or a path would change without the SET of blockers changing, and re-arm the nag for no reason."
+    },
+    "stages": {
+      "type": "object",
+      "description": "Which of savepoint's nine stages this run was asked for, which ran, and which were SKIPPED BY REQUEST (P4-K-08, `--only`/`--skip`). ⛔ THIS IS THE DURABLE HALF OF THE ANTI-FORGERY CONTRACT: `--skip` is a flag a caller could use to make a partial run read as a full one, so every skip is both a printed NOT_APPLICABLE row and a recorded field here. A reader that acts on this receipt must treat a non-empty `skipped` as 'this was not a savepoint' — the exit code describes only the stages that ran. Optional: a receipt from a kernel before P4-K-08 carries none, and 'which stages ran' is then UNKNOWN, never 'all nine'.",
+      "additionalProperties": false,
+      "required": [
+        "requested",
+        "ran",
+        "skipped"
+      ],
+      "properties": {
+        "requested": {
+          "$ref": "#/$defs/stageList",
+          "description": "The scope the caller asked for: the profile default, narrowed by --only, then reduced by --skip."
+        },
+        "ran": {
+          "$ref": "#/$defs/stageList",
+          "description": "The stages that actually executed. Recorded separately from `requested` because 'was it asked for' and 'did it happen' are different questions, and a receipt answering only the first would be the conflation `scopeApplied: null` exists to avoid in the task runner."
+        },
+        "skipped": {
+          "$ref": "#/$defs/stageList",
+          "description": "The nine minus `ran`. Non-empty means this run was PARTIAL — see `sourceRevision`, which a partial run deliberately withholds."
+        }
+      }
+    },
+    "sourceRevision": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "The revision the compiled state was bound to — the nearest ancestor of HEAD that is not a savepoint-only commit (hooks/_manifest.js sourceRevisions). Read by hooks/stop-savepoint.js: a receipt with exitCode 0 whose sourceRevision describes the same source as HEAD, with no uncommitted session delta, means the closeout is done and committed, so the hook stays quiet instead of demanding the savepoint that was just committed (observed 2026-08-23). Optional: a receipt from an older kernel carries none and simply never qualifies — the nag is the conservative default. ⛔ AND A PARTIAL RUN (`stages.skipped` non-empty) WITHHOLDS IT ON PURPOSE, for exactly that reason: a scoped run can exit 0 having checked two stages of ten, and publishing the pair the hook reads would retire the nag for a savepoint that never happened. The claim is withheld, not caveated; `stages` beside it records what actually ran and `head` still records where."
+    },
+    "head": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "HEAD when the run happened. Diagnostic only — it differs from sourceRevision exactly when the run happened on top of savepoint-only commits."
+    },
+    "blockers": {
+      "type": "array",
+      "description": "Every non-passing check, so an advisory can NAME what stopped the run rather than only that something did.",
+      "items": {
+        "type": "object",
+        "required": [
+          "check",
+          "outcome",
+          "detail"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "check": {
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "FAIL",
+              "CANNOT_DETERMINE"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Truncated to 300 chars by the writer. Not constrained here: this validator refuses keywords it cannot enforce, and a length bound it silently ignored would be a check of nothing."
+          },
+          "label": {
+            "type": "string",
+            "description": "OPTIONAL and ADDITIVE (K-09). The emitting subsystem's own richer word for the same verdict — NOT_CONFIGURED, COULD_NOT_RUN, SILENTLY INACTIVE — carried through from the kernel/lib/outcome.js row so an advisory can name the blocker the way the subsystem named it. A DISPLAY field: `outcome` above is still the only thing any reader may branch on, and `blockerDigest` is keyed on `check|outcome` alone, so adding or changing a label never re-arms the Stop hook. Absent on rows whose emitter has no richer word, and on every receipt written by an older kernel — which is why it is optional rather than required."
+          }
+        }
+      }
+    }
+  }
+}

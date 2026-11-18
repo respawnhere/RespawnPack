@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "kind": "rollover-handoff",
+  "handoffId": "ho_a1b2c3d4e5f60718",
+  "writtenAt": "2026-08-06T12:00:00.000Z",
+  "identity": {
+    "host": "claude-code",
+    "conversationId": "sess-compact-1",
+    "conversationIdField": "session_id"
+  },
+  "atomicActionId": null,
+  "exactNextAction": "finish the CSV writer",
+  "git": {
+    "head": "a1b2c3d4e5f60718293a4b5c6d7e8f9021324354",
+    "uncommittedFiles": [
+      "src/inflight.ts"
+    ],
+    "uncommittedTruncated": false,
+    "sessionDelta": {
+      "status": "CHANGED",
+      "files": [
+        "src/inflight.ts"
+      ],
+      "headMoved": false
+    }
+  },
+  "userConstraints": [],
+  "verificationEvidence": [],
+  "unresolvedQuestions": [],
+  "candidateMemories": [],
+  "migratedFrom": null,
+  "source": {
+    "kind": "native",
+    "raw": {
+      "trigger": "auto",
+      "sessionId": "sess-compact-1"
+    }
+  }
+}

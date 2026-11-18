@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "9.9.9",
+  "head": "0000000000000000000000000000000000000000",
+  "treeDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "contentTree": "cccccccccccccccccccccccccccccccccccccccc",
+  "judgedAt": "2026-08-04T00:00:00.000Z",
+  "verdict": "clean",
+  "lenses": [
+    "correctness",
+    "security",
+    "spine-consistency"
+  ],
+  "note": null
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "tasks": [
+    {
+      "id": "T-2",
+      "title": "correct the export heading",
+      "specPointer": "PLAN.md decision 2.1",
+      "scope": {
+        "files": [
+          "docs/export.md"
+        ],
+        "dirs": []
+      },
+      "intent": "Fix the heading the CSV export page shows; no code changes.",
+      "acceptance": [
+        "docs/export.md names the export \"Export CSV\", matching the button"
+      ],
+      "tools": "Read,Edit",
+      "gates": {
+        "savepoint": true,
+        "gate": false
+      },
+      "dependsOn": [
+        "T-1"
+      ],
+      "state": "ready",
+      "risk": "low; one prose heading, no behaviour",
+      "provenance": {
+        "createdBy": "planner",
+        "createdAt": "2026-08-04T00:00:00.000Z"
+      }
+    }
+  ]
+}

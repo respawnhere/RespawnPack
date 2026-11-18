@@ -1,0 +1,82 @@
+{
+  "kind": "respawnpack-offload-receipt",
+  "schemaVersion": "1.0.0",
+  "at": "2026-08-04T00:00:00.000Z",
+  "id": "review-0a1b2c3d4e5f",
+  "taskClass": "review",
+  "outcome": "FAIL",
+  "exitCode": 2,
+  "register": {
+    "source": "pack",
+    "path": "spine/reference/models/capability-register.json",
+    "asOf": "2026-01-02"
+  },
+  "route": {
+    "family": "example-family-1",
+    "model": "example-model-1",
+    "rating": "capable",
+    "why": "example-model-1 is capable (current) for review, the best-ranked available candidate.",
+    "asOf": "2026-01-02",
+    "practice": "docs/reference/models/prompting-general.md",
+    "alternatives": [
+      {
+        "family": "example-family-1",
+        "model": "example-model-3",
+        "rating": "unproven",
+        "why": "example-model-3 is unproven (legacy)"
+      }
+    ],
+    "skipped": [
+      {
+        "family": "example-family-2",
+        "why": "the environment variable this fixture family names is unset in this process"
+      }
+    ]
+  },
+  "envelope": {
+    "name": "general",
+    "fallback": true,
+    "practice": "docs/reference/models/prompting-general.md",
+    "why": "the general envelope, which is the fallback; no envelope is written for the family \"example-family-1\""
+  },
+  "provider": {
+    "name": "openai-compatible",
+    "family": "example-family-1",
+    "model": "example-model-1",
+    "kind": "TIMEOUT",
+    "detail": "the request was cancelled at the deadline, which is an observation of a clock and never a completion"
+  },
+  "availability": [
+    {
+      "family": "example-family-1",
+      "ok": true,
+      "why": "EXAMPLE_PROVIDER_ENV_NAME is set in this process; presence is all that is checked"
+    },
+    {
+      "family": "example-family-2",
+      "ok": false,
+      "why": "the environment variable this fixture family names is unset in this process"
+    }
+  ],
+  "retry": {
+    "attempted": false,
+    "from": null,
+    "to": null,
+    "why": "this path runs exactly one turn on the routed provider and stops; a second attempt on another family would spend a budget the operator did not choose"
+  },
+  "usage": {
+    "input": null,
+    "output": null
+  },
+  "durationMs": 1234,
+  "input": {
+    "path": "/tmp/fixture/unit-of-work.md",
+    "bytes": 42,
+    "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "output": {
+    "path": null,
+    "bytes": null,
+    "digest": null
+  }
+}

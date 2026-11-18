@@ -1,0 +1,185 @@
+{
+  "//": "RespawnPack P3-N-2 freeze test (decision 34, amended by C1 2026-10-09) — the settings.json a FRESH install now produces, which seeds posture {profile: standard, seededBy: installer} and composes the standard column. C1 retired worktree-guard and lockdown under standard (the host covers the editor boundary via isolation: worktree and the permissions.deny rules below), so the PreToolUse editor group is index-guard alone (one process) while the Bash group still runs through one hooks/dispatch.js process; permissions.deny carries the control-plane Edit/Write/NotebookEdit rules the pack owns (strict emits none). Every other registration is the strict column unchanged. install/install.test.mjs strips this key before comparing, exactly like install.js does for hooks/settings.snippet.json. DO NOT hand-edit the rest of this file. To re-pin deliberately after an intentional installer change, run: RESPAWNPACK_REPIN_STANDARD_SETTINGS=1 node --test install/install.test.mjs — then read the diff before committing it, because every unintentional diff here is exactly the regression this test exists to catch.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git push *)",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/secret-scan.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/secret-scan.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/dispatch.js PreToolUse bash --covers push-guard.js,index-guard.js,shell-guard.js,docker-session-tag.js",
+            "timeout": 60
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/spawn-guard.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Read|WebFetch|WebSearch|Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/injection-scan.js",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/context-monitor.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/spawn-guard.js",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/precompact-ledger-nudge.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/session-routing-nudge.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/index-guard.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/stop-savepoint.js",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ],
+    "deny": [
+      "Edit(.respawnpack/*)",
+      "Edit(.respawnpack/runtime/**)",
+      "Edit(respawnpack.config.json)",
+      "Edit(docs/derived/state/**)",
+      "Edit(.claude/settings.json)",
+      "Edit(.claude/settings.local.json)",
+      "Edit(.claude/hooks/**)",
+      "Edit(.claude/agents/**)",
+      "Edit(.mcp.json)",
+      "Edit(.git/**)",
+      "Write(.respawnpack/*)",
+      "Write(.respawnpack/runtime/**)",
+      "Write(respawnpack.config.json)",
+      "Write(docs/derived/state/**)",
+      "Write(.claude/settings.json)",
+      "Write(.claude/settings.local.json)",
+      "Write(.claude/hooks/**)",
+      "Write(.claude/agents/**)",
+      "Write(.mcp.json)",
+      "Write(.git/**)",
+      "NotebookEdit(.respawnpack/*)",
+      "NotebookEdit(.respawnpack/runtime/**)",
+      "NotebookEdit(respawnpack.config.json)",
+      "NotebookEdit(docs/derived/state/**)",
+      "NotebookEdit(.claude/settings.json)",
+      "NotebookEdit(.claude/settings.local.json)",
+      "NotebookEdit(.claude/hooks/**)",
+      "NotebookEdit(.claude/agents/**)",
+      "NotebookEdit(.mcp.json)",
+      "NotebookEdit(.git/**)"
+    ]
+  },
+  "skillListingBudgetFraction": 0.02
+}

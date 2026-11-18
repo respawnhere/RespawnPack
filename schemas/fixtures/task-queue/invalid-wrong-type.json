@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "tasks": [
+    {
+      "id": "T-1",
+      "title": "add the CSV export button",
+      "specPointer": "PLAN.md decision 2.1",
+      "scope": {
+        "files": [
+          "src/export.ts"
+        ],
+        "dirs": []
+      },
+      "intent": "Give the report page a CSV export next to the existing PDF one.",
+      "acceptance": [
+        "clicking Export CSV downloads a file with one row per visible record"
+      ],
+      "gates": {
+        "savepoint": true,
+        "gate": true,
+        "only": [
+          "test"
+        ]
+      },
+      "dependsOn": "T-0",
+      "state": "ready",
+      "risk": "low; additive UI, no existing route changes",
+      "provenance": {
+        "createdBy": "planner",
+        "createdAt": "2026-08-04T00:00:00.000Z"
+      }
+    }
+  ]
+}

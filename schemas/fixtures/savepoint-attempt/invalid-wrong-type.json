@@ -1,0 +1,47 @@
+{
+  "at": "2026-08-04T00:00:00.000Z",
+  "sessionId": "s-1",
+  "outcome": "CANNOT_DETERMINE",
+  "exitCode": "2",
+  "blockerDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "blockers": [
+    {
+      "check": "render:docs/derived/CONTINUITY.md",
+      "outcome": "CANNOT_DETERMINE",
+      "detail": "hand-authored file not yet migrated"
+    },
+    {
+      "check": "gate:.:test",
+      "outcome": "CANNOT_DETERMINE",
+      "detail": "npm is not on PATH",
+      "label": "COULD_NOT_RUN"
+    }
+  ],
+  "stages": {
+    "requested": [
+      "compile",
+      "writeback",
+      "render",
+      "verify",
+      "removals",
+      "reconcile",
+      "coverage",
+      "adapters",
+      "memory"
+    ],
+    "ran": [
+      "compile",
+      "writeback",
+      "render",
+      "verify",
+      "removals",
+      "reconcile",
+      "coverage",
+      "adapters",
+      "memory"
+    ],
+    "skipped": []
+  },
+  "sourceRevision": "0000000000000000000000000000000000000000",
+  "head": "0000000000000000000000000000000000000000"
+}

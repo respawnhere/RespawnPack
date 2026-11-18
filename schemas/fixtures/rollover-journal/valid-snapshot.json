@@ -1,0 +1,29 @@
+{
+  "v": 1,
+  "at": "2026-08-06T12:00:01.100Z",
+  "derivedFrom": "journal.jsonl — the authority; this file is a fast path and a cross-check",
+  "state": "COMPACTING",
+  "cycleId": "claude-code:sess-compact-1:0:aabbccddeeff",
+  "cycle": {
+    "host": "claude-code",
+    "conversationId": "sess-compact-1",
+    "index": 0,
+    "nonce": "aabbccddeeff",
+    "startedAt": "2026-08-06T12:00:00.000Z",
+    "provenance": "minted",
+    "cycleId": "claude-code:sess-compact-1:0:aabbccddeeff"
+  },
+  "halted": null,
+  "verifiedHandoff": {
+    "handoffId": "ho_a1b2c3d4e5f60718",
+    "equal": true
+  },
+  "counts": {
+    "transitions": 5,
+    "noops": 0,
+    "refusals": 0,
+    "halts": 0,
+    "consumptions": 0
+  },
+  "seq": 5
+}

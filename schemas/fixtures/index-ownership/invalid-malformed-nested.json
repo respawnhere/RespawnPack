@@ -1,0 +1,5 @@
+{
+  "0123456789abcdef": {
+    "src/a.ts": "not-a-state-key"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/cycle-record.schema.json",
+  "title": ".respawnpack/runtime/rollover/<host>-<conversationId>/cycle.json — the machine's current context-cycle identity",
+  "description": "Written by core/lifecycle/cycle.js's persist(), called from core/lifecycle/machine.js on mint (first open) and on every advance (a successful verify-identity). A CONTEXT CYCLE is the work performed between two compactions — NOT a session, because a compacted conversation keeps its session id, which is exactly why a v0.2 latch keyed on session id fired once and went silent forever. This file is a FAST PATH and a CROSS-CHECK ONLY: the journal (rollover-journal family) is the authority, and machine.open() REWRITES this file from the journal's fold whenever the two disagree — a crash between the journal append and this file's write is the one case where they legitimately do, for one open(). GITIGNORED, machine-local. No schemaVersion: this record is re-minted with a fresh nonce on every advance and re-derived from the journal on every restart, so there is no format for an old reader to disagree about.",
+  "type": "object",
+  "required": ["host", "conversationId", "index", "nonce", "startedAt", "provenance", "cycleId"],
+  "additionalProperties": false,
+  "properties": {
+    "host": { "enum": ["claude-code", "codex", "pi"] },
+    "conversationId": {
+      "description": "The host's own stable conversation identity, VERBATIM and un-sanitized — this is what an identity-verification record compares against, and is why it is kept separately from the sanitized directory-name segment derived from it.",
+      "type": "string"
+    },
+    "index": {
+      "description": "0-based, monotone, incremented exactly once per OBSERVED compaction completion (inside verify-identity).",
+      "type": "integer",
+      "minimum": 0
+    },
+    "nonce": {
+      "description": "12 hex characters, minted fresh with the cycle. What makes reuse of an index DETECTABLE — an artifact bound to cycle N carries N's nonce, so a re-minted N after a crash cannot silently adopt the orphaned cycle's latches or receipts.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{12}$"
+    },
+    "startedAt": { "type": "string" },
+    "provenance": {
+      "description": "Why this record has the index it has — 'cycle 0 because this is the first cycle' and 'cycle 0 because the journal was gone' are different facts. 'minted-after-repair' names the second explicitly rather than letting a reader infer it from the index alone.",
+      "enum": ["minted", "minted-after-repair", "advanced"]
+    },
+    "cycleId": {
+      "description": "host:conversationId:index:nonce — the composite identity every latch and every handoff's contextCycleId is keyed on.",
+      "type": "string"
+    }
+  }
+}

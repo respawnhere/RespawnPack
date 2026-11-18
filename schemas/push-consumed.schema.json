@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/push-consumed.schema.json",
+  "title": ".respawnpack/push.consumed — the consumed push authorization (JSON, despite the extension)",
+  "description": "Written by hooks/push-guard.js. GITIGNORED, and inside the CONTROL PLANE no subagent may write (a permission boundary whose configuration lives in the space it governs is not a boundary — finding N-9, and G4-P0-2 where this exact filename matched no control-plane pattern). ⛔ TWO FIELDS ENCODE TWO FIXED DEFECTS: `session`, because the guard once compared only command and elapsed time, so an identical push from ANY session rode another session's go-ahead; and `firstAt`, because each honoured retry rewrote `at` and the window slid indefinitely.",
+  "type": "object",
+  "required": ["at", "cmd", "session"],
+  "additionalProperties": false,
+  "properties": {
+    "at": { "type": "number" },
+    "firstAt": {
+      "description": "The ORIGINAL consume. Readers accept `firstAt ?? at` so a pre-firstAt record still works; a record with no `session` is deliberately NOT accepted, because a retry now requires a real session id on both sides.",
+      "type": "number"
+    },
+    "cmd": { "type": "string" },
+    "session": { "type": ["string", "null"] },
+    "retries": { "type": "integer", "minimum": 1 }
+  }
+}

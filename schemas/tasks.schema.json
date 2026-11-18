@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://respawnpack.dev/schemas/tasks.schema.json",
+  "title": "docs/derived/state/tasks.json — the tracked task queue",
+  "description": "AUTHORED by the planner, never written by this pack (registry.json: writer null) — the same class as requirements.json. The rework task list, decision 2.1 chose this ONE tracked family over the kernel audit K-11's original two: execution and attestation reuse `contract delegate --task --acceptance` and `contract complete --met`, which already refuse an empty acceptance list and a partial attestation, so only the durable, ordered queue is new here. No new verb and no `.respawnpack/runtime/task.json` land with this schema — `.respawnpack/runtime/contract.json` stays the one runtime pointer. Unlike requirements.json, additionalProperties is FALSE at every level: this is a tool-shaped planning record with a fully enumerated field list (the kernel audit §5 K-11's field list, minus the verbs and the runtime pointer), not a founder free-form file.",
+  "type": "object",
+  "required": ["schemaVersion", "tasks"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "tasks": {
+      "description": "The ordered, dependency-aware list. ⛔ IDS ARE MEANT TO BE UNIQUE, AND THIS VALIDATOR HAS NO KEYWORD TO SAY SO: `uniqueItems` is unsupported (schemas/validate.mjs SUPPORTED) and would only compare whole items even if it were, not one field of them. kernel/schema.test.mjs checks id-uniqueness directly instead, the same way a duplicate identifier in a reconciliation-source record is flagged by kernel/lib/reconcile.js's DUPLICATE_ID class rather than by reconciliation-source.schema.json.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/task" }
+    }
+  },
+  "$defs": {
+    "task": {
+      "type": "object",
+      "required": ["id", "title", "specPointer", "scope", "intent", "acceptance", "gates", "dependsOn", "state", "risk", "provenance"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "This row's stable handle. `dependsOn` entries and a goal's future `tasks-done:<id>` completion criterion (the kernel audit §5 K-11) cite it. Unique across the array — see this schema's note on `tasks` for why that cannot be a JSON Schema keyword here.",
+          "type": "string", "pattern": "\\S"
+        },
+        "title": { "type": "string", "pattern": "\\S" },
+        "specPointer": {
+          "description": "Where this task's requirement is written down — a file, a heading, or a decision id such as \"PLAN.md decision 2.1\" — so a fresh session can find the spec without this queue re-stating it.",
+          "type": "string", "pattern": "\\S"
+        },
+        "scope": {
+          "description": "The files and directories this task may touch. A future runner's handoff refusal (the kernel audit §5 K-11: 'the tree has no uncommitted changes under the task's declared scope') checks the tree against exactly this boundary.",
+          "type": "object",
+          "required": ["files", "dirs"],
+          "additionalProperties": false,
+          "properties": {
+            "files": { "type": "array", "items": { "type": "string" } },
+            "dirs": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "intent": {
+          "description": "What this task changes and why, for a session that has not read the spec pointer yet.",
+          "type": "string", "pattern": "\\S"
+        },
+        "acceptance": {
+          "description": "Required and never empty — the same rule `contract delegate --acceptance` and runtime-contract.schema.json's delegate-mode `acceptance` already enforce: a bounded task with no definition of done is an unbounded one with a shorter description.",
+          "type": "array", "minItems": 1, "items": { "type": "string" }
+        },
+        "gates": {
+          "description": "Which of this pack's own checks the task's completion must pass. `only`, when present, narrows to specific stage names; absent or empty means unrestricted. No stage vocabulary is enumerated here because no runner reads this field yet (the rework task list, decision 2.1 adds no reader) — pinning one now would invent a contract before its consumer exists.",
+          "type": "object",
+          "required": ["savepoint", "gate"],
+          "additionalProperties": false,
+          "properties": {
+            "savepoint": { "type": "boolean" },
+            "gate": { "type": "boolean" },
+            "only": { "type": "array", "items": { "type": "string", "pattern": "\\S" } }
+          }
+        },
+        "tools": {
+          "description": "OPTIONAL, and NARROWING ONLY (P3-I-2; P5-N-6b introduced the field). The tool permissions this row's session is given, in the host's own permission-rule syntax (`Edit`, `Write`, `Bash(git status)`), composed onto the session's `--allowedTools` by adapters/claude-code/task-runner/runner.js. ⛔ WHY THIS IS A FIELD AND NOT A SETTINGS ENTRY. The field run of 2026-09-03 defect D3: a workspace that has never accepted Claude Code's trust dialog has its ENTIRE `permissions.allow` list discarded by the CLI, with the explanation delivered only on the child's stderr, so the first live task session could read but could not Edit or Write the one file in its scope and could not see why. A flag on the argv is not gated by that dialog. ABSENT means the list DERIVED for this project from its declared `posture` and `projectType` (`deriveAllowedTools` in runner.js: the floor is `Read`, `Edit`, `Write`, the kernel's `contract` verb through node, and read-only git; posture `light` adds read-write git; `projectType` `ops-infra` adds read-only validators; `greenfield-app` and `mature-product` add npm test/lint/build; `docs-only` and an undeclared or unrecognised posture/projectType add nothing, so an undeclared project derives the floor byte for byte). PRESENT, it must be a SUBSET of that derived list: a row NARROWS what its own project already derives, and never widens it — an entry outside the derived set is refused at exit 2, naming the entry and the derived list, before anything is spawned (owner decision 21; this replaces the field's original 'present replaces the default' semantics). Only `--allowed-tools`, typed by the owner on the command line, may widen past the derivation. Never empty when present: an empty list is a session that may use no tool at all, which is not something a planner means, and which would otherwise be indistinguishable from taking the default. The runner also refuses an entry granting `Bash` with no program (`Bash`, `Bash(*)`), a push, or a forcing flag, whatever declared it — that floor lives with the composed invocation because it applies equally to a list passed on the command line or derived from posture and projectType.",
+          "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "\\S" }
+        },
+        "taskClass": {
+          "description": "OPTIONAL (P4-M-5). Which class of work this row is, from core/policy/routing.js's own TASK_CLASSES vocabulary — kernel/schema.test.mjs fences this enum against that array, both directions, on a mutated copy of each side, the same discipline P4-M-2 already keeps between TASK_CLASSES and schemas/capability-register.schema.json's taskClass enum. ABSENT means `coding`, the default class adapters/claude-code/task-runner/runner.js's `resolveTaskRoute` applies to a row that declares none — the same 'absence is the ordinary case' reading `tools` above already carries. A task session is always a hook-bearing Claude Code session (anti-drift item 54): this field never moves WHICH FAMILY runs the row — `core/policy/routing.js`'s `route()` is always called with `requiresHooks: true`, so the family is always its `HOOKED_FAMILY` — it only chooses which MODEL within that family the capability register's evidence prefers for the class. A register that rates a different family `preferred` for this class does not move a task session off the hooked one. An unrecognised value is refused by this schema and, procedurally, by `runner.js`'s `validateTaskQueue` before any session starts.",
+          "enum": ["coding", "review", "security-testing", "long-context", "planning", "writing", "research", "extraction"]
+        },
+        "dependsOn": {
+          "description": "Other rows' `id` values that must be `done` first. May be empty.",
+          "type": "array", "items": { "type": "string" }
+        },
+        "state": { "enum": ["proposed", "ready", "in-progress", "blocked", "done", "abandoned"] },
+        "risk": { "type": "string", "pattern": "\\S" },
+        "provenance": {
+          "type": "object",
+          "required": ["createdBy", "createdAt"],
+          "additionalProperties": false,
+          "properties": {
+            "createdBy": { "type": "string", "pattern": "\\S" },
+            "createdAt": { "type": "string", "pattern": "\\S" }
+          }
+        }
+      }
+    }
+  }
+}
